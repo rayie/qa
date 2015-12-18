@@ -14,7 +14,7 @@ Multiple Choice
 /*
  * Multiple choice
  * Data structure representing a question
- *
+ *   
  */
 
 {
@@ -67,6 +67,7 @@ Multiple Choice
   kind: "flt",
   txt: "What is your oxygen usage rate (Liters per minute)",
   unit: "LPM of Oxygen"
+  // importance of precision of this answer ??
 },{ 
   _id: 142,
   kind: "mc",
@@ -77,7 +78,7 @@ Multiple Choice
     { txt: "With activity" },
     { txt: "During sleep" },
     { txt: "Continuous" }
-  ]
+  ],
   minmax: [ 1, 5]
 },{
   _id: 200,
