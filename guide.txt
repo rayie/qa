@@ -1,0 +1,80 @@
+Terminology:
+  Survey
+  Respondent
+
+
+
+Questions
+
+
+Defaults Attribtutes of Every Question should have
+  Should there be note or comment field
+    If so, should a free text area be provided?
+
+
+  These attributes apply only in the context of a given survey the question is in.  The attribute given here is the default applied when the question is attached to a survey. At the survey-question specific level, it can be changed.
+
+  Can the question be skipped. 
+  Confidence of accuracy of the answer
+  To distinguish between a question being skipped and a respondent not knowing how to answer
+
+  Text: The main question text 
+  Optional subtext: Additional text to help clarify the question
+
+  Is the question stated in the first person or 3rd person?  Y/N
+
+  Tags 
+
+  Default to NA ?
+
+
+1) Multiple Choice
+
+
+  Options (Choices):
+
+    Option Text
+    Option value (the value representing the data point that choice)
+      - use the option text as the value
+      - use the positional value
+      - 
+
+    Sub Options - If when selected, further sub options should be offerred
+
+  Indicate the minimum and maximum number of choices the user can select / check off
+
+  Examples:
+    If only 1 out of 5 choices is allowed, the max/min should be expressed as 1:1
+    If at least 1 but a max of 2 out of 5 choices is allowed, the max/min shouldbe expressed as 1:2
+
+
+
+
+2) Numeric Free Entry
+
+  Precision - Whole numbers only or can the user express decimals/fractions?
+  Is there is an upper and/or lower limit
+  Is there a unit of measure to indicate?
+
+
+3) Numeric Range with Labels
+
+  Labels "Strongly Disagre", "Agree", 
+  Likert Scale
+  Numeric Range 0-10
+  Discreet Y/N ?
+
+
+
+4) Free text
+  Provide max # of characters  Default: 200 characters
+
+
+
+Survey
+A sequence of questions
+Override default question attributes
+Is the survey conducted by someone other than the respondent
+
+
+
