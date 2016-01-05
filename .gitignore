@@ -1,0 +1,11 @@
+*.swp
+*.swo
+log
+npm-debug.log
+node_modules
+pids
+nohup.out
+public/data_xls
+bower_components
+tmp
+.DS_Store
