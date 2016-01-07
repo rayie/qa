@@ -1,0 +1,199 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-color-picker/paper-color-input.html">
+<link rel="import" href="../paper-item/paper-icon-item.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+
+<!--
+An element providing a solution to no problem in particular.
+
+Example:
+
+    <seed-element></seed-element>
+
+@demo
+-->
+<dom-module id="question-mc">
+
+  <style>
+    :host {
+      display: block;
+      box-sizing: border-box;
+    }
+
+    .author img {
+      float: left;
+      margin-right: 5px;
+      max-height: 100px;
+      max-width: 100px;
+    }
+    paper-checkbox.red {
+      --paper-checkbox-checked-color: var(--paper-red-500);
+      --paper-checkbox-checked-ink-color: var(--paper-red-500);
+      --paper-checkbox-unchecked-color: var(--paper-red-900);
+      --paper-checkbox-unchecked-ink-color: var(--paper-red-900);
+      --paper-checkbox-label-color: var(--paper-red-500);
+    }
+
+
+   
+   :host > ::content .special {
+      background: orange;
+   }
+   paper-card {
+     --paper-card-header-color: blue;
+   }
+
+  </style>
+
+  <template>
+    <paper-card elevation=3>
+      <paper-button on-click="fireLasers">FireLasers</paper-button>
+      <div class="card-content">
+        <p>{{txt}}<p>
+      </div>
+      <paper-listbox 
+        id="choicelist"
+        multi 
+        on-iron-select="gotSelectEvent",
+        on-iron-deselect="gotSelectEvent",
+        selected-items="{{selections}}"
+        selected-values="{{selectionvals}}"
+      > 
+        <template is="dom-repeat" items="[[choices]]">
+          <paper-icon-item 
+            toggles
+            active="{{item.is_active}}"
+          >
+            <iron-icon icon="[[computeIconToUse(item.is_active)]]" item-icon></iron-icon>
+            <div class="flex">{{item.last}}, {{item.first}}</div>
+          </paper-icon-item>
+        </template>
+      </paper-listbox> 
+    </paper-card>
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'question-mc',
+
+    properties: {
+
+      /**
+       * `fancy` indicates that the element should don a monocle and tophat,
+       * while checking its pocket watch.
+       */
+      fancy: Boolean,
+
+
+      txt: {
+        type: String
+      },
+      selectionvals: {
+        type: Array,
+        values: function(){
+          return [
+          ];
+        }
+      },
+
+      selections: {
+        type: Array,
+        values: function(){
+          return [
+          ];
+        }
+      },
+      choices:{
+        type: Array
+      }
+    },
+    // binding computation
+    computeIconToUse: function(is_active){
+      return (is_active)? "icons:check-box" : "icons:check-box-outline-blank";
+    },
+
+    // Element Lifecycle
+    ready: function() {
+      // `ready` is called after all elements have been configured, but
+      // propagates bottom-up. This element's children are ready, but parents
+      // are not.
+      //
+      // This is the point where you should make modifications to the DOM (when
+      // necessary), or kick off any processes the element wants to perform.
+      this.choices.forEach(function(n){
+        n.iconToUse = "icons:check-box-outline-blank";
+      });
+      console.log("this.selections:", this.selections);
+      setTimeout(function(){
+        console.log("this.selections:", this.selections);
+      },5000);
+    },
+
+    attached: function() {
+      // `attached` fires once the element and its parents have been inserted
+      // into a document.
+      //
+      // This is a good place to perform any work related to your element's
+      // visual state or active behavior (measuring sizes, beginning animations,
+      // loading resources, etc).
+    },
+
+    detached: function() {
+      // The analog to `attached`, `detached` fires when the element has been
+      // removed from a document.
+      //
+      // Use this to clean up anything you did in `attached`.
+    },
+
+    // Element Behavior
+
+    /**
+     * The `seed-element-lasers` event is fired whenever `fireLasers` is called.
+     *
+     * @event seed-element-lasers
+     * @detail {{sound: String}}
+     */
+
+
+    /**
+     * Attempts to destroy this element's enemies with an any beam of light!
+     *
+     * Or, at least, dispatches an event in the vain hope that someone else will
+     * do the zapping.
+     */
+    fireLasers: function() {
+      console.log(this.selections,this.selectionvals);
+      console.log(this.txt);
+      console.log(this.choices);
+    },
+    gotSelectEvent: function(e,b){
+      console.log(e,b);
+      return 
+    },
+
+    gotDeSelectEvent: function(e,b){
+      console.log(e,b);
+      return 
+    },
+
+  });
+
+</script>
