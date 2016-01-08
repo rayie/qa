@@ -1,0 +1,36 @@
+{
+  "name": "qa",
+  "version": "0.0.0",
+  "homepage": "https://github.com/rayie/qa",
+  "authors": [
+    "Ray Ie <ie.raymond@gmail.com>"
+  ],
+  "moduleType": [
+    "es6",
+    "node"
+  ],
+  "main": "question-mc.html",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "/test/",
+    "/demo/",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "iron-icon": "PolymerElements/iron-icon#~1.0.7",
+    "iron-icons": "PolymerElements/iron-icons#~1.1.1",
+    "paper-button": "PolymerElements/paper-button#~1.0.11",
+    "paper-card": "PolymerElements/paper-card#~1.0.8",
+    "paper-item": "PolymerElements/paper-item#~1.1.3",
+    "paper-listbox": "PolymerElements/paper-listbox#~1.1.0",
+    "polymer": "Polymer/polymer#^1.2.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "web-component-tester": "*"
+  }
+}
