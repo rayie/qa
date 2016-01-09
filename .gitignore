@@ -1,4 +1,6 @@
 *.swp
+.*.swp
+.*.*.swp
 *.swo
 log
 npm-debug.log

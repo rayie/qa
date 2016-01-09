@@ -10,9 +10,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
-<link rel="import" href="../paper-color-picker/paper-color-input.html">
 <link rel="import" href="../paper-item/paper-icon-item.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
@@ -166,9 +166,6 @@ Example:
         }
       },
 
-      sub: {
-        type: String
-      },
 
       minmax: {
         type: Array,
@@ -202,12 +199,6 @@ Example:
       // loading resources, etc).
     },
 
-    detached: function() {
-      // The analog to `attached`, `detached` fires when the element has been
-      // removed from a document.
-      //
-      // Use this to clean up anything you did in `attached`.
-    },
 
     // Element Behavior
 
@@ -234,7 +225,6 @@ Example:
 
     deselect: function() {
       this.$.choicelist.select(2);
-      //this.selectionvals.pop();
     },
 
     gotActivateEvent: function(e,ob){

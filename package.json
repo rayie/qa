@@ -2,7 +2,7 @@
   "name": "qa",
   "version": "1.0.0",
   "description": "\"QA module\"",
-  "main": "q.js",
+  "main": "devserve.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -20,8 +20,6 @@
   },
   "homepage": "https://github.com/rayie/qa",
   "dependencies": {
-    "LiveScript": "^1.3.1",
     "grunt": "^0.4.5",
-    "simple-autoreload-server": "0.0.13"
   }
 }
