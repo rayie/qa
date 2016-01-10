@@ -17,6 +17,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script>$.noConflict();</script>
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <link rel="import" href="../question-mc.html">
+    <link rel="import" href="../question-ft.html">
   </head>
   <body>
     <div >
@@ -25,8 +26,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         minmax='[1,3]'
         txt='How bad do you cough'
         sub='Choose the best option'
+        display_num='Q.100'
       >
       </question-mc>
+
+      <question-ft
+        opts='[{"first":"Mick","last":"Mouse"},{"first":"Donald","last":"Duck"},{"first":"Ray","last":"Ie"},{"first":"Jack","last":"Do"}]' 
+        minmax='[1,3]'
+        txt='How bad do you cough'
+        sub='Choose the best option'
+      >
+      </question-mc>
+
     </div>
     <div id="wrap">
     </div>
