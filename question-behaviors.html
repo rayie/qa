@@ -20,11 +20,18 @@
         type: Number,
         notify: true,
         value: function(){ return 0 }
+      },
+
+      warn_msg: {
+        type: String,
+        value: function(){
+          return "";
+        }
       }
     },
 
     qstateChanged: function(e){
-      console.log("qstateChanged", e.detail.value);
+      //console.log("qstateChanged", e.detail.value);
       this.qstate = e.detail.value;
     }
 

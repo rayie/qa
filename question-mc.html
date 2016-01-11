@@ -8,13 +8,11 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-card/paper-card.html">
 <link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-item/paper-icon-item.html">
-<link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-input/paper-textarea.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-styles/typography.html">
@@ -39,13 +37,6 @@ Example:
       display: block;
       box-sizing: border-box;
     }
-    .author img {
-      float: left;
-      margin-right: 5px;
-      max-height: 100px;
-      max-width: 100px;
-    }
-
 
     paper-icon-item {
       --paper-icon-item: {
@@ -55,21 +46,15 @@ Example:
       }; 
     }
    
-   :host > ::content .special {
-      background: orange;
-   }
-   
-   .paper-font-caption {
-     @apply(--paper-font-caption);
-   }
+    .paper-font-caption {
+      @apply(--paper-font-caption);
+    }
 
-   paper-card {
-     --paper-card-header-color: blue;
-     width: 100%;
-     margin-bottom: 12px;
-   }
-
-
+    paper-card {
+      --paper-card-header-color: blue;
+      width: 100%;
+      margin-bottom: 12px;
+    }
   </style>
 
   <template>
@@ -169,23 +154,10 @@ Example:
         type: Array
       },
 
-      qstate: {
-        type: Number,
-        notify: true,
-        value: function(){ return 0 }
-      },
-
       answers: {
         type: Array,
         notify: true,
         value: function(){ return [] }
-      },
-
-      warn_msg: {
-        type: String,
-        value: function(){
-          return "TEST";
-        }
       }
 
     },
@@ -195,7 +167,6 @@ Example:
       this.opts.forEach(function(o){
         if ( o.is_active ) n++;
       });
-      console.log("n already active: ", n); 
       if ( n == (this.minmax[1] + 1) ){ 
         return   "icons:check-box-outline-blank";
       }
@@ -207,7 +178,6 @@ Example:
       this.opts.forEach(function(opt){
         if ( opt.is_active ) n++;
       });
-      console.log("activate - n already active: ", n); 
       if ( n==(this.minmax[1] + 1) ){ 
         ob.item.active = false 
       }
@@ -218,7 +188,6 @@ Example:
       this.opts.forEach(function(el,idx){
         if(el.is_active) answers.push(idx);
       });
-      console.log("answers.length, min",answers.length, this.minmax[0], ( answers.length >= this.minmax[0] ));
       if ( answers.length == 0 ){
         this.qstate=0;
       }
@@ -226,10 +195,8 @@ Example:
         this.qstate=1;  //(this.minmax[0] - answers.length) + " more required";
       }
       else if ( answers.length >= this.minmax[0] ){
-        console.log("Qstate is now 2");
         this.qstate=2;
       }
-      console.log("qstate is ", this.qstate);
       this.answers = answers;
     }
   });

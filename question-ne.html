@@ -13,7 +13,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-input/paper-textarea.html">
+<link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
@@ -30,28 +30,28 @@ Example:
 
 @demo
 -->
-<dom-module id="question-ft">
+<dom-module id="question-ne">
 
   <style is="custom-style">
+
     :host {
       display: block;
       box-sizing: border-box;
     }
-
    
-   :host > ::content .special {
+    :host > ::content .special {
       background: orange;
-   }
+    }
    
-   .paper-font-caption {
-     @apply(--paper-font-caption);
-   }
-   paper-card {
-     --paper-card-header-color: blue;
-     width: 100%;
-     margin-bottom: 12px;
-   }
+    .paper-font-caption {
+      @apply(--paper-font-caption);
+    }
 
+    paper-card {
+      --paper-card-header-color: blue;
+      width: 100%;
+      margin-bottom: 12px;
+    }
 
   </style>
 
@@ -67,18 +67,19 @@ Example:
         </question-part-hdr>
 
         <div class="card-content">
-          <paper-textarea
+          <paper-input
+            class="short"
             is="iron-input"
-            label="Type answer here (max [[maxlength]])" 
-            always-float-label
-            textarea
             input
-            char-counter 
+            type="number"
+            label="Numbers only"
+            always-float-label
+            prevent-invalid-input allowed-pattern="[0-9\.]"
             bind-value="{{answer}}"
             maxlength="[[maxlength]]"
             on-change="gotInputChange"
           >
-          </paper-textarea>
+          </paper-input>
         </div>
 
         <question-part-footer
@@ -98,7 +99,7 @@ Example:
 
   Polymer({
 
-    is: 'question-ft',
+    is: 'question-ne',
 
     behaviors: [ QuestionBehaviors.Basic ],
 
@@ -107,21 +108,19 @@ Example:
       maxlength: {
         type: Number,
         value: function(){
-          return 256;
+          return 10;
         }
       },
-
 
       answer: {
         type: String,
         notify: true,
-        value: function(){ return "X" }
+        value: function(){ return "" }
       }
 
     },
 
     gotInputChange: function(e,b){
-      //console.log("got_input_change", e, b, this.answer);
       if (this.answer){
         this.qstate=2;
       }

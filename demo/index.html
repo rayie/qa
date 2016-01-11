@@ -18,9 +18,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <link rel="import" href="../question-mc.html">
     <link rel="import" href="../question-ft.html">
+    <link rel="import" href="../question-ne.html">
   </head>
   <body>
-    <div >
+    <div id="qlist">
       <question-mc 
         opts='[{"txt":"In the morning"},{"txt":"Afternoon"},{"txt":"Evenings"},{"txt":"Midnight"},{"txt":"All Day"}]' 
         minmax='[1,1]'
@@ -34,8 +35,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         txt='How do you feel today?'
         display_num='Q.110'
       >
-      </question-mc>
+      </question-ft>
 
+      <question-ne
+        txt='How many packs of cigarrettes a day?'
+        display_num='Q.120'
+      >
+      </question-ne>
     </div>
     <div id="wrap">
     </div>

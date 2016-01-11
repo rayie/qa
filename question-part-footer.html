@@ -115,7 +115,7 @@ Example:
     },
 
     compute_qstate_label: function(qstate){
-      console.log(QSTATE[qstate]);
+      //console.log(QSTATE[qstate]);
       if ( qstate < 3) this.$.mark_btn.active=false;
       return QSTATE[qstate];
     },
@@ -131,18 +131,17 @@ Example:
 
       if ( this.qstate === 3){ 
         this.qstate = 0;
-        return console.log("QSTATE was already NA, moving it back to pristine, dont' manually change the btn active state");
+        return //console.log("QSTATE was already NA, moving it back to pristine, dont' manually change the btn active state");
       }
       else if ( this.qstate  > 0 ){  
         // de-activate the na btn state
         this.$.mark_btn.active=false;
-        return console.log("QSTATE was INRPGORESS or COMPELTE, don't allow to chagne", this.$.mark_btn.active);
+        return //console.log("QSTATE was INRPGORESS or COMPELTE, don't allow to chagne", this.$.mark_btn.active);
       }
-
       //else  - the remaining condition is that qstate was in PRISTINE state, so allow the change to NA state
 
       this.qstate = 3;
-      return console.log("QSTATE was PRISTINE, allow to chagne", this.$.mark_btn.active);
+      return //console.log("QSTATE was PRISTINE, allow to chagne", this.$.mark_btn.active);
     },
 
   });
