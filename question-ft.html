@@ -15,10 +15,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-item/paper-icon-item.html">
 <link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-input/paper-textarea.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="question-behaviors.html">
 <link rel="import" href="question-part-hdr.html">
+<link rel="import" href="question-part-footer.html">
 
 <!--
 An element providing a solution to no problem in particular.
@@ -29,7 +32,7 @@ Example:
 
 @demo
 -->
-<dom-module id="question-mc">
+<dom-module id="question-ft">
 
   <style is="custom-style">
     :host {
@@ -95,7 +98,7 @@ Example:
    }
    paper-card {
      --paper-card-header-color: blue;
-    width: 600px
+    width: 100%;
    }
 
 
@@ -105,34 +108,36 @@ Example:
     <div class="">
       <paper-card  elevation=3>
 
+        <question-part-hdr
+          txt="[[txt]]"
+          sub="[[sub]]"
+          display_num="[[display_num]]"
+        >
+        </question-part-hdr>
+
         <div class="card-content">
-          <question-part-hdr
-            txt="[[txt]]"
-            sub="[[sub]]"
-            display_num="[[display_num]]"
+
+          <paper-textarea
+            is="iron-input"
+            label="Type answer here (max [[maxlength]])" 
+            autoresizing 
+            textarea
+            input
+            char-counter 
+            bind-value="{{answer}}"
+            maxlength="[[maxlength]]"
+            on-change="gotInputChange"
           >
-          </question-part-hdr>
-          <paper-listbox 
-            id="choicelist"
-            selected-class=""
-            multi
-            on-iron-select="gotSelectEvent",
-            on-iron-activate="gotActivateEvent",
-          > 
-            <template is="dom-repeat" items="[[opts]]" as="opt">
-              <paper-icon-item 
-                toggles
-                active="{{opt.is_active}}"
-              >
-                <iron-icon icon="{{computeIconToUse(opt.is_active)}}" item-icon></iron-icon>
-                <div class="">{{opt.last}}, {{opt.first}}</div>
-              </paper-icon-item>
-            </template>
-          </paper-listbox> 
-          <hr/>
-          <paper-button toggles raised class='custom' on-click="fireLasers" >N/A</paper-button>
-          <paper-button on-click="deselect">Desel</paper-button>
+          </paper-textarea>
         </div>
+
+        <question-part-footer
+          warn_msg="[[warn_msg]]"
+          qstate="[[qstate]]"
+          on-qstate-changed="qstateChanged"
+        >
+        </question-part-footer>
+
       </paper-card>
     </div>
   </template>
@@ -143,52 +148,41 @@ Example:
 
   Polymer({
 
-    is: 'question-mc',
+    is: 'question-ft',
 
-    // binding computation
-    computeIconToUse: function(is_active ){
-      var n = 0;
-      this.opts.forEach(function(o){
-        if ( o.is_active ) n++;
-      });
-      console.log("n already active: ", n); 
-      if ( n == (this.minmax[1] + 1) ){ 
-        return   "icons:check-box-outline-blank";
-      }
-      return (is_active)? "icons:check-box" : "icons:check-box-outline-blank";
-    },
+    behaviors: [ QuestionBehaviors.Basic ],
 
     properties: {
 
-      /**
-       * `fancy` indicates that the element should don a monocle and tophat,
-       * while checking its pocket watch.
-       */
-      fancy: Boolean,
-
-
-      txt: {
-        type: String
+      maxlength: {
+        type: Number,
+        value: function(){
+          return 256;
+        }
       },
 
-      sub: {
+
+      answer: {
         type: String,
-        values: function(){
-          return "";
-        }
+        notify: true,
+        value: function(){ return "X" }
       },
 
-
-      minmax: {
-        type: Array,
-        values: function(){
-          return [1,2];
+      warn_msg: {
+        type: String,
+        value: function(){
+          return "TEST";
         }
-      },
+      }
+    },
 
-
-      opts:{
-        type: Array
+    gotInputChange: function(e,b){
+      console.log("got_input_change", e, b, this.answer);
+      if (this.answer){
+        this.qstate=2;
+      }
+      else {
+        this.qstate=0;
       }
     },
 
@@ -212,55 +206,6 @@ Example:
     },
 
 
-    // Element Behavior
-
-    /**
-     * The `seed-element-lasers` event is fired whenever `fireLasers` is called.
-     *
-     * @event seed-element-lasers
-     * @detail {{sound: String}}
-     */
-
-
-    /**
-     * Attempts to destroy this element's enemies with an any beam of light!
-     *
-     * Or, at least, dispatches an event in the vain hope that someone else will
-     * do the zapping.
-     */
-    fireLasers: function() {
-      Polymer.dom(this.$.choicelist).children.forEach(function(c){
-        c.active = false;
-      });
-      //console.log( Polymer.dom(this.$.choicelist).children );
-    },
-
-    deselect: function() {
-      this.$.choicelist.select(2);
-    },
-
-    gotActivateEvent: function(e,ob){
-      var n = 0;
-      this.opts.forEach(function(o){
-        if ( o.is_active ) n++;
-      });
-      console.log("activate - n already active: ", n); 
-      if ( n==(this.minmax[1] + 1) ){ 
-        ob.item.active = false 
-      };
-      
-      var j = 0;
-      this.opts.forEach(function(o){
-        if ( o.is_active ) j++;
-      });
-      console.log("j is ", j);
-    },
-
-    gotSelectEvent: function(e,b){
-    },
-
-    gotDeSelectEvent: function(e,item){
-    },
 
   });
 

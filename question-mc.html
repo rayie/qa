@@ -15,10 +15,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-item/paper-icon-item.html">
 <link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-input/paper-textarea.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="question-behaviors.html">
 <link rel="import" href="question-part-hdr.html">
+<link rel="import" href="question-part-footer.html">
 
 <!--
 An element providing a solution to no problem in particular.
@@ -42,41 +45,7 @@ Example:
       max-height: 100px;
       max-width: 100px;
     }
-    .qhdr {
-      @apply(--layout-horizontal);
-    }
-    .qhdr div {
-      padding: 2px
-    }
-    .flexchild {
-      @apply(--layout-flex);
-    }
-    paper-button.custom {
-      --paper-button-ink-color: var(--paper-pink-a200);
-      /* These could also be individually defined for each of the
-        specific css classes, but we'll just do it once as an example */
-      --paper-button-flat-keyboard-focus: {
-        background-color: var(--paper-pink-a200);
-        color: white !important;
-      };
-      --paper-button-raised-keyboard-focus: {
-        background-color: var(--paper-pink-a200) !important;
-        color: white !important;
-      };
-    }
-    paper-button.custom:hover {
-      background-color: var(--paper-indigo-100);
-    }
-    paper-button.red {
-      background-color: var(--paper-red-500);
-      color: white;
-    }
-    paper-button.green[active] {
-      background-color: var(--paper-red-500);
-    }
-    paper-button.disabled {
-      color: white;
-    }
+
 
     paper-icon-item {
       --paper-icon-item: {
@@ -93,9 +62,11 @@ Example:
    .paper-font-caption {
      @apply(--paper-font-caption);
    }
+
    paper-card {
      --paper-card-header-color: blue;
-    width: 600px
+     width: 100%;
+     margin-bottom: 12px;
    }
 
 
@@ -104,35 +75,45 @@ Example:
   <template>
     <div class="">
       <paper-card  elevation=3>
+        <question-part-hdr
+          txt="[[txt]]"
+          sub="[[sub]]"
+          display_num="[[display_num]]"
+        >
+        </question-part-hdr>
 
         <div class="card-content">
-          <question-part-hdr
-            txt="[[txt]]"
-            sub="[[sub]]"
-            display_num="[[display_num]]"
-          >
-          </question-part-hdr>
           <paper-listbox 
             id="choicelist"
             selected-class=""
             multi
-            on-iron-select="gotSelectEvent",
             on-iron-activate="gotActivateEvent",
+            on-iron-select="_gatherAnswers",
+            on-iron-deselect="_gatherAnswers",
           > 
             <template is="dom-repeat" items="[[opts]]" as="opt">
               <paper-icon-item 
                 toggles
                 active="{{opt.is_active}}"
               >
-                <iron-icon icon="{{computeIconToUse(opt.is_active)}}" item-icon></iron-icon>
-                <div class="">{{opt.last}}, {{opt.first}}</div>
+                <iron-icon 
+                  icon="{{computeIconToUse(opt.is_active)}}" 
+                  item-icon
+                >
+                </iron-icon>
+                <div class="">{{opt.txt}}</div>
               </paper-icon-item>
             </template>
           </paper-listbox> 
-          <hr/>
-          <paper-button toggles raised class='custom' on-click="fireLasers" >N/A</paper-button>
-          <paper-button on-click="deselect">Desel</paper-button>
         </div>
+
+        <question-part-footer
+          warn_msg="[[warn_msg]]"
+          qstate="[[qstate]]"
+          on-qstate-changed="qstateChanged"
+        >
+        </question-part-footer>
+
       </paper-card>
     </div>
   </template>
@@ -140,12 +121,75 @@ Example:
 </dom-module>
 
 <script>
+  var QSTATE = [
+    "Pristine",
+    "InProgress",
+    "Complete",
+    "Marked as NA"
+  ];
 
   Polymer({
 
     is: 'question-mc',
 
-    // binding computation
+    behaviors: [ QuestionBehaviors.Basic ],
+
+    properties: {
+
+      /**
+       * the name of the paper-icons icon to use to indicate an option is selected
+       */
+      icon_selected: {
+        type: String,
+        value: function(){
+          return "icons:check-box";
+        }
+      },
+          
+      /**
+       * the name of the paper-icons icon to use to indicate an option is NOT selected
+       */
+      icon_unselected: {
+        type: String,
+        value: function(){
+          return "icons:check-box-outline-blank";
+        }
+      },
+
+
+      minmax: {
+        type: Array,
+        value: function(){
+          return [1,2];
+        }
+      },
+
+
+      opts:{
+        type: Array
+      },
+
+      qstate: {
+        type: Number,
+        notify: true,
+        value: function(){ return 0 }
+      },
+
+      answers: {
+        type: Array,
+        notify: true,
+        value: function(){ return [] }
+      },
+
+      warn_msg: {
+        type: String,
+        value: function(){
+          return "TEST";
+        }
+      }
+
+    },
+
     computeIconToUse: function(is_active ){
       var n = 0;
       this.opts.forEach(function(o){
@@ -155,113 +199,39 @@ Example:
       if ( n == (this.minmax[1] + 1) ){ 
         return   "icons:check-box-outline-blank";
       }
-      return (is_active)? "icons:check-box" : "icons:check-box-outline-blank";
+      return (is_active)? this.icon_selected : this.icon_unselected;
     },
-
-    properties: {
-
-      /**
-       * `fancy` indicates that the element should don a monocle and tophat,
-       * while checking its pocket watch.
-       */
-      fancy: Boolean,
-
-
-      txt: {
-        type: String
-      },
-
-      sub: {
-        type: String,
-        values: function(){
-          return "";
-        }
-      },
-
-
-      minmax: {
-        type: Array,
-        values: function(){
-          return [1,2];
-        }
-      },
-
-
-      opts:{
-        type: Array
-      }
-    },
-
-    // Element Lifecycle
-    ready: function() {
-      // `ready` is called after all elements have been configured, but
-      // propagates bottom-up. This element's children are ready, but parents
-      // are not.
-      //
-      // This is the point where you should make modifications to the DOM (when
-      // necessary), or kick off any processes the element wants to perform.
-    },
-
-    attached: function() {
-      // `attached` fires once the element and its parents have been inserted
-      // into a document.
-      //
-      // This is a good place to perform any work related to your element's
-      // visual state or active behavior (measuring sizes, beginning animations,
-      // loading resources, etc).
-    },
-
-
-    // Element Behavior
-
-    /**
-     * The `seed-element-lasers` event is fired whenever `fireLasers` is called.
-     *
-     * @event seed-element-lasers
-     * @detail {{sound: String}}
-     */
-
-
-    /**
-     * Attempts to destroy this element's enemies with an any beam of light!
-     *
-     * Or, at least, dispatches an event in the vain hope that someone else will
-     * do the zapping.
-     */
-    fireLasers: function() {
-      Polymer.dom(this.$.choicelist).children.forEach(function(c){
-        c.active = false;
-      });
-      //console.log( Polymer.dom(this.$.choicelist).children );
-    },
-
-    deselect: function() {
-      this.$.choicelist.select(2);
-    },
-
+    
     gotActivateEvent: function(e,ob){
       var n = 0;
-      this.opts.forEach(function(o){
-        if ( o.is_active ) n++;
+      this.opts.forEach(function(opt){
+        if ( opt.is_active ) n++;
       });
       console.log("activate - n already active: ", n); 
       if ( n==(this.minmax[1] + 1) ){ 
         ob.item.active = false 
-      };
-      
-      var j = 0;
-      this.opts.forEach(function(o){
-        if ( o.is_active ) j++;
+      }
+    },
+
+    _gatherAnswers: function(){
+      var answers = [];
+      this.opts.forEach(function(el,idx){
+        if(el.is_active) answers.push(idx);
       });
-      console.log("j is ", j);
-    },
-
-    gotSelectEvent: function(e,b){
-    },
-
-    gotDeSelectEvent: function(e,item){
-    },
-
+      console.log("answers.length, min",answers.length, this.minmax[0], ( answers.length >= this.minmax[0] ));
+      if ( answers.length == 0 ){
+        this.qstate=0;
+      }
+      else if ( answers.length < this.minmax[0] ){
+        this.qstate=1;  //(this.minmax[0] - answers.length) + " more required";
+      }
+      else if ( answers.length >= this.minmax[0] ){
+        console.log("Qstate is now 2");
+        this.qstate=2;
+      }
+      console.log("qstate is ", this.qstate);
+      this.answers = answers;
+    }
   });
 
 </script>

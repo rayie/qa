@@ -1,0 +1,32 @@
+<script>
+  window.QuestionBehaviors = window.QuestionBehaviors || {};
+  QuestionBehaviors.Basic = {
+    properties: {
+      txt: {
+        type: String,
+        value: function(){
+          return "";
+        }
+      },
+
+      sub: {
+        type: String,
+        value: function(){
+          return "";
+        }
+      },
+
+      qstate: {
+        type: Number,
+        notify: true,
+        value: function(){ return 0 }
+      }
+    },
+
+    qstateChanged: function(e){
+      console.log("qstateChanged", e.detail.value);
+      this.qstate = e.detail.value;
+    }
+
+  }
+</script>

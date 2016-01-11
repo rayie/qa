@@ -45,7 +45,11 @@ Example:
       @apply(--layout-flex);
     }
     .flex-main-child {
-      @apply(--layout-flex-8);
+      @apply(--layout-flex-6);
+    }
+    .display_num {
+      @apply(--paper-font-body2)
+      text-align: right;
     }
     .main-q-txt {
       @apply(--paper-font-body2)
@@ -53,16 +57,19 @@ Example:
     .sub-q-txt {
       @apply(--paper-font-caption)
     }
+    .card-actions {
+      border-bottom: 1px solid lightgrey;
+    }
   </style>
 
   <template>
-    <div class="qhdr">
-      <div class='flexchild main-q-txt'>{{display_num}}</div>
-      <div class='flex-main-child main-q-txt'>{{txt}}</div>
-      <div class='flexchild main-q-txt'>Check</div>
-    </div>
-    <span class="sub-q-txt">{{sub}}</small>
-    <hr/>
+    <div class="card-actions">
+      <div class="qhdr">
+        <div class='flex-main-child main-q-txt'>[[txt]]</div>
+        <div class='flexchild display_num'>[[display_num]]</div>
+      </div>
+      <span class="sub-q-txt">{{sub}}</small>
+  </div>
   </template>
 
 </dom-module>
@@ -77,19 +84,18 @@ Example:
 
       display_num: {
         type: String,
-        values: function(){ return ""; }
+        value: function(){ return "Q?"; }
       },
 
       txt: {
         type: String,
-        values: function(){ return ""; }
+        value: function(){ return "Missing question text"; }
       },
 
       sub: {
         type: String,
-        values: function(){ return ""; }
+        value: function(){ return ""; }
       }
-
     }
 
   });
