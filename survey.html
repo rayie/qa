@@ -11,6 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-card/paper-card.html">
 <link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-item/paper-icon-item.html">
@@ -37,17 +38,20 @@ Example:
       display: block;
       box-sizing: border-box;
     }
-    .qhdr {
+    .survey-hdr {
       @apply(--layout-horizontal);
-    }
-    .qhdr div {
-      padding: 2px
-    }
-    .flexchild {
       @apply(--layout-flex);
+      @apply(--paper-font-title)
     }
-    .flex-main-child {
-      @apply(--layout-flex-6);
+    .hdr-left {
+      @apply(--layout-flex-4);
+    }
+    .hdr-right {
+      @apply(--layout-flex-8);
+      text-align: right;
+    }
+    paper-button {
+      @apply(--paper-font-button);
     }
     .display_num {
       @apply(--paper-font-body2)
@@ -66,24 +70,54 @@ Example:
 
   <template>
     <div class="survey-hdr">
-      <div class='survey-title'>[[title]]</div>
-      <div class='survey-subhead'>[[testsib]]</div>
+      <div class="hdr-left">
+        <div class='survey-title'>[[title]]</div>
+        <div class='survey-subhead'>[[subhead]]</div>
+      </div>
+      <div class="hdr-right">
+        <div>[[summary_txt]]</div>
+        <div>
+          <paper-button on-click="previewAnswers">Preview Answers</paper-button>
+        </div>
+      </div>
     </div>
     <div id="qlist">
       <!--the container for our question components, dynamically inserted-->
     </div>
-    <span>A[[stubss]]B</span>
+    <paper-dialog>
+      <h2>Answers:</h2>
+      <paper-dialog-scrollable>
+       {{ answer_preview_content }} 
+      </paper-dialog-scrollable>
+      <div class="buttons">
+        <paper-button dialog-dismiss>Dismiss</paper-button>
+      </div>
+    </paper-dialog>
+    <iron-ajax
+      id="ajaxer"       
+      handle-as="json",
+      on-response="survey_loaded",
+    >
+    </iron-ajax>
   </template>
 
 </dom-module>
 
 <script>
+  var QSTATE = [
+  "Pristine",
+  "InProgress",
+  "Complete",
+  "Marked as NA"
+  ];
 
   Polymer({
 
     is: 'survey-a',
 
     properties: {
+
+      patient_id: 
 
       title: {
         type: String,
@@ -97,22 +131,24 @@ Example:
       testsib: {
         type: String,
         value: "INIT"
+      },
+      summary_txt: {
+        type: String,
+        value: ""
       }
      
     },
 
     ready: function(){
       var self = this;
-      jQuery.ajax({url:"../q.js",dataType:"script" })
-      .done(function(a,b,c){
-        //console.log(a,b,c);
-        self._load_survey();
-      })
-      .fail(function(a,b,c){
-        console.log(a,b,c);
-        console.log(sample_survey);
-      })
+      this.start();
+    },
 
+    start: function(){ 
+      this.$.ajaxer.url="../sample_survey.json";
+      this.$.ajaxer.generateRequest();
+
+      return;
     },
 
     _convert_yn_to_mc: function(q){
@@ -136,11 +172,12 @@ Example:
       return q;
     },
 
-    _load_survey: function(){
+    survey_loaded: function(event){
+      var survey_data = event.detail.response;
       this.questions = {};
       var self = this;
-      sample_survey.questions=[];
-      sample_survey.forEach(function(q,idx){
+      this.questions_n = survey_data.length;
+      survey_data.forEach(function(q,idx){
         if ( ["mc","ft","ne","yn"].indexOf( q.kind ) === -1 ) return;
 
         q.display_num = "Q"+ q._id;
@@ -155,21 +192,40 @@ Example:
 
 
         self.listen(new_q,"siblingdisplay-changed","hideOrRevealSiblings");
+        self.listen(new_q,"qstate-changed","qstateChanged");
         Polymer.dom(self.$.qlist).appendChild(new_q);
 
         if ( q.hidden ) {
           var tg = new_q.querySelector("question-part-hdr");
-          console.log(tg);
           new_q.toggleClass("hilite-qhdr-bg",true, tg );
         }
 
         self.questions[q._id.toString()] = new_q;
         return;
       });
+      this.summarize();
     },
   
-    test: function(e){
-      console.log(this.siblingstoreveal);
+    summarize: function(){
+      var qstate_counts = [ 0, 0, 0, 0];
+      var count_hidden = 0;
+      for(var qnum in this.questions){
+        if(this.questions[ qnum ].hidden) count_hidden++;
+        qstate_counts[ this.questions[qnum].qstate ]++;
+      }
+      console.log(qstate_counts);
+      qstate_counts = qstate_counts;
+      count_hidden = count_hidden;
+      this.summary_txt = [
+        "Total Required:", 
+        (this.questions_n - count_hidden),
+        " Complete:",
+        qstate_counts[2],
+        " NA:",
+        qstate_counts[3]
+      ].join(" ");
+
+      console.log(this.summary_txt);
     },
 
     hideOrRevealSiblings: function(e){
@@ -181,6 +237,12 @@ Example:
       e.detail.value.reveal.forEach(function(qnum){
         self.questions[qnum.toString()].hidden=false;
       });
+    },
+
+    qstateChanged: function(e){
+      //doesn't matter which question changed, just so we know to update the summary
+      this.summarize();
+
     }
 
   });
