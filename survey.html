@@ -149,10 +149,20 @@ Example:
           q = self._convert_yn_to_mc(q);
         }
 
+
         var qtype = "Question"+q.kind.toUpperCase();
         var new_q = new window[qtype](q);
+
+
         self.listen(new_q,"siblingdisplay-changed","hideOrRevealSiblings");
         Polymer.dom(self.$.qlist).appendChild(new_q);
+
+        if ( q.hidden ) {
+          var tg = new_q.querySelector("question-part-hdr");
+          console.log(tg);
+          new_q.toggleClass("hilite-qhdr-bg",true, tg );
+        }
+
         self.questions[q._id.toString()] = new_q;
         return;
       });

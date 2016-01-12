@@ -11,6 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-card/paper-card.html">
 <link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-item/paper-icon-item.html">
@@ -42,19 +43,30 @@ Example:
         @apply(--paper-font-body2)
       }
 
-      .warn_msg {
-        @apply(--paper-font-caption);
+      .note-area {
         @apply(--layout-flex-5);
-        color: red;
+        @apply(--paper-font-caption);
+        --paper-input-container: {
+          height: 14px;
+          padding: 2px 2px 2px 18px;
+        }
+        --paper-input-container-label:{
+          @apply(--paper-font-caption);
+        }
       }
 
-      .qstate {
+      .footer-right {
         @apply(--layout-flex-5);
         @apply(--paper-font-caption);
         text-align: right;
-        color: gray
       }
-
+        .qstate {
+          color: darkgray;
+          font-weight: bold;
+        }
+        .warn_msg {
+          color: red;
+        }
 
     paper-button {
       @apply(--paper-font-button);
@@ -75,12 +87,27 @@ Example:
       >
         Mark as N/A
       </paper-button>
-      <span class='warn_msg'>
-        {{warn_msg}}
-      </span>
-      <span class='qstate'>
-        [[compute_qstate_label(qstate)]]
-      </span>
+
+      <paper-input
+        is="iron-input"
+        class="note-area"
+        label="Enter surveyor notes:"
+        maxlength="250"
+        bind-value="{{surveyor_notes}}"
+        input
+      >
+      </paper-input>
+
+
+      <div class="footer-right">
+        <span class='qstate'>
+          [[compute_qstate_label(qstate)]]
+        </span>
+        <br/>
+        <span class='warn_msg'>
+          {{warn_msg}}
+        </span>
+      </div>
     </div>
   </template>
 

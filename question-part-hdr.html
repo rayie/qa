@@ -31,6 +31,7 @@ Example:
 <dom-module id="question-part-hdr">
 
   <style is="custom-style">
+
     :host {
       display: block;
       box-sizing: border-box;
@@ -57,15 +58,20 @@ Example:
     .sub-q-txt {
       @apply(--paper-font-caption)
     }
+
     .card-actions {
       border-bottom: 1px solid lightgrey;
+    }
+
+    :host.hilite-qhdr-bg {
+      background-color: #FFFDE7;
     }
   </style>
 
   <template>
-    <div class="card-actions">
+    <div class="card-actions" >
       <div class="qhdr">
-        <div class='flex-main-child main-q-txt'>[[txt]]</div>
+        <div class='flex-main-child main-q-txt'>[[txt]] </div>
         <div class='flexchild display_num'>[[display_num]]</div>
       </div>
       <span class="sub-q-txt">{{sub}}</small>
@@ -95,7 +101,8 @@ Example:
       sub: {
         type: String,
         value: function(){ return ""; }
-      }
+      },
+
     }
 
   });

@@ -52,6 +52,14 @@ Example:
       width: 100%;
       margin-bottom: 12px;
     }
+    .card-content {
+      @apply(--layout-horizontal);
+      @apply(--layout-justified);
+      display: inline-block;
+    }
+   .hilite-qhdr-bg {
+     --qhdr-bgcolor: #FFFDE7;
+   }
 
   </style>
 
@@ -63,11 +71,14 @@ Example:
           txt="[[txt]]"
           sub="[[sub]]"
           display_num="[[display_num]]"
+          is_conditional="[[is_conditional]]"
         >
         </question-part-hdr>
 
         <div class="card-content">
+           
           <paper-input
+            width="12"
             class="short"
             is="iron-input"
             input

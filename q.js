@@ -77,7 +77,6 @@ var sample_survey = [
     _id: 140,
     kind: "yn",
     txt: "Do you use oxygen?",
-    precision: 2,
     rule: {
       "y":{
         ask: [141,142]
@@ -113,6 +112,12 @@ var sample_survey = [
   },
 
 
+  { 
+    _id: 143,
+    kind: "yn",
+    txt: "Have you ever been recommended to use Oxygen?",
+    hidden: true
+  },
 
   {
     _id: 200,
