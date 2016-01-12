@@ -17,6 +17,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-item/paper-icon-item.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="question-mc.html">
@@ -37,6 +39,11 @@ Example:
     :host {
       display: block;
       box-sizing: border-box;
+    }
+    paper-icon-item {
+      @apply(--paper-font-body2)
+      margin-bottom: 4px;
+      border-bottom: 1px solid gray;
     }
     .survey-hdr {
       @apply(--layout-horizontal);
@@ -66,6 +73,44 @@ Example:
     .card-actions {
       border-bottom: 1px solid lightgrey;
     }
+
+    /* answer sheet */
+    .list {
+      @apply(--layout-vertical);
+      padding-top: 12px;
+      background-color: white;
+      width: 240px;
+      height: 228px;
+      margin: 12px;
+      @apply(--shadow-elevation-2dp);
+    } 
+
+    .avatar {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: #ccc;
+    }
+
+    .blue {
+      background-color: var(--paper-light-blue-300);
+    }
+
+    .red {
+      background-color: var(--paper-red-300);
+    }
+
+    .orange {
+      background-color: var(--paper-amber-300);
+    }
+
+    .green {
+      background-color: var(--paper-green-300);
+    }
+
+
   </style>
 
   <template>
@@ -84,10 +129,24 @@ Example:
     <div id="qlist">
       <!--the container for our question components, dynamically inserted-->
     </div>
-    <paper-dialog>
-      <h2>Answers:</h2>
+    <paper-dialog id="answerSheetDialog">
       <paper-dialog-scrollable>
-       {{ answer_preview_content }} 
+        <h2>Answers:</h2>
+        <template 
+          is="dom-repeat"
+          items="[[answers]]"
+          as="answer"
+        </template>
+          <paper-icon-item>
+            <div class="" item-icon>
+              [[answer.qnum]]
+            </div>
+            <paper-item-body two-line>
+              <div>[[answer.q]]</div>
+              <div secondary>[[answer.a]]</div>
+            </paper-item-body>
+          </paper-icon-item>
+        </template>
       </paper-dialog-scrollable>
       <div class="buttons">
         <paper-button dialog-dismiss>Dismiss</paper-button>
@@ -117,7 +176,10 @@ Example:
 
     properties: {
 
-      patient_id: 
+      patient_id: {
+        type: String,
+        value: function(){ return "Missing Patient ID"; }
+      },
 
       title: {
         type: String,
@@ -168,7 +230,6 @@ Example:
             q.opts[1][k] = q.rule.n[k];
         }
       }
-      console.log(q);
       return q;
     },
 
@@ -206,12 +267,48 @@ Example:
       this.summarize();
     },
   
+    _build_answer_sheet: function(q){
+      var self = this;
+      if (q.qstate===3) var a= "N/A";
+      else if (q.qstate===0) var a= "Incomplete";
+      else switch(q.kind){
+        case "ft":
+        case "ne":
+          a= q.answer;
+          break;
+        case "mc":
+          a =[];
+          q.answer.forEach(function(ans){
+            a.push( q.opts[ans].txt );
+          });
+          a = a.join(",");
+          break;
+      }
+      var r = {
+        qnum: q.display_num,
+        q: q.txt,
+        a: a
+      };
+      console.log(r);
+      return r;
+    },
+
+    previewAnswers: function(){
+      this.$.answerSheetDialog.open();
+    },
+
     summarize: function(){
       var qstate_counts = [ 0, 0, 0, 0];
       var count_hidden = 0;
+      var answers = [];
       for(var qnum in this.questions){
-        if(this.questions[ qnum ].hidden) count_hidden++;
-        qstate_counts[ this.questions[qnum].qstate ]++;
+        if(this.questions[ qnum ].hidden){ 
+          count_hidden++;
+        }
+        else{
+          qstate_counts[ this.questions[qnum].qstate ]++;
+          answers.push( this._build_answer_sheet(this.questions[qnum]) );
+        }
       }
       console.log(qstate_counts);
       qstate_counts = qstate_counts;
@@ -226,6 +323,7 @@ Example:
       ].join(" ");
 
       console.log(this.summary_txt);
+      this.answers = answers;
     },
 
     hideOrRevealSiblings: function(e){

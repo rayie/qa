@@ -35,7 +35,13 @@ Example:
     :host {
       display: block;
       box-sizing: border-box;
+      background-color: #B2DFDB;
     }
+
+    :host.hilite-qhdr-bg {
+      background-color: #FFFDE7;
+    }
+
     .qhdr {
       @apply(--layout-horizontal);
     }
@@ -62,10 +68,7 @@ Example:
     .card-actions {
       border-bottom: 1px solid lightgrey;
     }
-
-    :host.hilite-qhdr-bg {
-      background-color: #FFFDE7;
-    }
+    
   </style>
 
   <template>
