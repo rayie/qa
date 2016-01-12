@@ -58,7 +58,7 @@ Example:
   </style>
 
   <template>
-    <div class="">
+    <div class="container">
       <paper-card  elevation=3>
         <question-part-hdr
           txt="[[txt]]"
@@ -113,7 +113,7 @@ Example:
     "Marked as NA"
   ];
 
-  Polymer({
+  window.QuestionMC = Polymer({
 
     is: 'question-mc',
 
@@ -154,7 +154,7 @@ Example:
         type: Array
       },
 
-      answers: {
+      answer: {
         type: Array,
         notify: true,
         value: function(){ return [] }
@@ -184,20 +184,40 @@ Example:
     },
 
     _gatherAnswers: function(){
-      var answers = [];
+      var answer = [];
       this.opts.forEach(function(el,idx){
-        if(el.is_active) answers.push(idx);
+        if(el.is_active) answer.push(idx);
       });
-      if ( answers.length == 0 ){
+      if ( answer.length == 0 ){
         this.qstate=0;
       }
-      else if ( answers.length < this.minmax[0] ){
-        this.qstate=1;  //(this.minmax[0] - answers.length) + " more required";
+      else if ( answer.length < this.minmax[0] ){
+        this.qstate=1;  //(this.minmax[0] - answer.length) + " more required";
       }
-      else if ( answers.length >= this.minmax[0] ){
+      else if ( answer.length >= this.minmax[0] ){
         this.qstate=2;
       }
-      this.answers = answers;
+      this.answer = answer;
+
+      var self=this;
+      var sibs_to_reveal=[];
+      this.answer.forEach(function(idx_of_answer){
+        if ( self.opts[idx_of_answer].ask !== undefined ){
+          sibs_to_reveal = sibs_to_reveal.concat(  self.opts[idx_of_answer].ask );
+        }
+      });
+
+      //compare against last state of siblings to reveal
+      var to_hide = _.difference( this.siblingsrevealed, sibs_to_reveal);
+      var to_reveal = _.difference( sibs_to_reveal, this.siblingsrevealed);
+      
+      self.siblingsrevealed = [].concat(sibs_to_reveal);
+      if ( to_hide.length || to_reveal ){
+        self.siblingdisplay = {
+          hide: to_hide,
+          reveal: to_reveal
+        }
+      }
     }
   });
 

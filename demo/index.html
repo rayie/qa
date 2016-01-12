@@ -16,32 +16,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
     <script>$.noConflict();</script>
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-    <link rel="import" href="../question-mc.html">
-    <link rel="import" href="../question-ft.html">
-    <link rel="import" href="../question-ne.html">
+    <link rel="import" href="../survey.html">
   </head>
   <body>
     <div id="qlist">
-      <question-mc 
-        opts='[{"txt":"In the morning"},{"txt":"Afternoon"},{"txt":"Evenings"},{"txt":"Midnight"},{"txt":"All Day"}]' 
-        minmax='[1,1]'
-        txt='How bad do you cough'
-        sub='Choose the best option'
-        display_num='Q.100'
+      <survey-a
+        title="Test Survey"
+        subhead="Answer all questions"
       >
-      </question-mc>
-
-      <question-ft
-        txt='How do you feel today?'
-        display_num='Q.110'
-      >
-      </question-ft>
-
-      <question-ne
-        txt='How many packs of cigarrettes a day?'
-        display_num='Q.120'
-      >
-      </question-ne>
+      </survey-a>
     </div>
     <div id="wrap">
     </div>

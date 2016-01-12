@@ -1,0 +1,178 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-item/paper-icon-item.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-styles/typography.html">
+<link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="question-mc.html">
+<link rel="import" href="question-ft.html">
+<link rel="import" href="question-ne.html">
+<!--
+An element providing a solution to no problem in particular.
+
+Example:
+
+    <seed-element></seed-element>
+
+@demo
+-->
+<dom-module id="survey-a">
+
+  <style is="custom-style">
+    :host {
+      display: block;
+      box-sizing: border-box;
+    }
+    .qhdr {
+      @apply(--layout-horizontal);
+    }
+    .qhdr div {
+      padding: 2px
+    }
+    .flexchild {
+      @apply(--layout-flex);
+    }
+    .flex-main-child {
+      @apply(--layout-flex-6);
+    }
+    .display_num {
+      @apply(--paper-font-body2)
+      text-align: right;
+    }
+    .survey-title {
+      @apply(--paper-font-title)
+    }
+    .survey-subhead{
+      @apply(--paper-font-subhead)
+    }
+    .card-actions {
+      border-bottom: 1px solid lightgrey;
+    }
+  </style>
+
+  <template>
+    <div class="survey-hdr">
+      <div class='survey-title'>[[title]]</div>
+      <div class='survey-subhead'>[[testsib]]</div>
+    </div>
+    <div id="qlist">
+      <!--the container for our question components, dynamically inserted-->
+    </div>
+    <span>A[[stubss]]B</span>
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'survey-a',
+
+    properties: {
+
+      title: {
+        type: String,
+        value: function(){ return "Missing Surve Title?"; }
+      },
+
+      subhead: {
+        type: String,
+        value: function(){ return "Missing Survey Subheading"; }
+      },
+      testsib: {
+        type: String,
+        value: "INIT"
+      }
+     
+    },
+
+    ready: function(){
+      var self = this;
+      jQuery.ajax({url:"../q.js",dataType:"script" })
+      .done(function(a,b,c){
+        //console.log(a,b,c);
+        self._load_survey();
+      })
+      .fail(function(a,b,c){
+        console.log(a,b,c);
+        console.log(sample_survey);
+      })
+
+    },
+
+    _convert_yn_to_mc: function(q){
+      q.minmax=[1,1];
+      q.kind="mc";
+      q.opts = [
+        { txt: "YES" },
+        { txt: "NO" }
+      ];
+      if ( q.rule ){
+        if ( q.rule.y ){
+          for(var k in q.rule.y)
+            q.opts[0][k] = q.rule.y[k];
+        }
+        if ( q.rule.n ){
+          for(var k in q.rule.n)
+            q.opts[1][k] = q.rule.n[k];
+        }
+      }
+      console.log(q);
+      return q;
+    },
+
+    _load_survey: function(){
+      this.questions = {};
+      var self = this;
+      sample_survey.questions=[];
+      sample_survey.forEach(function(q,idx){
+        if ( ["mc","ft","ne","yn"].indexOf( q.kind ) === -1 ) return;
+
+        q.display_num = "Q"+ q._id;
+
+        if ( q.kind=="yn" ){
+          q = self._convert_yn_to_mc(q);
+        }
+
+        var qtype = "Question"+q.kind.toUpperCase();
+        var new_q = new window[qtype](q);
+        self.listen(new_q,"siblingdisplay-changed","hideOrRevealSiblings");
+        Polymer.dom(self.$.qlist).appendChild(new_q);
+        self.questions[q._id.toString()] = new_q;
+        return;
+      });
+    },
+  
+    test: function(e){
+      console.log(this.siblingstoreveal);
+    },
+
+    hideOrRevealSiblings: function(e){
+      //console.log("siblingscheck",e.detail.value);
+      var self = this;
+      e.detail.value.hide.forEach(function(qnum){
+        self.questions[qnum.toString()].hidden=true;
+      });
+      e.detail.value.reveal.forEach(function(qnum){
+        self.questions[qnum.toString()].hidden=false;
+      });
+    }
+
+  });
+
+</script>

@@ -1,6 +1,12 @@
+<script src="../lodash/lodash.js"></script>
 <script>
   window.QuestionBehaviors = window.QuestionBehaviors || {};
   QuestionBehaviors.Basic = {
+    factoryImpl: function(props){
+      for(var propname in props){
+        this[ propname ] = props[propname];
+      }
+    },
     properties: {
       txt: {
         type: String,
@@ -27,13 +33,38 @@
         value: function(){
           return "";
         }
+      },
+
+      /**
+      * hidden 
+      * If true, the question does not display, within a survey
+      *   
+      */ 
+      hidden: {
+        type: Boolean,
+        value: function(){
+          return false;
+        }
+      },
+
+      /*
+      * Interally used to track if a siblings reveal/hide change is necessary
+      */
+      siblingsrevealed: [],
+
+      siblingdisplay: {
+        type: Object,
+        notify: true,
+        value:{ "reveal":[], "hide": [] }
       }
+
     },
 
     qstateChanged: function(e){
-      //console.log("qstateChanged", e.detail.value);
+      console.log("qstateChanged", e.detail.value);
       this.qstate = e.detail.value;
     }
+
 
   }
 </script>

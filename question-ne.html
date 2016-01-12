@@ -97,7 +97,8 @@ Example:
 
 <script>
 
-  Polymer({
+
+  window.QuestionNE = Polymer({
 
     is: 'question-ne',
 
@@ -116,17 +117,76 @@ Example:
         type: String,
         notify: true,
         value: function(){ return "" }
+      },
+
+      precision: {
+        type: Number,
+        value: 0
       }
 
     },
 
     gotInputChange: function(e,b){
+      var ask=false;
       if (this.answer){
         this.qstate=2;
+        if ( this.precision===0 ){
+          var answer = parseInt( this.answer );
+        }
+        else{
+          var answer = parseFloat( this.answer );
+        }
+        
+        if ( isNaN( answer ) ){
+          this.qstate=0;
+        }
+      
+        this.answer=_.round( answer, this.precision );
       }
       else {
         this.qstate=0;
       }
+
+      if ( typeof this.rule!=="object") return;
+
+      if ( this.qstate ){
+        for(var condition_key in this.rule["if"]){
+          switch(condition_key){
+            case "gt":
+              ask = (this.answer > this.rule["if"][condition_key]);
+              break;
+            case "gte":
+              ask = (this.answer >= this.rule["if"][condition_key]);
+              break;
+            case "lt":
+              ask = (this.answer < this.rule["if"][condition_key]);
+              break;
+            case "lte":
+              ask = (this.answer <= this.rule["if"][condition_key])
+              break;
+          }
+        }
+      }
+      
+      if ( ask ) 
+        var sibs_to_reveal=[].concat( this.rule.ask );
+      else
+        var sibs_to_reveal=[];
+
+
+      //compare against last state of siblings to reveal
+      var to_hide = _.difference( this.siblingsrevealed, sibs_to_reveal);
+      var to_reveal = _.difference( sibs_to_reveal, this.siblingsrevealed);
+      
+      this.siblingsrevealed = [].concat(sibs_to_reveal);
+
+      if ( to_hide.length || to_reveal ){
+        this.siblingdisplay = {
+          hide: to_hide,
+          reveal: to_reveal
+        }
+      }
+
     }
 
   });
