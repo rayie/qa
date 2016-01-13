@@ -65,7 +65,7 @@ Example:
 
   <template>
     <div class="">
-      <paper-card  elevation=3>
+      <paper-card  elevation=1>
 
         <question-part-hdr
           txt="[[txt]]"
@@ -86,7 +86,7 @@ Example:
             label="Numbers only"
             always-float-label
             prevent-invalid-input allowed-pattern="[0-9\.]"
-            bind-value="{{answer}}"
+            value="{{answer}}"
             maxlength="[[maxlength]]"
             on-change="gotInputChange"
           >

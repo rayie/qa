@@ -16,18 +16,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
     <script>$.noConflict();</script>
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../address-form.html">
     <link rel="import" href="../survey.html">
+    <link rel="import" href="../question-mc.html">
   </head>
   <body>
-    <div id="qlist">
-      <survey-a
-        title="Test Survey"
-        subhead="Answer all questions"
-      >
-      </survey-a>
-    </div>
-    <div id="wrap">
-    </div>
+    <address-form form_title='Address Form'>
+    </address-form>
+   <question-ft>
+    </question-ft>
+    <!--
+    <survey-a
+      title="Test Survey"
+      subhead="Answer all questions"
+    >
+    </survey-a>
+    -->
 
   </body>
 </html>

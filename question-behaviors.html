@@ -2,7 +2,14 @@
 <script>
   window.QuestionBehaviors = window.QuestionBehaviors || {};
   QuestionBehaviors.Basic = {
+
     factoryImpl: function(props){
+      return true;
+
+      /*
+        legacy, only required if using class based instantiation
+        instead of Polymer.Base.create
+      */
       for(var propname in props){
         this[ propname ] = props[propname];
       }

@@ -114,6 +114,7 @@ Example:
   </style>
 
   <template>
+
     <div class="survey-hdr">
       <div class="hdr-left">
         <div class='survey-title'>[[title]]</div>
@@ -126,6 +127,7 @@ Example:
         </div>
       </div>
     </div>
+
     <div id="qlist">
       <!--the container for our question components, dynamically inserted-->
     </div>
@@ -190,14 +192,18 @@ Example:
         type: String,
         value: function(){ return "Missing Survey Subheading"; }
       },
+      
       testsib: {
         type: String,
         value: "INIT"
       },
+
       summary_txt: {
         type: String,
         value: ""
-      }
+      },
+
+      survey_url: "scripts/sample_survey.json"
      
     },
 
@@ -207,9 +213,9 @@ Example:
     },
 
     start: function(){ 
+      //this.$.ajaxer.url="scripts/sample_survey.json";
       this.$.ajaxer.url="../sample_survey.json";
       this.$.ajaxer.generateRequest();
-
       return;
     },
 
@@ -234,6 +240,7 @@ Example:
     },
 
     survey_loaded: function(event){
+      console.log(event);
       var survey_data = event.detail.response;
       this.questions = {};
       var self = this;
@@ -241,16 +248,15 @@ Example:
       survey_data.forEach(function(q,idx){
         if ( ["mc","ft","ne","yn"].indexOf( q.kind ) === -1 ) return;
 
-        q.display_num = "Q"+ q._id;
+        q.display_num = "Q" + q._id;
 
         if ( q.kind=="yn" ){
           q = self._convert_yn_to_mc(q);
         }
 
-
-        var qtype = "Question"+q.kind.toUpperCase();
-        var new_q = new window[qtype](q);
-
+        //var qtype = "Question"+q.kind.toUpperCase();
+        //var new_q = new window[qtype](q);
+        var new_q = self.create("question-"+q.kind.toLowerCase(),q);
 
         self.listen(new_q,"siblingdisplay-changed","hideOrRevealSiblings");
         self.listen(new_q,"qstate-changed","qstateChanged");
@@ -264,7 +270,7 @@ Example:
         self.questions[q._id.toString()] = new_q;
         return;
       });
-      this.summarize();
+      return this.summarize();
     },
   
     _build_answer_sheet: function(q){

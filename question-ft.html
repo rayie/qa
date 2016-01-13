@@ -60,7 +60,7 @@ Example:
 
   <template>
     <div class="">
-      <paper-card  elevation=3>
+      <paper-card  elevation=1>
 
         <question-part-hdr
           txt="[[txt]]"
@@ -78,7 +78,7 @@ Example:
             textarea
             input
             char-counter 
-            bind-value="{{answer}}"
+            value="{{answer}}"
             maxlength="[[maxlength]]"
             on-change="gotInputChange"
           >

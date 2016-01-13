@@ -61,7 +61,7 @@ Example:
   <template>
     <div class="container">
 
-      <paper-card elevation=3>
+      <paper-card elevation=1>
 
         <question-part-hdr
           txt="[[txt]]"
@@ -94,6 +94,13 @@ Example:
               </paper-icon-item>
             </template>
           </paper-listbox> 
+
+          <div class='card-actions' id='promptdiv' hidden >
+            <strong>Prompt:</strong>
+            <span>
+              {{ prompt }}
+            </span>
+          </div>
         </div>
 
         <question-part-footer
@@ -189,9 +196,14 @@ Example:
 
     _gatherAnswers: function(){
       var answer = [];
+      var prompt_content = [];
       this.opts.forEach(function(el,idx){
-        if(el.is_active) answer.push(idx);
+        if(el.is_active){ 
+          answer.push(idx);
+          if(el.prompt) prompt_content.push(el.prompt.toString());
+        }
       });
+
       if ( answer.length == 0 ){
         this.qstate=0;
       }
@@ -222,6 +234,16 @@ Example:
           reveal: to_reveal
         }
       }
+
+      if ( prompt_content.length ){
+        this.prompt = prompt_content.join(", ");
+        this.$.promptdiv.hidden=false;
+      }
+      else{
+        this.prompt = "";
+        this.$.promptdiv.hidden=true;
+      }
+
     }
   });
 
