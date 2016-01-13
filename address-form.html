@@ -20,7 +20,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../address-autocomplete/address-autocomplete.html">
 
 <!--
-An element providing a solution to no problem in particular.
+An address form with Google Maps autocomplete lookup.
+Forked from https://github.com/kunalkundaje/address-autocomplete
 
 Example:
 
@@ -103,12 +104,21 @@ Example:
       margin-bottom: 12px;
     }
     paper-input ,
+    paper-textarea,
     address-autocomplete {
       margin: 6px;
     }
     .card-actions {
       background-color: #B2DFDB;
       border-bottom: 1px solid lightgrey;
+    }
+    .card-footer {
+      margin: 12px 6px 6px 6px;
+      padding-top: 16px;
+      border-top: 1px solid lightgrey;
+    }
+    paper-button {
+      @apply(--paper-font-button);
     }
 
   </style>
@@ -133,9 +143,9 @@ Example:
               <address-autocomplete
                 id="goog_addr_entry"
                 is="iron-input"
-                label="Lookup"
+                input-label="Type here to search for address using Google Maps autocomplete"
                 on-address-changed="gotAddressFromGoogle"
-                api-key="AIzaSyA8ErlCjVxK5D0h2nTxJ64osBaVT2QhMh8"  //Rays browser dev key 1
+                api-key="AIxaSyA8ErlCjVxK5D0h2nTxJ64osBaVT2QhMh8"  //Rays browser dev key 1
               >
               </address-autocomplete>
 
@@ -240,16 +250,21 @@ Example:
 
           <div class='form-body'>     
             <div class='flexchild'>
-              <paper-checkbox>
+              <paper-checkbox value="PR" checked>
                 Primary Residence
               </paper-checkbox>
-              <paper-checkbox>
+              <paper-checkbox value="MA" checked>
                 Mailing Address
               </paper-checkbox>
-              <paper-checkbox>
+              <paper-checkbox value="BIZ" checked>
                 Billing Address
               </paper-checkbox>
             </div>
+          </div>
+
+
+          <div class='form-body card-footer' hidden="[[!showSubmitBtn]]">     
+            <paper-button raised on-click="submit">Submit</paper>
           </div>
 
         </div>
@@ -282,8 +297,18 @@ Example:
         value: function(){
           return 256;
         }
-      }
+      },
+      address: { value: {} },
 
+      showSubmitBtn: {
+        type: Boolean,
+        value: true
+      },
+
+      submitBtnLbl: {
+        type: String,
+        value: "Submit"
+      }
     },
 
     gotAddressFromGoogle: function(e){
@@ -293,6 +318,17 @@ Example:
 
     gotInputChange: function(e){
       console.log(e.detail.value); 
+      return;
+    },
+
+    submit: function(){
+      var applies_to=[];
+      Polymer.dom(this.root).querySelectorAll("paper-checkbox").forEach(function(el){
+        console.log( el.checked );
+        if ( el.checked ) applies_to.push(el.value);
+      });
+      this.address.applies_to=applies_to;
+      console.log(this.address);
       return;
     }
   });
