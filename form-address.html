@@ -19,6 +19,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../address-autocomplete/address-autocomplete.html">
+<link rel="import" href="question-part-hdr.html">
+<link rel="import" href="question-part-footer.html">
 
 <!--
 An address form with Google Maps autocomplete lookup.
@@ -30,7 +32,7 @@ Example:
 
 @demo
 -->
-<dom-module id="address-form">
+<dom-module id="form-address">
 
   <style is="custom-style">
 
@@ -129,13 +131,13 @@ Example:
     <div class="container">
       <paper-card  elevation=1>
 
-        <div class="card-actions" >
-          <div class="form-hdr">
-            <div class='flex6child form-title'>[[form_title]] </div>
-            <div class='flexchild form-num'>[[form_num]]</div>
-          </div>
-          <span class="form-sub-title">{{form_sub}}</small>
-        </div>
+        <question-part-hdr
+          txt="[[txt]]"
+          sub="[[sub]]"
+          display_num="[[display_num]]"
+          is_conditional="[[is_conditional]]"
+        />
+        </question-part-hdr>
 
         <div class="card-content">
 
@@ -158,7 +160,7 @@ Example:
                 type="text"
                 label="Placename - optional, only use if location is a business (ie. St. Joseph's Hospital )"
                 always-float-label
-                value="{{address.place_nm}}"
+                value="{{answer.place_nm}}"
                 maxlength="[[maxlength]]"
                 on-change="gotInputChange"
               >
@@ -171,7 +173,7 @@ Example:
                 type="text"
                 label="Address Line 1 - Number + Street "
                 always-float-label
-                value="{{address.addr1}}"
+                value="{{answer.addr1}}"
                 maxlength="[[maxlength]]"
                 on-change="gotInputChange"
               >
@@ -183,7 +185,7 @@ Example:
                 type="text"
                 label="Address Line 2 - optional, (ie. Suite, Floor, Room#, etc)"
                 always-float-label
-                value="{{address.addr2}}"
+                value="{{answer.addr2}}"
                 maxlength="[[maxlength]]"
                 on-change="gotInputChange"
               >
@@ -200,7 +202,7 @@ Example:
                 type="text"
                 label="City"
                 always-float-label
-                value="{{address.city}}"
+                value="{{answer.city}}"
                 maxlength="[[maxlength]]"
                 on-change="gotInputChange"
               >
@@ -213,7 +215,7 @@ Example:
                 type="text"
                 label="State"
                 always-float-label
-                value="{{address.state}}"
+                value="{{answer.state}}"
                 maxlength="[[maxlength]]"
                 on-change="gotInputChange"
               >
@@ -226,7 +228,7 @@ Example:
                 type="text"
                 label="Zipcode"
                 always-float-label
-                value="{{address.zip}}"
+                value="{{answer.zip}}"
                 maxlength="[[maxlength]]"
                 on-change="gotInputChange"
               >
@@ -244,7 +246,7 @@ Example:
                 type="text"
                 label="Address Note - optional, (ie. Gate Code#, use back entrance)",
                 always-float-label
-                value="{{address.note}}"
+                value="{{answer.note}}"
                 maxlength="[[maxlength]]"
                 on-change="gotInputChange"
               >
@@ -254,13 +256,13 @@ Example:
 
           <div class='form-body'>     
             <div class='flexchild'>
-              <paper-checkbox value="PR" checked>
+              <paper-checkbox value="PR" checked on-change="gotCheckBoxChanged">
                 Primary Residence
               </paper-checkbox>
-              <paper-checkbox value="MA" checked>
+              <paper-checkbox value="MA" checked on-change="gotCheckBoxChanged">
                 Mailing Address
               </paper-checkbox>
-              <paper-checkbox value="BIZ" checked>
+              <paper-checkbox value="BIZ" checked on-change="gotCheckBoxChanged">
                 Billing Address
               </paper-checkbox>
             </div>
@@ -273,6 +275,13 @@ Example:
           <paper-button raised on-click="submit">Submit</paper>
         </div>
 
+        <question-part-footer
+          warn_msg="[[warn_msg]]"
+          qstate="[[qstate]]"
+          on-qstate-changed="qstateChangedInFooter"
+        >
+        </question-part-footer>
+
       </paper-card>
     </div>
   </template>
@@ -284,17 +293,11 @@ Example:
 
   Polymer({
 
-    is: 'address-form',
+    is: 'form-address',
+
+    behaviors: [ QuestionBehaviors.Basic, QuestionBehaviors.FormsOnly ],
 
     properties: {
-
-      form_title: {
-        value: "Address Form"
-      },
-
-      form_num: {
-        value: "F1000"
-      },
 
       maxlength: {
         type: Number,
@@ -302,11 +305,18 @@ Example:
           return 256;
         }
       },
-      address: { value: {} },
+
+      answer: { 
+        type: Object,
+        notify: true,
+        value: {} 
+      },
+
+      minmax_records: { value: [1,1] },
 
       showSubmitBtn: {
         type: Boolean,
-        value: true
+        value: false
       },
 
       submitBtnLbl: {
@@ -316,23 +326,34 @@ Example:
     },
 
     gotAddressFromGoogle: function(e){
-      this.address = e.detail.value;
+      for(var addr_part in this.answer)
+        e.detail.value[addr_part] = this.answer[addr_part];
+      
+      this.answer = e.detail.value; 
+      this.qstate = 2;
+      console.log(this.answer);
       return;
     },
+
 
     gotInputChange: function(e){
-      console.log(e.detail.value); 
+      console.log(e.target.value); 
+      console.log(this.answer);
       return;
     },
 
-    submit: function(){
+    gotCheckBoxChanged: function(e){
       var applies_to=[];
       Polymer.dom(this.root).querySelectorAll("paper-checkbox").forEach(function(el){
         console.log( el.checked );
         if ( el.checked ) applies_to.push(el.value);
       });
-      this.address.applies_to=applies_to;
-      console.log(this.address);
+      this.answer.applies_to=applies_to;
+      console.log(this.answer);
+    },
+
+    submit: function(){
+      console.log(this.answer);
       return;
     }
   });

@@ -93,6 +93,13 @@ Example:
           </paper-input>
         </div>
 
+        <div class='prompt-area' id='promptdiv' hidden >
+          <strong>Prompt:</strong>
+          <span>
+            {{ prompt }}
+          </span>
+        </div>
+
         <question-part-footer
           warn_msg="[[warn_msg]]"
           qstate="[[qstate]]"
@@ -113,7 +120,7 @@ Example:
 
     is: 'question-ne',
 
-    behaviors: [ QuestionBehaviors.Basic ],
+    behaviors: [ QuestionBehaviors.Basic, QuestionBehaviors.QuestionsOnly ],
 
     properties: {
 

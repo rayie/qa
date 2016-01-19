@@ -45,6 +45,13 @@ Example:
         cursor: pointer;
       }; 
     }
+    .prompt-area {
+      @apply(--paper-font-body2);
+      border-bottom: 1px solid lightgey;
+      background-color: #ffcc80;
+      margin-bottom: 12px;
+      padding: 12px 12px 12px 24px;
+    }
    
     .paper-font-caption {
       @apply(--paper-font-caption);
@@ -95,12 +102,13 @@ Example:
             </template>
           </paper-listbox> 
 
-          <div class='card-actions' id='promptdiv' hidden >
-            <strong>Prompt:</strong>
-            <span>
-              {{ prompt }}
-            </span>
-          </div>
+        </div>
+
+        <div class='prompt-area' id='promptdiv' hidden >
+          <strong>Prompt:</strong>
+          <span>
+            {{ prompt }}
+          </span>
         </div>
 
         <question-part-footer
@@ -128,7 +136,7 @@ Example:
 
     is: 'question-mc',
 
-    behaviors: [ QuestionBehaviors.Basic ],
+    behaviors: [ QuestionBehaviors.Basic, QuestionBehaviors.QuestionsOnly ],
 
     properties: {
 
@@ -199,11 +207,13 @@ Example:
       var prompt_content = [];
       this.opts.forEach(function(el,idx){
         if(el.is_active){ 
+          console.log("idx ", idx, " is active");
           answer.push(idx);
           if(el.prompt) prompt_content.push(el.prompt.toString());
         }
       });
 
+      this.answer = answer;
       if ( answer.length == 0 ){
         this.qstate=0;
       }
@@ -213,7 +223,7 @@ Example:
       else if ( answer.length >= this.minmax[0] ){
         this.qstate=2;
       }
-      this.answer = answer;
+      console.log(answer);
 
       var self=this;
       var sibs_to_reveal=[];

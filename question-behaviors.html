@@ -6,13 +6,6 @@
     factoryImpl: function(props){
       return true;
 
-      /*
-        legacy, only required if using class based instantiation
-        instead of Polymer.Base.create
-      */
-      for(var propname in props){
-        this[ propname ] = props[propname];
-      }
     },
     properties: {
       txt: {
@@ -59,8 +52,25 @@
         value: function(){
           return false;
         }
-      },
+      }
 
+
+    },
+    qstateChanged: function(e){
+      //console.log("qstateChanged", e);
+    },
+
+    qstateChangedInFooter: function(e){
+      //console.log("qstateChangedInFooter", e.detail.value);
+      this.qstate = e.detail.value;
+    }
+
+
+  };
+  
+  QuestionBehaviors.QuestionsOnly = {
+
+    properties: {
       /*
       * Interally used to track if a siblings reveal/hide change is necessary
       */
@@ -72,16 +82,18 @@
         value:{ "reveal":[], "hide": [] }
       }
 
-    },
-    qstateChanged: function(e){
-      console.log("qstateChanged", e);
-    },
-
-    qstateChangedInFooter: function(e){
-      console.log("qstateChangedInFooter", e.detail.value);
-      this.qstate = e.detail.value;
     }
 
+  };
 
-  }
+  QuestionBehaviors.FormsOnly = {
+
+    properties: {
+      /*
+      * Interally used to track if a siblings reveal/hide change is necessary
+      */
+
+    }
+
+  };
 </script>

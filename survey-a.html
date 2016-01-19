@@ -24,6 +24,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="question-mc.html">
 <link rel="import" href="question-ft.html">
 <link rel="import" href="question-ne.html">
+<link rel="import" href="form-address.html">
+<link rel="import" href="form-person.html">
 <!--
 An element providing a solution to no problem in particular.
 
@@ -67,7 +69,7 @@ Example:
     .survey-title {
       @apply(--paper-font-title)
     }
-    .survey-subhead{
+    .survey-subtitle{
       @apply(--paper-font-subhead)
     }
     .card-actions {
@@ -95,7 +97,7 @@ Example:
     }
 
     .blue {
-      background-color: var(--paper-light-blue-300);
+      color: var(--paper-light-blue-300);
     }
 
     .red {
@@ -110,56 +112,92 @@ Example:
       background-color: var(--paper-green-300);
     }
 
+    .card-footer {
+      margin: 12px 6px 12px 6px;
+      padding-top: 16px;
+      padding-left: 16px;
+      border-top: 1px solid lightgrey;
+    }
 
   </style>
 
   <template>
-
-    <div class="survey-hdr">
-      <div class="hdr-left">
-        <div class='survey-title'>[[title]]</div>
-        <div class='survey-subhead'>[[subhead]]</div>
+    <div>
+      <div hidden="[[subject_id]]">
+        <h2>The survey can not be initiated because a subject ID missing</h2>
       </div>
-      <div class="hdr-right">
-        <div>[[summary_txt]]</div>
-        <div>
-          <paper-button on-click="previewAnswers">Preview Answers</paper-button>
+    </div>
+    <div hidden="[[!subject_id]]">
+
+      <div class="survey-hdr">
+        <div class="hdr-left">
+          <div class='survey-title'>[[survey_data.title]]</div>
+          <div class='survey-subtitle'>[[survey_data.subtitle]]</div>
+        </div>
+        <div class="hdr-right">
+          <div>[[summary_txt]]</div>
+          <div>
+            <paper-button on-click="previewAnswers">Preview Answers</paper-button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div id="qlist">
-      <!--the container for our question components, dynamically inserted-->
-    </div>
-    <paper-dialog id="answerSheetDialog">
-      <paper-dialog-scrollable>
-        <h2>Answers:</h2>
-        <template 
-          is="dom-repeat"
-          items="[[answers]]"
-          as="answer"
-        </template>
-          <paper-icon-item>
-            <div class="" item-icon>
-              [[answer.qnum]]
-            </div>
-            <paper-item-body two-line>
-              <div>[[answer.q]]</div>
-              <div secondary>[[answer.a]]</div>
-            </paper-item-body>
-          </paper-icon-item>
-        </template>
-      </paper-dialog-scrollable>
-      <div class="buttons">
-        <paper-button dialog-dismiss>Dismiss</paper-button>
+      <div id="qlist">
+        <!--the container for our question components, dynamically inserted-->
       </div>
-    </paper-dialog>
+      <paper-dialog id="answerSheetDialog">
+        <paper-dialog-scrollable>
+          <h2>Answers:</h2>
+          <template 
+            is="dom-repeat"
+            items="[[answers]]"
+            as="answer"
+          </template>
+            <paper-icon-item>
+              <div class="" item-icon>
+                [[answer.qnum]]
+              </div>
+              <paper-item-body two-line>
+                <div>[[answer.q]]</div>
+                <div class='blue' secondary>[[answer.a]]</div>
+              </paper-item-body>
+            </paper-icon-item>
+          </template>
+        </paper-dialog-scrollable>
+        <div class="buttons">
+          <paper-button dialog-dismiss>Dismiss</paper-button>
+        </div>
+      </paper-dialog>
+
+      <div class='card-footer' hidden="[[!showSubmitBtn]]">     
+        <paper-button raised on-click="submit_survey">Submit</paper>
+      </div>
+
+    </div>
     <iron-ajax
-      id="ajaxer"       
+      id="ajax_load_survey"       
       handle-as="json",
-      on-response="survey_loaded",
-    >
-    </iron-ajax>
+      on-response="load_survey_responded"
+      loading="{{is_loading}}"
+    ></iron-ajax>
+
+    <iron-ajax
+      id="ajax_save_survey"       
+      handle-as="json"
+      content-type="application/json"
+      on-response="save_survey_responded"
+      loading="{{is_saving}}"
+    ></iron-ajax>
+
+    <iron-ajax
+      id="ajax_submit_survey"       
+      handle-as="json"
+      content-type="application/json"
+      on-response="survey_submitted"
+      url="{{survey_data.submitUrl}}"
+      loading="{{is_submitting}}"
+      method="POST"
+    ></iron-ajax>
   </template>
 
 </dom-module>
@@ -177,25 +215,16 @@ Example:
     is: 'survey-a',
 
     properties: {
-
-      patient_id: {
-        type: String,
-        value: function(){ return "Missing Patient ID"; }
+      survey_data: {
+        value: {}
       },
 
-      title: {
+      subject_id: {
         type: String,
-        value: function(){ return "Missing Surve Title?"; }
-      },
-
-      subhead: {
-        type: String,
-        value: function(){ return "Missing Survey Subheading"; }
-      },
-      
-      testsib: {
-        type: String,
-        value: "INIT"
+        value: function(){ 
+           
+          return "";
+        }
       },
 
       summary_txt: {
@@ -203,7 +232,9 @@ Example:
         value: ""
       },
 
-      survey_url: "scripts/sample_survey.json"
+      surveyUrl: {
+        value: "scripts/sample_survey.json"
+      }
      
     },
 
@@ -214,8 +245,8 @@ Example:
 
     start: function(){ 
       //this.$.ajaxer.url="scripts/sample_survey.json";
-      this.$.ajaxer.url="../sample_survey.json";
-      this.$.ajaxer.generateRequest();
+      this.$.ajax_load_survey.url=this.surveyUrl;
+      this.$.ajax_load_survey.generateRequest();
       return;
     },
 
@@ -239,25 +270,30 @@ Example:
       return q;
     },
 
-    survey_loaded: function(event){
-      console.log(event);
-      var survey_data = event.detail.response;
+    load_survey_responded: function(event){
+      console.log(event.detail.response);
+      this.survey_data = event.detail.response;
+      this.survey_data.subtitle = "For Subject: " + this.subject_id;
       this.questions = {};
       var self = this;
-      this.questions_n = survey_data.length;
-      survey_data.forEach(function(q,idx){
-        if ( ["mc","ft","ne","yn"].indexOf( q.kind ) === -1 ) return;
-
-        q.display_num = "Q" + q._id;
-
-        if ( q.kind=="yn" ){
-          q = self._convert_yn_to_mc(q);
+      /*
+      *  This generates the Polymer questions or forms
+      */
+      this.survey_data.qq.forEach(function(q,idx){
+        if ( q.kind==="form"){
+          q.display_num = "F" + q._id;
+          var new_frm = self.create("form-"+q.form.toLowerCase(),q);
+          self.listen(new_frm,"qstate-changed","qstateChanged");
+          Polymer.dom(self.$.qlist).appendChild(new_frm);
+          self.questions[q._id.toString()] = new_frm;
+          return;
         }
 
-        //var qtype = "Question"+q.kind.toUpperCase();
-        //var new_q = new window[qtype](q);
-        var new_q = self.create("question-"+q.kind.toLowerCase(),q);
 
+        if ( ["mc","ft","ne","yn"].indexOf( q.kind ) === -1 ) return;
+        q.display_num = "Q" + q._id;
+        if ( q.kind=="yn" ) q = self._convert_yn_to_mc(q);
+        var new_q = self.create("question-"+q.kind.toLowerCase(),q);
         self.listen(new_q,"siblingdisplay-changed","hideOrRevealSiblings");
         self.listen(new_q,"qstate-changed","qstateChanged");
         Polymer.dom(self.$.qlist).appendChild(new_q);
@@ -280,11 +316,13 @@ Example:
       else switch(q.kind){
         case "ft":
         case "ne":
-          a= q.answer;
+        case "form":
+          var a= q.answer;
           break;
         case "mc":
-          a =[];
+          var a =[];
           q.answer.forEach(function(ans){
+            console.log(ans);
             a.push( q.opts[ans].txt );
           });
           a = a.join(",");
@@ -295,7 +333,8 @@ Example:
         q: q.txt,
         a: a
       };
-      console.log(r);
+      if ( a!=="Incomplete" && a!=="N/A" )
+        console.log(q.kind,q.answer,a);
       return r;
     },
 
@@ -316,20 +355,40 @@ Example:
           answers.push( this._build_answer_sheet(this.questions[qnum]) );
         }
       }
-      console.log(qstate_counts);
+      //console.log(qstate_counts);
       qstate_counts = qstate_counts;
       count_hidden = count_hidden;
       this.summary_txt = [
         "Total Required:", 
-        (this.questions_n - count_hidden),
+        (this.survey_data.qq.length - count_hidden),
         " Complete:",
         qstate_counts[2],
         " NA:",
         qstate_counts[3]
       ].join(" ");
 
-      console.log(this.summary_txt);
       this.answers = answers;
+      //console.log(this.answers);
+    },
+
+    save_survey: function(){
+      this.$.ajax_save_survey.url="/api/save";
+      this.$.ajax_save_survey.body = { subject_id: this.subject_id, answers: this.answers };
+      this.$.ajax_load_surey.generateRequest();
+    },
+
+    save_survey_responded: function(event){
+      var a = event.detail.response;
+    },
+
+    submit_survey: function(){
+      console.log(this.answers);
+      //this.$.ajax_save_survey.url="/api/save";
+      this.$.ajax_submit_survey.body = { subject_id: this.subject_id, answers: this.answers };
+      this.$.ajax_submit_survey.generateRequest();
+    },
+    submit_survey_responded: function(e){
+      console.log(e);
     },
 
     hideOrRevealSiblings: function(e){
@@ -346,7 +405,6 @@ Example:
     qstateChanged: function(e){
       //doesn't matter which question changed, just so we know to update the summary
       this.summarize();
-
     }
 
   });

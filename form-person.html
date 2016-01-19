@@ -11,26 +11,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-card/paper-card.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
-<link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="../address-autocomplete/address-autocomplete.html">
+<link rel="import" href="question-part-hdr.html">
+<link rel="import" href="question-part-footer.html">
 
 <!--
-An address form with Google Maps autocomplete lookup.
-Forked from https://github.com/kunalkundaje/address-autocomplete
 
 Example:
 
-    <address-form></address-form>
+    <form-person></form-person>
 
 @demo
 -->
-<dom-module id="address-form">
+<dom-module id="form-person">
 
   <style is="custom-style">
 
@@ -67,10 +66,10 @@ Example:
       @apply(--layout-flex);
     }
 
-    .flex12child {
-      @apply(--layout-flex-12);
-    }
 
+    .flex1child {
+      @apply(--layout-flex-1);
+    }
 
     .flex2child {
       @apply(--layout-flex-2);
@@ -80,8 +79,20 @@ Example:
       @apply(--layout-flex-3);
     }
 
+    .flex4child {
+      @apply(--layout-flex-4);
+    }
+
     .flex6child {
       @apply(--layout-flex-6);
+    }
+
+    .flex8child {
+      @apply(--layout-flex-8);
+    }
+
+    .flex12child {
+      @apply(--layout-flex-12);
     }
 
     .form-num {
@@ -105,8 +116,7 @@ Example:
       margin-bottom: 12px;
     }
     paper-input ,
-    paper-textarea,
-    address-autocomplete {
+    paper-textarea {
       margin: 6px;
     }
     .card-actions {
@@ -128,150 +138,110 @@ Example:
   <template>
     <div class="container">
       <paper-card  elevation=1>
-
-        <div class="card-actions" >
-          <div class="form-hdr">
-            <div class='flex6child form-title'>[[form_title]] </div>
-            <div class='flexchild form-num'>[[form_num]]</div>
-          </div>
-          <span class="form-sub-title">{{form_sub}}</small>
-        </div>
+        <question-part-hdr
+          txt="[[txt]]"
+          sub="[[sub]]"
+          display_num="[[display_num]]"
+          is_conditional="[[is_conditional]]"
+        />
+        </question-part-hdr>
 
         <div class="card-content">
 
           <div class='form-body'>     
-            <div class='flex12child'>
-
-              <address-autocomplete
-                id="goog_addr_entry"
-                is="iron-input"
-                input-label="Type here to search for address using Google Maps autocomplete"
-                on-address-changed="gotAddressFromGoogle"
-                api-key="AIzaSyA8ErlCjVxK5D0h2nTxJ64osBaVT2QhMh8"  //Rays browser dev key 1
-              >
-              </address-autocomplete>
-
-
+            <div class='flex4child'>
               <paper-input
                 is="iron-input"
                 input
                 type="text"
-                label="Placename - optional, only use if location is a business (ie. St. Joseph's Hospital )"
+                label="First Name",
                 always-float-label
-                value="{{address.place_nm}}"
+                value="{{answer.fn}}"
                 maxlength="[[maxlength]]"
-                on-change="gotInputChange"
-              >
-              </paper-input>
-
-
-              <paper-input
-                is="iron-input"
-                input
-                type="text"
-                label="Address Line 1 - Number + Street "
-                always-float-label
-                value="{{address.addr1}}"
-                maxlength="[[maxlength]]"
-                on-change="gotInputChange"
-              >
-              </paper-input>
-
-              <paper-input
-                is="iron-input"
-                input
-                type="text"
-                label="Address Line 2 - optional, (ie. Suite, Floor, Room#, etc)"
-                always-float-label
-                value="{{address.addr2}}"
-                maxlength="[[maxlength]]"
-                on-change="gotInputChange"
-              >
-              </paper-input>
-
-            </div>
-          </div>
-
-          <div class='form-body'>     
-            <div class='flex6child'>
-              <paper-input
-                is="iron-input"
-                input
-                type="text"
-                label="City"
-                always-float-label
-                value="{{address.city}}"
-                maxlength="[[maxlength]]"
-                on-change="gotInputChange"
-              >
-              </paper-input>
+              ></paper-input>
             </div>
             <div class='flex2child'>
               <paper-input
                 is="iron-input"
                 input
                 type="text"
-                label="State"
+                label="Middle Name",
                 always-float-label
-                value="{{address.state}}"
+                value="{{answer.mn}}"
                 maxlength="[[maxlength]]"
-                on-change="gotInputChange"
-              >
-              </paper-input>
+              ></paper-input>
+            </div>
+            <div class='flex4child'>
+              <paper-input
+                is="iron-input"
+                input
+                type="text"
+                label="Last Name",
+                always-float-label
+                value="{{answer.ln}}"
+                maxlength="[[maxlength]]"
+              ></paper-input>
+            </div>
+            <div class='flex2child'>
+              <paper-input
+                is="iron-input"
+                input
+                type="text"
+                label="Suffix - optional (ie Jr., Sr.)",
+                always-float-label
+                value="{{answer.suf}}"
+                maxlength="[[maxlength]]"
+              ></paper-input>
+            </div>
+          </div>
+
+          <div class='form-body'>     
+            <div class='flex2child'>
+              <paper-input
+                is="iron-input"
+                input
+                auto-validate
+                prevent-invalid-input
+                autocapitalize
+                allowed-pattern="[mfMF]"
+                error-message="Only 'M' or 'F' allowed"
+                type="text"
+                label="Sex (M/F)"
+                always-float-label
+                value="{{answer.sex}}"
+                maxlength="[[maxlength]]"
+              ></paper-input>
             </div>
             <div class='flex3child'>
               <paper-input
                 is="iron-input"
                 input
+                pattern="[0-9]{2}[^0-9][0-9]{2}[^0-9][12][0-9]{4}"
                 type="text"
-                label="Zipcode"
+                label="Date of Birth (m-d-y)"
                 always-float-label
-                value="{{address.zip}}"
+                value="{{answer.dob}}"
                 maxlength="[[maxlength]]"
-                on-change="gotInputChange"
-              >
-              </paper-input>
+              ></paper-input>
+            </div>
+            <div class='flex6child'>
+              &nbsp;
             </div>
           </div>
-
-          <div class='form-body'>     
-            <div class='flex3child'>
-              <paper-textarea
-                is="iron-input"
-                input
-                textarea
-                char-counter
-                type="text"
-                label="Address Note - optional, (ie. Gate Code#, use back entrance)",
-                always-float-label
-                value="{{address.note}}"
-                maxlength="[[maxlength]]"
-                on-change="gotInputChange"
-              >
-              </paper-input>
-            </div>
-          </div>
-
-          <div class='form-body'>     
-            <div class='flexchild'>
-              <paper-checkbox value="PR" checked>
-                Primary Residence
-              </paper-checkbox>
-              <paper-checkbox value="MA" checked>
-                Mailing Address
-              </paper-checkbox>
-              <paper-checkbox value="BIZ" checked>
-                Billing Address
-              </paper-checkbox>
-            </div>
-          </div>
-
 
         </div>
+
 
         <div class='card-footer' hidden="[[!showSubmitBtn]]">     
           <paper-button raised on-click="submit">Submit</paper>
         </div>
+
+        <question-part-footer
+          warn_msg="[[warn_msg]]"
+          qstate="[[qstate]]"
+          on-qstate-changed="qstateChangedInFooter"
+        >
+        </question-part-footer>
 
       </paper-card>
     </div>
@@ -284,17 +254,11 @@ Example:
 
   Polymer({
 
-    is: 'address-form',
+    is: 'form-person',
+
+    behaviors: [ QuestionBehaviors.Basic, QuestionBehaviors.FormsOnly ],
 
     properties: {
-
-      form_title: {
-        value: "Address Form"
-      },
-
-      form_num: {
-        value: "F1000"
-      },
 
       maxlength: {
         type: Number,
@@ -302,11 +266,12 @@ Example:
           return 256;
         }
       },
-      address: { value: {} },
+
+      answer: { value: {} },
 
       showSubmitBtn: {
         type: Boolean,
-        value: true
+        value: false 
       },
 
       submitBtnLbl: {
@@ -315,24 +280,8 @@ Example:
       }
     },
 
-    gotAddressFromGoogle: function(e){
-      this.address = e.detail.value;
-      return;
-    },
-
-    gotInputChange: function(e){
-      console.log(e.detail.value); 
-      return;
-    },
-
-    submit: function(){
-      var applies_to=[];
-      Polymer.dom(this.root).querySelectorAll("paper-checkbox").forEach(function(el){
-        console.log( el.checked );
-        if ( el.checked ) applies_to.push(el.value);
-      });
-      this.address.applies_to=applies_to;
-      console.log(this.address);
+    submit: function(e){
+      console.log(this.answer);
       return;
     }
   });
