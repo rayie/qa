@@ -16,11 +16,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-item/paper-icon-item.html">
 <link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-menu/paper-menu.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../iron-localstorage/iron-localstorage.html">
+<link rel="import" href="question-behaviors.html">
 <link rel="import" href="question-mc.html">
 <link rel="import" href="question-ft.html">
 <link rel="import" href="question-ne.html">
@@ -117,6 +120,7 @@ Example:
       padding-top: 16px;
       padding-left: 16px;
       border-top: 1px solid lightgrey;
+      @apply(--paper-font-body2)
     }
 
   </style>
@@ -127,12 +131,14 @@ Example:
         <h2>The survey can not be initiated because a subject ID missing</h2>
       </div>
     </div>
+
     <div hidden="[[!subject_id]]">
 
       <div class="survey-hdr">
         <div class="hdr-left">
           <div class='survey-title'>[[survey_data.title]]</div>
           <div class='survey-subtitle'>[[survey_data.subtitle]]</div>
+          <small>{{ scenariouser._id }}</small>
         </div>
         <div class="hdr-right">
           <div>[[summary_txt]]</div>
@@ -145,6 +151,7 @@ Example:
       <div id="qlist">
         <!--the container for our question components, dynamically inserted-->
       </div>
+
       <paper-dialog id="answerSheetDialog">
         <paper-dialog-scrollable>
           <h2>Answers:</h2>
@@ -152,7 +159,7 @@ Example:
             is="dom-repeat"
             items="[[answers]]"
             as="answer"
-          </template>
+          >
             <paper-icon-item>
               <div class="" item-icon>
                 [[answer.qnum]]
@@ -169,11 +176,37 @@ Example:
         </div>
       </paper-dialog>
 
-      <div class='card-footer' hidden="[[!showSubmitBtn]]">     
-        <paper-button raised on-click="submit_survey">Submit</paper>
+      <div class='card-footer' >
+        <paper-button 
+        raised  
+        disabled="[[!ok_to_submit]]"
+        on-click="submit_survey"
+        >Submit</paper>
       </div>
 
+      <div class='card-footer' >
+        <h2>Submitted Successfully:</h2>
+        <h3>Next Steps:</h3>
+        <paper-menu>
+          <template is="dom-repeat" items="[[submitSuccessful.tasks_created]]" as="t">
+
+            <paper-icon-item 
+            >
+              <iron-icon 
+                item-icon
+                icon="icons:chevron-right"
+              >
+              </iron-icon>
+              <div class="">
+                [[ t.name ]] for [[ t.subject_display_as ]]
+              </div>
+            </paper-icon-item>
+
+          </template>
+        </paper-menu>
+      </div>
     </div>
+
     <iron-ajax
       id="ajax_load_survey"       
       handle-as="json",
@@ -193,21 +226,35 @@ Example:
       id="ajax_submit_survey"       
       handle-as="json"
       content-type="application/json"
-      on-response="survey_submitted"
+      on-response="submit_survey_responded"
+      on-error="submit_survey_error"
       url="{{survey_data.submitUrl}}"
+      with-credentials
       loading="{{is_submitting}}"
       method="POST"
     ></iron-ajax>
+    <iron-localstorage
+      id="locstore"
+      name="scenariouser"
+      auto-save-disabled
+      value="{{scenariouser}}"
+    >
+    </iron-localstorage>
   </template>
 
 </dom-module>
 
 <script>
   var QSTATE = [
-  "Pristine",
-  "InProgress",
-  "Complete",
-  "Marked as NA"
+    "Pristine",
+    "InProgress",
+    "Complete",
+    "Marked as NA"
+  ];
+  var SURVEYSTATE = [
+    "Ready", //no submission attempted yet
+    "Error", //submission resulted in error
+    "Success" //submission successful
   ];
 
   Polymer({
@@ -227,6 +274,11 @@ Example:
         }
       },
 
+      ok_to_submit: {
+        type: Boolean,
+        value: false
+      },
+
       summary_txt: {
         type: String,
         value: ""
@@ -234,13 +286,37 @@ Example:
 
       surveyUrl: {
         value: "scripts/sample_survey.json"
-      }
+      },
      
+      scenariouser: {
+        observer: "_scenariouserChanged",
+        value: function(){ return null }
+      },
+    
+      submitError: {
+        value: null,
+        notifies: true
+      },
+
+      submitSuccessful: {
+        value: null,
+        notifies: true
+      },
+
+      state: {
+        value: 0,
+        notifies: true
+      }
+    },
+
+    _scenariouserChanged: function(newVal,oldVal){
+      //console.log("scenariouserChanged in Survey",newVal,oldVal);
     },
 
     ready: function(){
       var self = this;
       this.start();
+      //window.addEventListener("storage",function(e){ console.log("storage event", e); });
     },
 
     start: function(){ 
@@ -271,7 +347,7 @@ Example:
     },
 
     load_survey_responded: function(event){
-      console.log(event.detail.response);
+      //console.log(event.detail.response);
       this.survey_data = event.detail.response;
       this.survey_data.subtitle = "For Subject: " + this.subject_id;
       this.questions = {};
@@ -288,7 +364,6 @@ Example:
           self.questions[q._id.toString()] = new_frm;
           return;
         }
-
 
         if ( ["mc","ft","ne","yn"].indexOf( q.kind ) === -1 ) return;
         q.display_num = "Q" + q._id;
@@ -333,8 +408,7 @@ Example:
         q: q.txt,
         a: a
       };
-      if ( a!=="Incomplete" && a!=="N/A" )
-        console.log(q.kind,q.answer,a);
+      //if ( a!=="Incomplete" && a!=="N/A" ) console.log(q.kind,q.answer,a);
       return r;
     },
 
@@ -358,9 +432,12 @@ Example:
       //console.log(qstate_counts);
       qstate_counts = qstate_counts;
       count_hidden = count_hidden;
+      var total_required = (this.survey_data.qq.length - count_hidden);
       this.summary_txt = [
-        "Total Required:", 
-        (this.survey_data.qq.length - count_hidden),
+        "Required:", 
+        total_required,
+        " InProgress:",
+        qstate_counts[1],
         " Complete:",
         qstate_counts[2],
         " NA:",
@@ -368,6 +445,7 @@ Example:
       ].join(" ");
 
       this.answers = answers;
+      this.ok_to_submit = ( total_required === ( qstate_counts[2] + qstate_counts[3] ) );
       //console.log(this.answers);
     },
 
@@ -382,13 +460,57 @@ Example:
     },
 
     submit_survey: function(){
-      console.log(this.answers);
-      //this.$.ajax_save_survey.url="/api/save";
-      this.$.ajax_submit_survey.body = { subject_id: this.subject_id, answers: this.answers };
+      
+      if ( this.is_submitting ) return console.log("Still in progress");
+      this.ok_to_submit = false;
+
+      this.$.locstore.reload();
+      var payload = { 
+        subject_id: this.subject_id, 
+        csrfToken: this.scenariouser.csrfToken,
+        on_done: this.survey_data.on.done
+      }
+
+      switch( this.survey_data.type ){
+        case "entity":
+          //there should only be one answer
+          var answer = this.answers[0];
+          for(var key in answer.a){
+            payload[ key ] = answer.a[key];
+          }
+          break;
+        case "data":
+          payload.answers = this.answers;
+          break;
+      }
+      console.log(payload);
+      this.$.ajax_submit_survey.body = payload;
       this.$.ajax_submit_survey.generateRequest();
+      return;
     },
+
     submit_survey_responded: function(e){
+      console.log("detail:", e.detail);
+      if ( e.detail.response ){
+        console.log("resp", e.detail.response );
+        this.set("submitError", null);
+        this.set("submitSuccessful", e.detail.response);
+        console.log(this.submitSuccessful);
+        this.set("state", 2);
+      }
+    },
+
+    submit_survey_error: function(e){
       console.log(e);
+      var self = this;
+      if ( e.detail.response ){
+        //this.submitSuccessful = null;
+        this.submitError = e.detail.response;
+        this.set("state", 1);
+      }
+      setTimeout(function(){
+        self.ok_to_submit = true;
+      },1500);
     },
 
     hideOrRevealSiblings: function(e){

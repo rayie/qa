@@ -80,6 +80,7 @@ Example:
   <template>
     <div class='card-actions qfooter'>
       <paper-button 
+        hidden="[[hideNa]]"
         id="mark_btn"
         toggles 
         on-click="markAsNA"
@@ -89,6 +90,7 @@ Example:
       </paper-button>
 
       <paper-input
+        hidden="[[hideNotes]]"
         is="iron-input"
         class="note-area"
         label="Enter surveyor notes:"
@@ -127,7 +129,15 @@ Example:
 
     properties: {
         
+      hideNa: {
+        type: Boolean,
+        value: false 
+      },
 
+      hideNotes: {
+        type: Boolean,
+        value: false 
+      },
 
       warn_msg: {
         type: String

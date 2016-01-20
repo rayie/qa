@@ -152,9 +152,14 @@ Example:
             <div class='flex4child'>
               <paper-input
                 is="iron-input"
+                on-change="answerChanged"
                 input
+                required
+                validator="nonEmptyString"
                 type="text"
-                label="First Name",
+                label="First Name"
+                name="FirstName",
+                error-message="Required"
                 always-float-label
                 value="{{answer.fn}}"
                 maxlength="[[maxlength]]"
@@ -163,9 +168,11 @@ Example:
             <div class='flex2child'>
               <paper-input
                 is="iron-input"
+                on-change="answerChanged"
                 input
                 type="text"
                 label="Middle Name",
+                name="MiddleName",
                 always-float-label
                 value="{{answer.mn}}"
                 maxlength="[[maxlength]]"
@@ -174,9 +181,14 @@ Example:
             <div class='flex4child'>
               <paper-input
                 is="iron-input"
+                on-change="answerChanged"
                 input
+                required
+                validator="nonEmptyString"
                 type="text"
                 label="Last Name",
+                name="LastName",
+                error-message="Required"
                 always-float-label
                 value="{{answer.ln}}"
                 maxlength="[[maxlength]]"
@@ -185,9 +197,11 @@ Example:
             <div class='flex2child'>
               <paper-input
                 is="iron-input"
+                on-change="answerChanged"
                 input
                 type="text"
                 label="Suffix - optional (ie Jr., Sr.)",
+                name="Suffix"
                 always-float-label
                 value="{{answer.suf}}"
                 maxlength="[[maxlength]]"
@@ -200,13 +214,16 @@ Example:
               <paper-input
                 is="iron-input"
                 input
-                auto-validate
+                required
+                validator="nonEmptyString"
+                on-change="answerChanged"
                 prevent-invalid-input
                 autocapitalize
-                allowed-pattern="[mfMF]"
+                allowed-pattern="[MF]"
                 error-message="Only 'M' or 'F' allowed"
                 type="text"
                 label="Sex (M/F)"
+                name="Sex"
                 always-float-label
                 value="{{answer.sex}}"
                 maxlength="[[maxlength]]"
@@ -215,11 +232,15 @@ Example:
             <div class='flex3child'>
               <paper-input
                 is="iron-input"
+                on-change="answerChanged"
                 input
-                pattern="[0-9]{2}[^0-9][0-9]{2}[^0-9][12][0-9]{4}"
+                required
+                validator="nonEmptyString"
                 type="text"
                 label="Date of Birth (m-d-y)"
+                name="DOB"
                 always-float-label
+                error-message="Required"
                 value="{{answer.dob}}"
                 maxlength="[[maxlength]]"
               ></paper-input>
@@ -237,6 +258,8 @@ Example:
         </div>
 
         <question-part-footer
+          hide-na="[[hideNa]]"
+          hide-notes="[[hideNotes]]"
           warn_msg="[[warn_msg]]"
           qstate="[[qstate]]"
           on-qstate-changed="qstateChangedInFooter"
@@ -267,7 +290,21 @@ Example:
         }
       },
 
-      answer: { value: {} },
+      hideNa: {
+        type: Boolean,
+        value: true
+      },
+
+      hideNotes: {
+        type: Boolean,
+        value: true
+      },
+
+      answer: { 
+        value: {
+          fn:"",mn:"",ln:"",sex:"",dob:"",suf:""
+        }
+      },
 
       showSubmitBtn: {
         type: Boolean,
@@ -279,9 +316,23 @@ Example:
         value: "Submit"
       }
     },
-
+    answerChanged: function(e){
+      e.target.validate();
+      var n_invalid=0;
+      Polymer.dom(this.root).querySelectorAll("paper-input").forEach(function(input){
+        //console.log(input.name,input.required,input.invalid);
+        if ( input.invalud || ( input.required && _.trim(input.value)==="" ) ){
+          n_invalid++;
+        }
+      });
+      if ( n_invalid ) this.qstate=1;
+      else this.qstate=2;
+    },
+    nonEmptyString: function(val){
+      if ( val.length ) return true;
+      return false;
+    },
     submit: function(e){
-      console.log(this.answer);
       return;
     }
   });

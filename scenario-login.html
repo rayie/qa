@@ -1,0 +1,311 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-styles/typography.html">
+<link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../iron-localstorage/iron-localstorage.html">
+
+<!--
+
+Example:
+
+    <scenario-login></scenario-login>
+
+@demo
+-->
+<dom-module id="scenario-login">
+
+  <style is="custom-style">
+
+    :host {
+      display: block;
+      box-sizing: border-box;
+    }
+   
+    :host > ::content .special {
+    }
+   
+    /* form hdr part */
+    .form-hdr ,
+    .form-body {
+      @apply(--layout-horizontal);
+      padding: 4px;
+    }
+
+    .form-body div {
+      margin: 4px;
+    }
+
+    .form-hdr div {
+      margin: 4px;
+    }
+
+    paper-checkbox {
+      display: inline-block;
+      margin: 6px 24px 6px 6px;
+      @apply(--paper-font-body2)
+    }
+
+    .flexchild {
+      @apply(--layout-flex);
+    }
+
+
+    .flex1child {
+      @apply(--layout-flex-1);
+    }
+
+    .flex2child {
+      @apply(--layout-flex-2);
+    }
+
+    .flex3child {
+      @apply(--layout-flex-3);
+    }
+
+    .flex4child {
+      @apply(--layout-flex-4);
+    }
+
+    .flex6child {
+      @apply(--layout-flex-6);
+    }
+
+    .flex8child {
+      @apply(--layout-flex-8);
+    }
+
+    .flex12child {
+      @apply(--layout-flex-12);
+    }
+
+    .form-num {
+      @apply(--paper-font-body2)
+      text-align: right;
+    }
+
+    .form-title {
+      @apply(--paper-font-body2)
+    }
+
+    .form-sub-title {
+      @apply(--paper-font-caption)
+    }
+
+    .paper-font-caption {
+      @apply(--paper-font-caption);
+    }
+    paper-card {
+      width: 100%;
+      margin-bottom: 12px;
+    }
+    paper-input ,
+    paper-textarea {
+      margin: 6px;
+    }
+    .card-actions {
+      background-color: #B2DFDB;
+      border-bottom: 1px solid lightgrey;
+    }
+    .card-footer {
+      margin: 12px 6px 12px 6px;
+      padding-top: 16px;
+      padding-left: 16px;
+      border-top: 1px solid lightgrey;
+    }
+    paper-button {
+      @apply(--paper-font-button);
+    }
+
+  </style>
+
+  <template>
+    <div class="container">
+      <paper-card  elevation=1>
+
+        <div class="card-content">
+
+          <div class='form-body'>     
+            <div class='flex4child'>
+              <paper-input
+                is="iron-input"
+                input
+                type="text"
+                label="Email Address",
+                always-float-label
+                error-message="Invalid Email/PW combination"
+                value="{{email}}"
+                maxlength="[[maxlength]]"
+              ></paper-input>
+            </div>
+            <div class='flex4child'>
+              <paper-input
+                input
+                type="password"
+                label="Password",
+                always-float-label
+                value="{{pw}}"
+                error-message="Invalid Email/PW combination"
+                maxlength="[[maxlength]]"
+              ></paper-input>
+            </div>
+          </div>
+          <div class='form-body'>     
+            <div class='flexchild'>
+              <paper-button raised on-click="login">Login</paper-button>
+              <paper-button raised on-click="logout">Logout</paper-button>
+              <paper-button raised on-click="test">Test</paper-button>
+              <small>{{ scenariouser._id }}</small>
+            </div>
+          </div>
+
+        </div>
+
+      </paper-card>
+    </div>
+    <iron-ajax
+      id="ajax_login"
+      handle-as="json"
+      content-type="application/json"
+      on-response="login_response"
+      on-error="login_error"
+      method="POST"
+      with-credentials
+      url="{{loginUrl}}"
+      loading="{{is_logging_in}}"
+    ></iron-ajax>
+    <iron-ajax
+      id="ajax_logout"
+      handle-as="json"
+      content-type="application/json"
+      on-response="logout_response"
+      on-error="logout_error"
+      method="POST"
+      with-credentials
+      url="{{logoutUrl}}"
+      loading="{{is_logging_out}}"
+    ></iron-ajax>
+    <iron-ajax
+      id="ajax_test"
+      handle-as="json"
+      content-type="application/json"
+      on-response="test_response"
+      on-error="test_error"
+      method="POST"
+      with-credentials
+      url="{{testUrl}}"
+    ></iron-ajax>
+
+
+    <iron-localstorage
+      id="locstore"
+      name="scenariouser"
+      auto-save-disabled
+      value="{{scenariouser}}"
+    >
+    </iron-localstorage>
+  </template>
+
+</dom-module>
+
+<script>
+
+
+  Polymer({
+
+    is: 'scenario-login',
+
+    properties: {
+
+      email: {
+        type: String,
+        value: ""
+      },
+
+      pw: {
+        type: String,
+        value: ""
+      },
+
+      loginUrl: { type: String, value: "" },
+      logoutUrl: { type: String, value: "" },
+
+      scenariouser: {
+        observer: "_scenariouserChanged",
+        value: function(){ return null }
+      }
+
+    },
+
+    _scenariouserChanged: function(newVal,oldVal){
+      //console.log("scenariouserChanged in LoginForm",newVal,oldVal);
+    },
+
+    test: function(e){
+      this.$.ajax_test.body = {};
+      this.$.ajax_test.generateRequest();
+      return;
+    },
+    test_error: function(e){
+      console.log(e);
+    },
+    test_response: function(e){
+      console.log(e);
+    },
+
+
+
+    logout: function(e){
+      this.$.ajax_logout.body = {};
+      this.$.ajax_logout.generateRequest();
+      return;
+    },
+    logout_error: function(e){
+      console.log(e);
+    },
+    logout_response: function(e){
+      //console.log(e.detail.response);
+      this.set("scenariouser", null);
+      this.$.locstore.save();
+    },
+
+    login: function(e){
+      Polymer.dom(this.root).querySelectorAll("paper-input").forEach(function(el){
+        el.invalid=false;
+      });
+      this.$.ajax_login.body = {email: this.email , pw: this.pw };
+      this.$.ajax_login.generateRequest();
+      return;
+    },
+    login_error: function(e){
+      console.log(e);
+      Polymer.dom(this.root).querySelectorAll("paper-input").forEach(function(el){
+        el.invalid=true;
+      });
+    },
+    login_response: function(e){
+      //console.log(e.detail.response);
+      if( e.detail.response.success===true ){
+        this.set("scenariouser", e.detail.response.user);
+        this.$.locstore.save();
+      }
+    }
+  });
+
+</script>
