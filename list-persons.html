@@ -29,7 +29,7 @@ Example:
 
 @demo
 -->
-<dom-module id="card-person">
+<dom-module id="list-persons">
 
   <style is="custom-style">
 
@@ -147,61 +147,19 @@ Example:
 
   <template>
     <div class="container">
-      <paper-card  elevation=1>
-
-        <div class="card-content">
-
+      <paper-menu>
+        <template is="dom-repeat" items="[[persons]]" as="p">
           <div class=''>     
-            <h3>[[person.display_as]] ([[person.sex]]) [[person.dob]]</h3>
-            <small>RecordID: [[subjectId]]</small>
+            <a href$="patients/[[p._id]]">[[p.display_as]] ([[p.sex]]) [[p.dob]]</a>
+            <small>RecordID: [[p._id]]</small>
           </div>
-
-        </div>
-
-        <div class='card-footer' >
-          <h3>Tasks:</h3>
-          <paper-menu>
-            <template is="dom-repeat" items="[[person.tasks]]" as="t">
-
-              <paper-icon-item 
-              >
-                <iron-icon 
-                  item-icon
-                  icon="icons:chevron-right"
-                >
-                </iron-icon>
-                <template is="dom-if" if="{{!t.is_done}}">
-                  <div class="">
-                    [[ t.name ]] for [[ t.subject_display_as ]]
-                    <a href$="{{baseUrl}}tasks/{{t._id}}">
-                      Start
-                    </a>
-                  </div>
-                </template>
-                <template is="dom-if" if="{{t.is_done}}">
-                  <div class="">
-                    [[ t.name ]] for [[ t.subject_display_as ]] - 
-                    <strong>DONE</strong>
-                    <br/>
-                    <small>
-                    - [[t.state.u_id]] on [[t.state.ts]]
-                    </small>
-                  </div>
-                </template>
-              </paper-icon-item>
-
-            </template>
-          </paper-menu>
-        </div>
-
-
-      </paper-card>
-
+        </template>
+      </paper-menu>
       <iron-ajax
-        id="ajax_load_person"       
+        id="ajax_load_persons"       
         handle-as="json",
-        on-response="loadPersonResponse"
-        on-error="loadPersonError"
+        on-response="loadPersonsResponse"
+        on-error="loadPersonsError"
         loading="{{is_loading}}"
       ></iron-ajax>
     </div>
@@ -214,17 +172,12 @@ Example:
 
   Polymer({
 
-    is: 'card-person',
+    is: 'list-persons',
 
     properties: {
-      person: {
-        type: Object,
-        value: null
-      },
-      subjectId: {
-        type: String,
-        value: "",
-        observer: "loadPerson"
+      persons: {
+        type: Array,
+        value: []
       },
       baseUrl: {
         type: String,
@@ -233,33 +186,25 @@ Example:
     },
 
     ready: function(){
-      if ( !this.subjectId ) return; 
-      this.loadPerson();
+      this.loadPersons();
     },
 
-    loadPerson: function(){
-      if ( !this.subjectId ) return; 
-      console.log("in loadPerson", this.subjectId);
-      this.$.ajax_load_person.url="http://sc3:8600/api/person:get?subject_id=" + this.subjectId;
-      this.$.ajax_load_person.generateRequest();
+    loadPersons: function(){
+      console.log("in loadPersons");
+      this.$.ajax_load_persons.url="http://sc3:8600/api/person:list";
+      this.$.ajax_load_persons.generateRequest();
     },
-    loadPersonResponse: function(e){
+
+    loadPersonsResponse: function(e){
       console.log(e);
-      e.detail.response.person.dob  = e.detail.response.person.dob.toString().substr(0,10);
-      e.detail.response.person.tasks.forEach(function(t){
-        if ( t.state.code=="done") t.is_done=true; 
-        else t.is_done=false;
-      });
-
-      this.set("person",e.detail.response.person);
+      //e.detail.response.person.dob  = e.detail.response.person.dob.toString().substr(0,10);
+      this.set("persons",e.detail.response.persons);
     },
-    loadPersonError: function(e){
+
+    loadPersonsError: function(e){
       console.log(e);
-    },
-
-    submit: function(e){
-      return;
     }
+
   });
 
 </script>

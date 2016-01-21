@@ -137,8 +137,7 @@ Example:
       <div class="survey-hdr">
         <div class="hdr-left">
           <div class='survey-title'>[[surveyData.title]]</div>
-          <div class='survey-subtitle'>[[surveyData.subtitle]]</div>
-          <small>{{ scenariouser._id }}</small>
+          <div hidden="[[!taskId]]" class='survey-subtitle'>[[task.subject_display_as]]</div>
         </div>
         <div class="hdr-right">
           <div>[[summaryTxt]]</div>
@@ -184,7 +183,7 @@ Example:
         >Submit</paper>
       </div>
 
-      <div class='card-footer' >
+      <div class='card-footer' hidden="[[!submitSuccessful]]" >
         <h2>Submitted Successfully:</h2>
         <h3>Next Steps:</h3>
         <paper-menu>
@@ -199,6 +198,9 @@ Example:
               </iron-icon>
               <div class="">
                 [[ t.name ]] for [[ t.subject_display_as ]]
+                <a href$="{{baseUrl}}tasks/{{t._id}}">
+                  Start
+                </a>
               </div>
             </paper-icon-item>
 
@@ -331,6 +333,7 @@ Example:
 
     _reset: function(){
       this.surveyData = {};
+      this.task = {};
       this.subjectId = "";
       this.summaryTxt = "";
       this.state = 0;
@@ -374,6 +377,7 @@ Example:
       console.log("in directToSurvey",this.directSurveyUrl);
       if ( !this.directSurveyUrl) return;
 
+      this.taskId = "";
       this._reset();
       this.subjectId = "STUB";
       this._loadSurvey("http://sc3:8600/flows/" + this.directSurveyUrl + ".json");
@@ -526,7 +530,8 @@ Example:
       var payload = { 
         subject_id: this.subjectId, 
         csrfToken: this.scenariouser.csrfToken,
-        on_done: this.surveyData.on.done
+        on_done: this.surveyData.on.done,
+        parent_task_id: this.taskId
       }
 
       switch( this.surveyData.type ){
