@@ -1,0 +1,249 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-item/paper-item-body.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-styles/typography.html">
+<link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+
+<!--
+
+Example:
+
+    <card-person></card-person>
+
+@demo
+-->
+<dom-module id="card-person">
+
+  <style is="custom-style">
+
+    :host {
+      display: block;
+      box-sizing: border-box;
+    }
+   
+    :host > ::content .special {
+    }
+   
+    /* form hdr part */
+    .form-hdr ,
+    .form-body {
+      @apply(--layout-horizontal);
+      padding: 4px;
+    }
+
+    .form-body div {
+      margin: 4px;
+    }
+
+    .form-hdr div {
+      margin: 4px;
+    }
+
+    paper-checkbox {
+      display: inline-block;
+      margin: 6px 24px 6px 6px;
+      @apply(--paper-font-body2)
+    }
+
+    .flexchild {
+      @apply(--layout-flex);
+    }
+
+
+    .flex1child {
+      @apply(--layout-flex-1);
+    }
+
+    .flex2child {
+      @apply(--layout-flex-2);
+    }
+
+    .flex3child {
+      @apply(--layout-flex-3);
+    }
+
+    .flex4child {
+      @apply(--layout-flex-4);
+    }
+
+    .flex6child {
+      @apply(--layout-flex-6);
+    }
+
+    .flex8child {
+      @apply(--layout-flex-8);
+    }
+
+    .flex12child {
+      @apply(--layout-flex-12);
+    }
+
+    .list {
+      @apply(--layout-vertical);
+      padding-top: 12px;
+      background-color: white;
+      width: 240px;
+      height: 228px;
+      margin: 12px;
+      @apply(--shadow-elevation-2dp);
+    }
+
+    .form-num {
+      @apply(--paper-font-body2)
+      text-align: right;
+    }
+
+    .form-title {
+      @apply(--paper-font-body2)
+    }
+
+    .form-sub-title {
+      @apply(--paper-font-caption)
+    }
+
+    .paper-font-caption {
+      @apply(--paper-font-caption);
+    }
+    paper-card {
+      width: 100%;
+      margin-bottom: 12px;
+    }
+    paper-input ,
+    paper-textarea {
+      margin: 6px;
+    }
+    .card-actions {
+      background-color: #B2DFDB;
+      border-bottom: 1px solid lightgrey;
+    }
+    .card-footer {
+      margin: 12px 6px 12px 6px;
+      padding-top: 16px;
+      padding-left: 16px;
+      border-top: 1px solid lightgrey;
+    }
+    paper-button {
+      @apply(--paper-font-button);
+    }
+
+  </style>
+
+  <template>
+    <div class="container">
+      <paper-card  elevation=1>
+
+        <div class="card-content">
+
+          <div class=''>     
+            <h3>[[person.display_as]] ([[person.sex]]) [[person.dob]]</h3>
+            <small>RecordID: [[subjectId]]</small>
+          </div>
+
+        </div>
+
+        <div class='card-footer' >
+          <h3>Tasks:</h3>
+          <paper-menu>
+            <template is="dom-repeat" items="[[person.tasks]]" as="t">
+
+              <paper-icon-item 
+              >
+                <iron-icon 
+                  item-icon
+                  icon="icons:chevron-right"
+                >
+                </iron-icon>
+                <div class="">
+                  [[ t.name ]] for [[ t.subject_display_as ]]
+                  <a href$="{{baseUrl}}tasks/{{t._id}}">
+                  Start
+                  </a>
+                  
+                </div>
+              </paper-icon-item>
+
+            </template>
+          </paper-menu>
+        </div>
+
+
+      </paper-card>
+
+      <iron-ajax
+        id="ajax_load_person"       
+        handle-as="json",
+        on-response="loadPersonResponse"
+        on-error="loadPersonError"
+        loading="{{is_loading}}"
+      ></iron-ajax>
+    </div>
+  </template>
+
+</dom-module>
+
+<script>
+
+
+  Polymer({
+
+    is: 'card-person',
+
+    properties: {
+      person: {
+        type: Object,
+        value: null
+      },
+      subjectId: {
+        type: String,
+        value: "",
+        observer: "loadPerson"
+      },
+      baseUrl: {
+        type: String,
+        value: ""
+      }
+    },
+
+    ready: function(){
+      if ( !this.subjectId ) return; 
+      this.loadPerson();
+    },
+
+    loadPerson: function(){
+      if ( !this.subjectId ) return; 
+      console.log("in loadPerson", this.subjectId);
+      this.$.ajax_load_person.url="http://sc3:8600/api/person:get?subject_id=" + this.subjectId;
+      this.$.ajax_load_person.generateRequest();
+    },
+    loadPersonResponse: function(e){
+      console.log(e);
+      e.detail.response.person.dob  = e.detail.response.person.dob.toString().substr(0,10);
+      this.set("person",e.detail.response.person);
+    },
+    loadPersonError: function(e){
+      console.log(e);
+    },
+
+    submit: function(e){
+      return;
+    }
+  });
+
+</script>

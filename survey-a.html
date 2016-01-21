@@ -127,21 +127,21 @@ Example:
 
   <template>
     <div>
-      <div hidden="[[subject_id]]">
-        <h2>The survey can not be initiated because a subject ID missing</h2>
+      <div hidden="[[subjectId]]">
+        <h2>The survey can not be initiated because a subject ID missing {{subjectId}} - </h2>
       </div>
     </div>
 
-    <div hidden="[[!subject_id]]">
+    <div hidden="[[!subjectId]]">
 
       <div class="survey-hdr">
         <div class="hdr-left">
-          <div class='survey-title'>[[survey_data.title]]</div>
-          <div class='survey-subtitle'>[[survey_data.subtitle]]</div>
+          <div class='survey-title'>[[surveyData.title]]</div>
+          <div class='survey-subtitle'>[[surveyData.subtitle]]</div>
           <small>{{ scenariouser._id }}</small>
         </div>
         <div class="hdr-right">
-          <div>[[summary_txt]]</div>
+          <div>[[summaryTxt]]</div>
           <div>
             <paper-button on-click="previewAnswers">Preview Answers</paper-button>
           </div>
@@ -208,9 +208,17 @@ Example:
     </div>
 
     <iron-ajax
+      id="ajax_load_task"
+      handle-as="json",
+      on-response="loadTaskResponded"
+      on-error="loadTaskError"
+      loading="{{is_loading}}"
+    ></iron-ajax>
+
+    <iron-ajax
       id="ajax_load_survey"       
       handle-as="json",
-      on-response="load_survey_responded"
+      on-response="loadSurveyResponded"
       loading="{{is_loading}}"
     ></iron-ajax>
 
@@ -228,11 +236,12 @@ Example:
       content-type="application/json"
       on-response="submit_survey_responded"
       on-error="submit_survey_error"
-      url="{{survey_data.submitUrl}}"
+      url="{{surveyData.submitUrl}}"
       with-credentials
       loading="{{is_submitting}}"
       method="POST"
     ></iron-ajax>
+
     <iron-localstorage
       id="locstore"
       name="scenariouser"
@@ -262,32 +271,35 @@ Example:
     is: 'survey-a',
 
     properties: {
-      survey_data: {
+
+      directSurveyUrl: {
+        type: String,
+        value: function(){ return ""; },
+        observer: "directToSurvey"
+      },
+
+      taskId: {
+        type: String,
+        value: function(){ return ""; },
+        observer: "loadTask"
+      },
+
+      surveyData: {
         value: {}
       },
 
-      subject_id: {
+      subjectId: {
         type: String,
         value: function(){ 
-           
           return "";
         }
       },
 
-      ok_to_submit: {
-        type: Boolean,
-        value: false
-      },
-
-      summary_txt: {
+      summaryTxt: {
         type: String,
         value: ""
       },
 
-      surveyUrl: {
-        value: "scripts/sample_survey.json"
-      },
-     
       scenariouser: {
         observer: "_scenariouserChanged",
         value: function(){ return null }
@@ -314,16 +326,62 @@ Example:
     },
 
     ready: function(){
-      var self = this;
-      this.start();
-      //window.addEventListener("storage",function(e){ console.log("storage event", e); });
+      this._reset();
     },
 
-    start: function(){ 
-      //this.$.ajaxer.url="scripts/sample_survey.json";
-      this.$.ajax_load_survey.url=this.surveyUrl;
-      this.$.ajax_load_survey.generateRequest();
+    _reset: function(){
+      this.surveyData = {};
+      this.subjectId = "";
+      this.summaryTxt = "";
+      this.state = 0;
+      this.submitError = null;
+      this.submitSuccessful = null;
+      this.ok_to_submit = false;
+      Polymer.dom(this.$.qlist).children.forEach(function(el,idx){
+        console.log("removing",idx);
+        el.remove(); //removeChild();
+      });
+    },
+
+
+    /*
+    * loading a form based on the task selected
+    */
+    loadTask: function(){ 
+      console.log("in loadTask",this.taskId);
+      if ( !this.taskId ) return;
+
+      this._reset();
+      this.$.ajax_load_task.url="http://sc3:8600/api/task:get?task_id="+this.taskId;
+      console.log("["+this.$.ajax_load_task.url+"]");
+      this.$.ajax_load_task.generateRequest();
       return;
+    },
+
+    loadTaskError: function(e){ 
+      console.log("Failed loading task from @", this.$.ajax_load_task.url );
+      return;
+    },
+
+    loadTaskResponded: function(e){ 
+      this.set("task",e.detail.response.task);
+      this.set("subjectId",this.task.subject_id);
+      this._loadSurvey(this.task.url);
+      return;
+    },
+
+    directToSurvey: function(){
+      console.log("in directToSurvey",this.directSurveyUrl);
+      if ( !this.directSurveyUrl) return;
+
+      this._reset();
+      this.subjectId = "STUB";
+      this._loadSurvey("http://sc3:8600/flows/" + this.directSurveyUrl + ".json");
+    },
+
+    _loadSurvey: function(surveyUrl){
+      this.$.ajax_load_survey.url=surveyUrl;
+      this.$.ajax_load_survey.generateRequest();
     },
 
     _convert_yn_to_mc: function(q){
@@ -346,16 +404,16 @@ Example:
       return q;
     },
 
-    load_survey_responded: function(event){
+    loadSurveyResponded: function(event){
       //console.log(event.detail.response);
-      this.survey_data = event.detail.response;
-      this.survey_data.subtitle = "For Subject: " + this.subject_id;
+      this.surveyData = event.detail.response;
+      this.surveyData.subtitle = "For Subject: " + this.subjectId;
       this.questions = {};
       var self = this;
       /*
       *  This generates the Polymer questions or forms
       */
-      this.survey_data.qq.forEach(function(q,idx){
+      this.surveyData.qq.forEach(function(q,idx){
         if ( q.kind==="form"){
           q.display_num = "F" + q._id;
           var new_frm = self.create("form-"+q.form.toLowerCase(),q);
@@ -432,8 +490,8 @@ Example:
       //console.log(qstate_counts);
       qstate_counts = qstate_counts;
       count_hidden = count_hidden;
-      var total_required = (this.survey_data.qq.length - count_hidden);
-      this.summary_txt = [
+      var total_required = (this.surveyData.qq.length - count_hidden);
+      this.summaryTxt = [
         "Required:", 
         total_required,
         " InProgress:",
@@ -451,7 +509,7 @@ Example:
 
     save_survey: function(){
       this.$.ajax_save_survey.url="/api/save";
-      this.$.ajax_save_survey.body = { subject_id: this.subject_id, answers: this.answers };
+      this.$.ajax_save_survey.body = { subject_id: this.subjectId, answers: this.answers };
       this.$.ajax_load_surey.generateRequest();
     },
 
@@ -466,12 +524,12 @@ Example:
 
       this.$.locstore.reload();
       var payload = { 
-        subject_id: this.subject_id, 
+        subject_id: this.subjectId, 
         csrfToken: this.scenariouser.csrfToken,
-        on_done: this.survey_data.on.done
+        on_done: this.surveyData.on.done
       }
 
-      switch( this.survey_data.type ){
+      switch( this.surveyData.type ){
         case "entity":
           //there should only be one answer
           var answer = this.answers[0];
