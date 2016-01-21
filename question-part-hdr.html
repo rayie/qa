@@ -75,7 +75,7 @@ Example:
     <div class="card-actions" >
       <div class="qhdr">
         <div class='flex-main-child main-q-txt'>[[txt]] </div>
-        <div class='flexchild display_num'>[[display_num]]</div>
+        <div class='flexchild display_num'>[[seq_num]] - [[display_num]]</div>
       </div>
       <span class="sub-q-txt">{{sub}}</small>
     </div>
@@ -90,6 +90,12 @@ Example:
     is: 'question-part-hdr',
 
     properties: {
+
+      seq_num: {
+        type: String,
+        value: function(){ return "?"; }
+      },
+
 
       display_num: {
         type: String,

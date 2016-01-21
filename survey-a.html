@@ -333,7 +333,7 @@ Example:
 
     _reset: function(){
       this.surveyData = {};
-      this.task = {};
+      this.task = null;
       this.subjectId = "";
       this.summaryTxt = "";
       this.state = 0;
@@ -417,9 +417,12 @@ Example:
       /*
       *  This generates the Polymer questions or forms
       */
+      var qn = 0;
       this.surveyData.qq.forEach(function(q,idx){
         if ( q.kind==="form"){
           q.display_num = "F" + q._id;
+          qn++;
+          q.seq_num=qn*1;
           var new_frm = self.create("form-"+q.form.toLowerCase(),q);
           self.listen(new_frm,"qstate-changed","qstateChanged");
           Polymer.dom(self.$.qlist).appendChild(new_frm);
@@ -429,8 +432,12 @@ Example:
 
         if ( ["mc","ft","ne","yn"].indexOf( q.kind ) === -1 ) return;
         q.display_num = "Q" + q._id;
+
         if ( q.kind=="yn" ) q = self._convert_yn_to_mc(q);
         var new_q = self.create("question-"+q.kind.toLowerCase(),q);
+        qn++;
+        new_q.seq_num=qn*1;
+
         self.listen(new_q,"siblingdisplay-changed","hideOrRevealSiblings");
         self.listen(new_q,"qstate-changed","qstateChanged");
         Polymer.dom(self.$.qlist).appendChild(new_q);
@@ -459,8 +466,13 @@ Example:
         case "mc":
           var a =[];
           q.answer.forEach(function(ans){
-            console.log(ans);
             a.push( q.opts[ans].txt );
+
+            if ( q.opts[ans].task ){
+              self.surveyData.tasksToAdd.push( q.opts[ans].task );
+              console.log(q.opts[ans]);
+            }
+
           });
           a = a.join(",");
           break;
@@ -482,6 +494,7 @@ Example:
       var qstate_counts = [ 0, 0, 0, 0];
       var count_hidden = 0;
       var answers = [];
+      this.surveyData.tasksToAdd = [];
       for(var qnum in this.questions){
         if(this.questions[ qnum ].hidden){ 
           count_hidden++;
@@ -527,11 +540,17 @@ Example:
       this.ok_to_submit = false;
 
       this.$.locstore.reload();
+
+
+
       var payload = { 
         subject_id: this.subjectId, 
         csrfToken: this.scenariouser.csrfToken,
-        on_done: this.surveyData.on.done,
+        on_done: this.surveyData.on.done.concat( this.surveyData.tasksToAdd ),
         parent_task_id: this.taskId
+      }
+      if ( this.task ){
+        payload.parent_task_name = this.task.name;
       }
 
       switch( this.surveyData.type ){

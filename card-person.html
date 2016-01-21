@@ -194,8 +194,24 @@ Example:
           </paper-menu>
         </div>
 
-
       </paper-card>
+
+      
+      <paper-card  elevation=1 hidden="[[!recentdata]]">
+        <div class="card-content">
+          <h3>Most Recent Data Collected:</h3>
+          <paper-menu>
+            <template is="dom-repeat" items="[[recentdata.list]]" >
+              <paper-item class='listing'>
+                [[ item.lbl ]] :
+                <strong>[[ item.val ]] </strong>
+              </paper-item>
+            </template>
+          </paper-menu>
+        </div>
+      </paper-card>
+
+
 
       <iron-ajax
         id="ajax_load_person"       
@@ -204,6 +220,8 @@ Example:
         on-error="loadPersonError"
         loading="{{is_loading}}"
       ></iron-ajax>
+
+
     </div>
   </template>
 
@@ -218,6 +236,10 @@ Example:
 
     properties: {
       person: {
+        type: Object,
+        value: null
+      },
+      recentdata: {
         type: Object,
         value: null
       },
@@ -244,14 +266,22 @@ Example:
       this.$.ajax_load_person.generateRequest();
     },
     loadPersonResponse: function(e){
-      console.log(e);
+      console.log(e.detail.response);
       e.detail.response.person.dob  = e.detail.response.person.dob.toString().substr(0,10);
       e.detail.response.person.tasks.forEach(function(t){
         if ( t.state.code=="done") t.is_done=true; 
         else t.is_done=false;
       });
-
+      var rd = e.detail.response.recentdata;
+      var list=[];
+      if ( rd ){
+        rd.qseq.forEach(function(q){
+          list.push({ lbl: rd.qref[q], val: rd[q] });
+        });
+        rd.list = list;
+      }
       this.set("person",e.detail.response.person);
+      this.set("recentdata",rd);
     },
     loadPersonError: function(e){
       console.log(e);
