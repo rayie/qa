@@ -199,7 +199,7 @@ Example:
       
       <paper-card  elevation=1 hidden="[[!recentdata]]">
         <div class="card-content">
-          <h3>Most Recent Data Collected:</h3>
+          <h3>Most Recent Data Collected - [[ recentdata.parent_task_name ]]</h3>
           <paper-menu>
             <template is="dom-repeat" items="[[recentdata.list]]" >
               <paper-item class='listing'>
@@ -276,7 +276,18 @@ Example:
       var list=[];
       if ( rd ){
         rd.qseq.forEach(function(q){
-          list.push({ lbl: rd.qref[q], val: rd[q] });
+          if ( q==="F200" ){
+            var val = [
+              rd[q].addr1 ,
+              rd[q].addr2 ,
+              rd[q].city , 
+              rd[q].state, 
+              rd[q].zip 
+            ].join(", ")
+          }
+          else var val = rd[q];
+
+          list.push({ lbl: q+" "+rd.qref[q], val: val });
         });
         rd.list = list;
       }

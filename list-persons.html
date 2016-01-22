@@ -150,7 +150,7 @@ Example:
       <paper-menu>
         <template is="dom-repeat" items="[[persons]]" as="p">
           <div class=''>     
-            <a href$="patients/[[p._id]]">[[p.display_as]] ([[p.sex]]) [[p.dob]]</a>
+            <a href$="patients/[[p._id]]">[[p.display_as]] ([[p.sex]]) [[p.dobstr]]</a>
             <small>RecordID: [[p._id]]</small>
           </div>
         </template>
@@ -198,6 +198,9 @@ Example:
     loadPersonsResponse: function(e){
       console.log(e);
       //e.detail.response.person.dob  = e.detail.response.person.dob.toString().substr(0,10);
+      e.detail.response.persons.forEach(function(p){
+        p.dobstr =p.dob.substr(0,10);
+      });
       this.set("persons",e.detail.response.persons);
     },
 
