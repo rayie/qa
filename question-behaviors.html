@@ -1,4 +1,28 @@
-<script src="../lodash/lodash.js"></script>
+<script src="../lodash/lodash.min.js"></script>
+<script src="../moment/min/moment.min.js">
+var util = {
+  age: function(start,end){
+    if (typeof start=="str"){
+      start = moment( start,"YYYY-MM-DD" );
+    }
+    else {
+      start = moment( start );
+    }
+
+    if (typeof start=="str"){
+      end = moment( end,"YYYY-MM-DD" );
+    } 
+    else{
+      end = moment( end );
+    }
+
+    var now = new Date();
+    start = start.toDate();
+    var months = start.diff(end,'month') * -1;
+    return Math.floor(months/12) + " Years, " + ( months % 12 ) + " Months"; 
+  }
+}
+</script>
 <script>
   window.QuestionBehaviors = window.QuestionBehaviors || {};
   QuestionBehaviors.Basic = {

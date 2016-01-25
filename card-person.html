@@ -152,7 +152,7 @@ Example:
         <div class="card-content">
 
           <div class=''>     
-            <h3>[[person.display_as]] ([[person.sex]]) [[person.dob]]</h3>
+            <h3>[[person.display_as]] ([[person.sex]]) [[person.dob]]  ([[person.ageStr]])</h3>
             <small>RecordID: [[subjectId]]</small>
           </div>
 
@@ -266,8 +266,17 @@ Example:
       this.$.ajax_load_person.generateRequest();
     },
     loadPersonResponse: function(e){
-      console.log(e.detail.response);
-      e.detail.response.person.dob  = e.detail.response.person.dob.toString().substr(0,10);
+
+      var person = e.detail.response.person;
+      var dob = moment( person.dob,"YYYY-MM-DD" );
+      var now = new Date();
+      //person.dob = dob.toDate();
+      //person.dobStr = dob.format("MM-DD-YYYY");
+      //var months = dob.diff(now,'month') * -1;
+      //person.ageStr = Math.floor(months/12) + " Years, " + ( months % 12 ) + " Months";
+      //person.ageStr = util.age(person.dob,now);
+
+      //e.detail.response.person.dob  = e.detail.response.person.dob.toString().substr(0,10);
       e.detail.response.person.tasks.forEach(function(t){
         if ( t.state.code=="done") t.is_done=true; 
         else t.is_done=false;
