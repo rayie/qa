@@ -39,7 +39,7 @@
     "address-autocomplete": "rayie/address-autocomplete#v1.0",
     "iron-localstorage": "PolymerElements/iron-localstorage#~1.0.5",
     "paper-menu": "PolymerElements/paper-menu#~1.2.2",
-    "moment": "~2.11.1"
+    "moment-display": "rayie/moment-display#~0.0.1"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
