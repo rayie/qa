@@ -1,0 +1,641 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-item/paper-icon-item.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../paper-styles/typography.html">
+<link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../iron-localstorage/iron-localstorage.html">
+<link rel="import" href="question-behaviors.html">
+<link rel="import" href="question-mc.html">
+<link rel="import" href="question-ft.html">
+<link rel="import" href="question-ne.html">
+<link rel="import" href="form-address.html">
+<link rel="import" href="form-person.html">
+<!--
+An element providing a solution to no problem in particular.
+
+Example:
+
+    <seed-element></seed-element>
+
+@demo
+-->
+<dom-module id="survey-b">
+
+  <style is="custom-style">
+    :host {
+      display: block;
+      box-sizing: border-box;
+    }
+    paper-icon-item {
+      @apply(--paper-font-body2)
+      margin-bottom: 4px;
+      border-bottom: 1px solid gray;
+    }
+    .survey-hdr {
+      @apply(--layout-horizontal);
+      @apply(--layout-flex);
+      @apply(--paper-font-title)
+    }
+    .hdr-left {
+      @apply(--layout-flex-4);
+    }
+    .hdr-right {
+      @apply(--layout-flex-8);
+      text-align: right;
+    }
+    paper-button {
+      @apply(--paper-font-button);
+    }
+    .display_num {
+      @apply(--paper-font-body2)
+      text-align: right;
+    }
+    .survey-title {
+      @apply(--paper-font-title)
+    }
+    .survey-subtitle{
+      @apply(--paper-font-subhead)
+    }
+    .card-actions {
+      border-bottom: 1px solid lightgrey;
+    }
+
+    /* answer sheet */
+    .list {
+      @apply(--layout-vertical);
+      padding-top: 12px;
+      background-color: white;
+      width: 240px;
+      height: 228px;
+      margin: 12px;
+      @apply(--shadow-elevation-2dp);
+    } 
+
+    .avatar {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: #ccc;
+    }
+
+    .blue {
+      color: var(--paper-light-blue-300);
+    }
+
+    .red {
+      background-color: var(--paper-red-300);
+    }
+
+    .orange {
+      background-color: var(--paper-amber-300);
+    }
+
+    .green {
+      background-color: var(--paper-green-300);
+    }
+
+    .card-footer {
+      margin: 12px 6px 12px 6px;
+      padding-top: 16px;
+      padding-left: 16px;
+      border-top: 1px solid lightgrey;
+      @apply(--paper-font-body2)
+    }
+
+  </style>
+
+  <template>
+    <div>
+      <div hidden="[[subjectId]]">
+        <h2>The survey can not be initiated because a subject ID missing {{subjectId}} - </h2>
+      </div>
+    </div>
+
+    <div hidden="[[!subjectId]]">
+
+      <div class="survey-hdr">
+        <div class="hdr-left">
+          <div class='survey-title'>[[surveyData.title]]</div>
+          <div hidden="[[!taskId]]" class='survey-subtitle'>[[task.subject_display_as]]</div>
+        </div>
+        <div class="hdr-right">
+          <div>[[summaryTxt]]</div>
+          <div>
+            <paper-button on-click="previewAnswers">Preview Answers</paper-button>
+          </div>
+        </div>
+      </div>
+
+      <div id="qlist">
+        <!--the container for our question components, dynamically inserted-->
+      </div>
+
+      <paper-dialog id="answerSheetDialog">
+        <paper-dialog-scrollable>
+          <h2>Answers:</h2>
+          <template 
+            is="dom-repeat"
+            items="[[answers]]"
+            as="answer"
+          >
+            <paper-icon-item>
+              <div class="" item-icon>
+                [[answer.qnum]]
+              </div>
+              <paper-item-body two-line>
+                <div>[[answer.q]]</div>
+                <div class='blue' secondary>[[answer.a]]</div>
+              </paper-item-body>
+            </paper-icon-item>
+          </template>
+        </paper-dialog-scrollable>
+        <div class="buttons">
+          <paper-button dialog-dismiss>Dismiss</paper-button>
+        </div>
+      </paper-dialog>
+
+      <div class='card-footer' >
+        <paper-button 
+        raised  
+        disabled="[[!ok_to_submit]]"
+        on-click="submit_survey"
+        >Submit</paper>
+      </div>
+
+      <div class='card-footer' hidden="[[!submitSuccessful]]" >
+        <h2>Submitted Successfully:</h2>
+        <h3>Next Steps:</h3>
+        <paper-menu>
+          <template is="dom-repeat" items="[[submitSuccessful.tasks_created]]" as="t">
+
+            <paper-icon-item 
+            >
+              <iron-icon 
+                item-icon
+                icon="icons:chevron-right"
+              >
+              </iron-icon>
+              <div class="">
+                [[ t.name ]] for [[ t.subject_display_as ]]
+                <a href$="{{baseUrl}}tasks/{{t._id}}">
+                  Start
+                </a>
+              </div>
+            </paper-icon-item>
+
+          </template>
+        </paper-menu>
+      </div>
+    </div>
+
+    <iron-ajax
+      id="ajax_load_task"
+      handle-as="json",
+      on-response="loadTaskResponded"
+      on-error="loadTaskError"
+      loading="{{is_loading}}"
+    ></iron-ajax>
+
+    <iron-ajax
+      id="ajax_load_survey"       
+      handle-as="json",
+      on-response="loadSurveyResponded"
+      loading="{{is_loading}}"
+    ></iron-ajax>
+
+    <iron-ajax
+      id="ajax_save_survey"       
+      handle-as="json"
+      content-type="application/json"
+      on-response="save_survey_responded"
+      loading="{{is_saving}}"
+    ></iron-ajax>
+
+    <iron-ajax
+      id="ajax_submit_survey"       
+      handle-as="json"
+      content-type="application/json"
+      on-response="submit_survey_responded"
+      on-error="submit_survey_error"
+      url="{{surveyData.submitUrl}}"
+      with-credentials
+      loading="{{is_submitting}}"
+      method="POST"
+    ></iron-ajax>
+
+    <iron-localstorage
+      id="locstore"
+      name="scenariouser"
+      auto-save-disabled
+      value="{{scenariouser}}"
+    >
+    </iron-localstorage>
+  </template>
+
+</dom-module>
+
+<script>
+  var QSTATE = [
+    "Pristine",
+    "InProgress",
+    "Complete",
+    "Marked as NA"
+  ];
+  var SURVEYSTATE = [
+    "Ready", //no submission attempted yet
+    "Error", //submission resulted in error
+    "Success" //submission successful
+  ];
+
+  Polymer({
+
+    is: 'survey-b',
+
+    properties: {
+
+      directSurveyUrl: {
+        type: String,
+        value: function(){ return ""; },
+        observer: "directToSurvey"
+      },
+
+      taskId: {
+        type: String,
+        value: function(){ return ""; },
+        observer: "loadTask"
+      },
+
+      surveyData: {
+        value: {}
+      },
+
+      subjectId: {
+        type: String,
+        value: function(){ 
+          return "";
+        }
+      },
+
+      summaryTxt: {
+        type: String,
+        value: ""
+      },
+
+      scenariouser: {
+        observer: "_scenariouserChanged",
+        value: function(){ return null }
+      },
+    
+      submitError: {
+        value: null,
+        notifies: true
+      },
+
+      submitSuccessful: {
+        value: null,
+        notifies: true
+      },
+
+      state: {
+        value: 0,
+        notifies: true
+      }
+    },
+
+    _scenariouserChanged: function(newVal,oldVal){
+      //console.log("scenariouserChanged in Survey",newVal,oldVal);
+    },
+
+    ready: function(){
+      this._reset();
+    },
+
+    _reset: function(){
+      this.surveyData = {};
+      this.task = null;
+      this.subjectId = "";
+      this.summaryTxt = "";
+      this.state = 0;
+      this.submitError = null;
+      this.submitSuccessful = null;
+      this.ok_to_submit = false;
+      Polymer.dom(this.$.qlist).children.forEach(function(el,idx){
+        console.log("removing",idx);
+        el.remove(); //removeChild();
+      });
+    },
+
+
+    /*
+    * loading a survey based on the task selected
+    */
+    loadTask: function(){ 
+      console.log("in loadTask",this.taskId);
+      if ( !this.taskId ) return;
+
+      this._reset();
+      this.$.ajax_load_task.url="http://sc3:8600/api/task:get?task_id="+this.taskId;
+      console.log("["+this.$.ajax_load_task.url+"]");
+      this.$.ajax_load_task.generateRequest();
+      return;
+    },
+
+    loadTaskError: function(e){ 
+      console.log("Failed loading task from @", this.$.ajax_load_task.url );
+      return;
+    },
+
+    loadTaskResponded: function(e){ 
+      this.set("task",e.detail.response.task);
+      this.set("subjectId",this.task.subject_id);
+      this._loadSurvey(this.task.url);
+      return;
+    },
+
+    directToSurvey: function(){
+      console.log("in directToSurvey",this.directSurveyUrl);
+      if ( !this.directSurveyUrl) return;
+
+      this.taskId = "";
+      this._reset();
+      this.subjectId = "STUB";
+      this._loadSurvey("http://sc3:8600/flows/" + this.directSurveyUrl + ".json");
+    },
+
+    _loadSurvey: function(surveyUrl){
+      this.$.ajax_load_survey.url=surveyUrl;
+      this.$.ajax_load_survey.generateRequest();
+    },
+
+    _convert_yn_to_mc: function(q){
+      q.minmax=[1,1];
+      q.kind="mc";
+      q.opts = [
+        { txt: "YES" },
+        { txt: "NO" }
+      ];
+      if ( q.rule ){
+        if ( q.rule.y ){
+          for(var k in q.rule.y)
+            q.opts[0][k] = q.rule.y[k];
+        }
+        if ( q.rule.n ){
+          for(var k in q.rule.n)
+            q.opts[1][k] = q.rule.n[k];
+        }
+      }
+      return q;
+    },
+
+    addedInstance: function(d){
+      console.log('addedInstance',d.target.get("seq_num"));
+      var pos_in_qq  = d.target.get("seq_num") - 1;
+      var q = this.surveyData.qq[ pos_in_qq ];
+      var timesCloned = 1 * d.target.get("additionalInstancesAdded");
+      var clone_of_q = _.cloneDeep(q);
+
+      clone_of_q.additionalInstancesAllowed = 0;
+      clone_of_q.additionalInstancesAdded = 0;
+
+      clone_of_q.display_num += "-" + (timesCloned*1);
+      clone_of_q.seq_num += "-" + (timesCloned*1);
+
+      var new_frm = this.create("form-"+clone_of_q.form.toLowerCase(),clone_of_q);
+      this.listen(new_frm,"qstate-changed","qstateChanged");
+      Polymer.dom(this.$.qlist).insertBefore( new_frm, Polymer.dom(d.target).nextSibling );
+      this.questions[clone_of_q._id.toString() + "-" + (timesCloned*1)] = new_frm;
+      return this.summarize();
+
+    },
+
+
+    loadSurveyResponded: function(event){
+      //console.log(event.detail.response);
+      this.surveyData = event.detail.response;
+      this.surveyData.subtitle = "For Subject: " + this.subjectId;
+      this.questions = {};
+      var self = this;
+      /*
+      *  This generates the Polymer questions or forms
+      */
+      var qn = 0;
+      this.surveyData.qq.forEach(function(q,idx){
+        q.idx_in_survey = idx * 1;
+
+        if ( q.kind==="form"){
+          q.display_num = "F" + q._id;
+          qn++;
+          q.seq_num=qn*1;
+          var new_frm = self.create("form-"+q.form.toLowerCase(),q);
+          self.listen(new_frm,"qstate-changed","qstateChanged");
+          self.listen(new_frm,"additional-instances-added-changed","addedInstance");
+          //self.listen(new_frm,"clone-changed","cloneFired");
+          Polymer.dom(self.$.qlist).appendChild(new_frm);
+          self.questions[q._id.toString()] = new_frm;
+          return;
+        }
+
+        q.display_num = "Q" + q._id;
+
+        if ( q.kind=="yn" ) q = self._convert_yn_to_mc(q);
+        var new_q = self.create("question-"+q.kind.toLowerCase(),q);
+        qn++;
+        new_q.seq_num=qn*1;
+
+        self.listen(new_q,"siblingdisplay-changed","hideOrRevealSiblings");
+        self.listen(new_q,"qstate-changed","qstateChanged");
+        Polymer.dom(self.$.qlist).appendChild(new_q);
+
+        if ( q.hidden ) {
+          var tg = new_q.querySelector("question-part-hdr");
+          new_q.toggleClass("hilite-qhdr-bg",true, tg );
+        }
+
+        self.questions[q._id.toString()] = new_q;
+        return;
+      });
+      return this.summarize();
+    },
+  
+    _build_answer_sheet: function(q){
+      var self = this;
+      if (q.qstate===3) var a= "N/A";
+      else if (q.qstate===0) var a= "Incomplete";
+      else switch(q.kind){
+        case "ft":
+        case "ne":
+        case "form":
+          var a= q.answer;
+          break;
+        case "mc":
+          var a =[];
+          q.answer.forEach(function(ans){
+            a.push( q.opts[ans].txt );
+
+            if ( q.opts[ans].task ){
+              self.surveyData.tasksToAdd.push( q.opts[ans].task );
+              console.log(q.opts[ans]);
+            }
+
+          });
+          a = a.join(",");
+          break;
+      }
+      var r = {
+        qnum: q.display_num,
+        q: q.txt,
+        a: a
+      };
+      //if ( a!=="Incomplete" && a!=="N/A" ) console.log(q.kind,q.answer,a);
+      return r;
+    },
+
+    previewAnswers: function(){
+      this.$.answerSheetDialog.open();
+    },
+
+    summarize: function(){
+      var qstate_counts = [ 0, 0, 0, 0];
+      var count_hidden = 0;
+      var answers = [];
+      var answers_required = 0;
+      this.surveyData.tasksToAdd = [];
+      for(var qnum in this.questions){
+        if(this.questions[ qnum ].hidden){ 
+          count_hidden++;
+        }
+        else{
+          answers_required++;
+          qstate_counts[ this.questions[qnum].qstate ]++;
+          answers.push( this._build_answer_sheet(this.questions[qnum]) );
+        }
+      }
+      //console.log(qstate_counts);
+      qstate_counts = qstate_counts;
+      count_hidden = count_hidden;
+      this.summaryTxt = [
+        "Required:", 
+        answers_required,
+        " InProgress:",
+        qstate_counts[1],
+        " Complete:",
+        qstate_counts[2],
+        " NA:",
+        qstate_counts[3]
+      ].join(" ");
+
+      this.answers = answers;
+      this.ok_to_submit = ( answers_required === ( qstate_counts[2] + qstate_counts[3] ) );
+      //console.log(this.answers);
+    },
+
+    save_survey: function(){
+      this.$.ajax_save_survey.url="/api/save";
+      this.$.ajax_save_survey.body = { subject_id: this.subjectId, answers: this.answers };
+      this.$.ajax_load_surey.generateRequest();
+    },
+
+    save_survey_responded: function(event){
+      var a = event.detail.response;
+    },
+
+    submit_survey: function(){
+      
+      if ( this.is_submitting ) return console.log("Still in progress");
+      this.ok_to_submit = false;
+
+      this.$.locstore.reload();
+
+      var payload = { 
+        subject_id: this.subjectId, 
+        csrfToken: this.scenariouser.csrfToken,
+        on_done: this.surveyData.on.done.concat( this.surveyData.tasksToAdd ),
+        parent_task_id: this.taskId
+      }
+      if ( this.task ){
+        payload.parent_task_name = this.task.name;
+      }
+
+      switch( this.surveyData.type ){
+        case "entity":
+          //there should only be one answer
+          var answer = this.answers[0];
+          for(var key in answer.a){
+            payload[ key ] = answer.a[key];
+          }
+          break;
+        case "data":
+          payload.answers = this.answers;
+          break;
+      }
+      console.log(payload);
+      this.$.ajax_submit_survey.body = payload;
+      this.$.ajax_submit_survey.generateRequest();
+      return;
+    },
+
+    submit_survey_responded: function(e){
+      console.log("detail:", e.detail);
+      if ( e.detail.response ){
+        console.log("resp", e.detail.response );
+        this.set("submitError", null);
+        this.set("submitSuccessful", e.detail.response);
+        console.log(this.submitSuccessful);
+        this.set("state", 2);
+      }
+    },
+
+    submit_survey_error: function(e){
+      console.log(e);
+      var self = this;
+      if ( e.detail.response ){
+        //this.submitSuccessful = null;
+        this.submitError = e.detail.response;
+        this.set("state", 1);
+      }
+      setTimeout(function(){
+        self.ok_to_submit = true;
+      },1500);
+    },
+
+    hideOrRevealSiblings: function(e){
+      //console.log("siblingscheck",e.detail.value);
+      var self = this;
+      e.detail.value.hide.forEach(function(qnum){
+        self.questions[qnum.toString()].hidden=true;
+      });
+      e.detail.value.reveal.forEach(function(qnum){
+        self.questions[qnum.toString()].hidden=false;
+      });
+    },
+
+    qstateChanged: function(e){
+      //doesn't matter which question changed, just so we know to update the summary
+      console.log("qstate changed in surveyb");
+      this.summarize();
+    }
+
+  });
+
+</script>

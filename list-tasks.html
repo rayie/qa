@@ -10,11 +10,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-card/paper-card.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icons/av-icons.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-item/paper-icon-item.html">
 <link rel="import" href="../paper-item/paper-item-body.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-styles/typography.html">
@@ -26,11 +28,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 Example:
 
-    <card-person></card-person>
+    <list-tasks></list-tasks>
 
 @demo
 -->
-<dom-module id="list-persons">
+<dom-module id="list-tasks">
 
   <style is="custom-style">
 
@@ -148,24 +150,43 @@ Example:
 
   <template>
     <div class="container">
-      <paper-menu>
-        <template is="dom-repeat" items="[[persons]]" as="p">
-          <div class=''>     
-            <a href$="patients/[[p._id]]">[[p.display_as]] ([[p.sex]]) 
+      <h2>Open Tasks</h2>
+      <div role="listbox">
+        <template is="dom-repeat" items="[[tasks]]" as="t">
+          <paper-icon-item>
+            <iron-icon icon="av:add-to-queue" item-icon></iron-icon>
+            <paper-item-body two-line>
+              <a href$="patients/[[t.subject_id]]">
+                [[t.subject_display_as]] 
+              </a>
+
+
+              <div >
+                [[t.name]]
+              </div>
+            </paper-item-body>
+            
+            <div
+              hidden="[[!t.due.end]]"
+            >
+              Due:
               <moment-display
-              str="[[p.dob]]"
-              >
-              </moment-display>
-            </a>
-            <small>RecordID: [[p._id]]</small>
-          </div>
+                str="[[t.due.end]]"
+                time
+              ></moment-display>
+            </div>
+
+            <div hidden="[[t.due.end]]" >
+              No Due Date
+            </div>
+          </paper-icon-item>
         </template>
-      </paper-menu>
+      </div>
       <iron-ajax
-        id="ajax_load_persons"       
+        id="ajax_load_tasks"       
         handle-as="json",
-        on-response="loadPersonsResponse"
-        on-error="loadPersonsError"
+        on-response="loadTasksResponse"
+        on-error="loadTasksError"
         loading="{{is_loading}}"
       ></iron-ajax>
     </div>
@@ -178,10 +199,10 @@ Example:
 
   Polymer({
 
-    is: 'list-persons',
+    is: 'list-tasks',
 
     properties: {
-      persons: {
+      tasks: {
         type: Array,
         value: []
       },
@@ -192,25 +213,22 @@ Example:
     },
 
     ready: function(){
-      this.loadPersons();
+      this.loadTasks();
     },
 
-    loadPersons: function(){
-      console.log("in loadPersons");
-      this.$.ajax_load_persons.url="http://sc3:8600/api/person:list";
-      this.$.ajax_load_persons.generateRequest();
+    loadTasks: function(){
+      console.log("in loadTasks");
+      this.$.ajax_load_tasks.url="http://sc3:8600/api/tasks:get";
+      this.$.ajax_load_tasks.params={state_code:["init","inprog"]};
+      this.$.ajax_load_tasks.generateRequest();
     },
 
-    loadPersonsResponse: function(e){
-      console.log(e);
-      //e.detail.response.person.dob  = e.detail.response.person.dob.toString().substr(0,10);
-      e.detail.response.persons.forEach(function(p){
-        //p.dobstr =p.dob.substr(0,10);
-      });
-      this.set("persons",e.detail.response.persons);
+    loadTasksResponse: function(e){
+      console.log(e.detail.response.tasks);
+      this.set("tasks",e.detail.response.tasks);
     },
 
-    loadPersonsError: function(e){
+    loadTasksError: function(e){
       console.log(e);
     }
 

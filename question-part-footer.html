@@ -88,12 +88,22 @@ Example:
       >
         Mark as N/A
       </paper-button>
+      
+      <paper-button 
+        hidden="[[hideAddInstanceBtn]]"
+        id="add_instance_btn"
+        on-click="addInstance"
+        raised
+      >
+        Add Another
+      </paper-button>
+
 
       <paper-input
         hidden="[[hideNotes]]"
         is="iron-input"
         class="note-area"
-        label="Enter surveyor notes:"
+        label="Surveyor notes:"
         maxlength="250"
         bind-value="{{surveyor_notes}}"
         input
@@ -108,6 +118,10 @@ Example:
         <br/>
         <span class='warn_msg'>
           {{warn_msg}}
+        </span>
+        <span class=''>
+          {{additionalInstancesAllowed}},
+          {{additionalInstancesAdded}}
         </span>
       </div>
     </div>
@@ -146,15 +160,36 @@ Example:
       qstate: {
         type: Number,
         notify: true
+      },
+
+      additionalInstancesAllowed: {
+        type: Number,
+        value: 0
+      },
+
+      additionalInstancesAdded: {
+        type: Number,
+        notify: true,
+        value: 0
+      },
+
+      hideAddInstanceBtn: {
+        type: Boolean,
+        value: true
       }
-
-
     },
 
     compute_qstate_label: function(qstate){
       //console.log(QSTATE[qstate]);
       if ( qstate < 3) this.$.mark_btn.active=false;
       return QSTATE[qstate];
+    },
+
+    attached: function(){
+      console.log( this.additionalInstancesAdded , this.additionalInstancesAllowed );
+      if ( this.additionalInstancesAdded < this.additionalInstancesAllowed ){
+        this.set("hideAddInstanceBtn",false);
+      }
     },
 
     /*
@@ -181,6 +216,14 @@ Example:
       return //console.log("QSTATE was PRISTINE, allow to chagne", this.$.mark_btn.active);
     },
 
+    addInstance: function(){
+      if ( this.qstate===3 ) return;
+
+      this.set("additionalInstancesAdded",(this.additionalInstancesAdded+1));
+      if ( this.additionalInstancesAdded == this.additionalInstancesAllowed ){
+        this.hideAddInstanceBtn=true;     
+      }
+    }
   });
 
 </script>

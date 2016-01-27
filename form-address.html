@@ -135,6 +135,7 @@ Example:
           txt="[[txt]]"
           sub="[[sub]]"
           display_num="[[display_num]]"
+          seq_num="[[seq_num]]"
           is_conditional="[[is_conditional]]"
         />
         </question-part-hdr>
@@ -268,7 +269,13 @@ Example:
             </div>
           </div>
 
-
+          <div class='form-body'>     
+            <div class='flexchild'>
+            <b>allowed: [[additionalInstancesAllowed]]</b> 
+            &nbsp;
+            <b>Added: [[additionalInstancesAdded]]</b> 
+            </div>
+          </div>
         </div>
 
         <div class='card-footer' hidden="[[!showSubmitBtn]]">     
@@ -279,6 +286,8 @@ Example:
           warn_msg="[[warn_msg]]"
           qstate="[[qstate]]"
           on-qstate-changed="qstateChangedInFooter"
+          additional-instances-allowed="[[additionalInstancesAllowed]]"
+          additional-instances-added="{{additionalInstancesAdded}}"
         >
         </question-part-footer>
 
@@ -326,8 +335,7 @@ Example:
     },
 
     gotAddressFromGoogle: function(e){
-      for(var addr_part in this.answer)
-        e.detail.value[addr_part] = this.answer[addr_part];
+      //for(var addr_part in this.answer) e.detail.value[addr_part] = this.answer[addr_part];
       
       this.answer = e.detail.value; 
       this.qstate = 2;

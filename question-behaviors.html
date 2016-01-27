@@ -52,19 +52,22 @@
         value: function(){
           return false;
         }
+      },
+
+      idx_in_survey: {
+        type: Number
       }
 
-
     },
+
     qstateChanged: function(e){
-      //console.log("qstateChanged", e);
+      console.log("qstateChanged", e);
     },
 
     qstateChangedInFooter: function(e){
-      //console.log("qstateChangedInFooter", e.detail.value);
-      this.qstate = e.detail.value;
+      console.log("qstateChangedInFooter", e.detail.value);
+      this.set("qstate", e.detail.value);
     }
-
 
   };
   
@@ -92,8 +95,19 @@
       /*
       * Interally used to track if a siblings reveal/hide change is necessary
       */
+      additionalInstancesAllowed: {
+        type: Number,
+        value: 0 
+      },
 
+      additionalInstancesAdded: {
+        type: Number,
+        value: 0 ,
+        notify: true,
+      }
     }
+
+   
 
   };
 </script>

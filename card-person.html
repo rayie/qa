@@ -285,13 +285,14 @@ Example:
       var list=[];
       if ( rd ){
         rd.qseq.forEach(function(q){
-          if ( q==="F200" ){
+          if ( q.substr(0,4)==="F200" ){
             var val = [
               rd[q].addr1 ,
               rd[q].addr2 ,
               rd[q].city , 
               rd[q].state, 
-              rd[q].zip 
+              rd[q].zip,
+              rd[q].applies_to.join("|") 
             ].join(", ")
           }
           else var val = rd[q];
