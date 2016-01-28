@@ -191,13 +191,13 @@ Example:
       }
     },
 
-    ready: function(){
+    attached: function(){
       this.loadPersons();
     },
 
     loadPersons: function(){
       console.log("in loadPersons");
-      this.$.ajax_load_persons.url="http://sc3:8600/api/person:list";
+      this.$.ajax_load_persons.url=window.APIBASEURL+"api/person:list";
       this.$.ajax_load_persons.generateRequest();
     },
 

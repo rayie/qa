@@ -254,7 +254,7 @@ Example:
       }
     },
 
-    ready: function(){
+    attached: function(){
       if ( !this.subjectId ) return; 
       this.loadPerson();
     },
@@ -262,7 +262,7 @@ Example:
     loadPerson: function(){
       if ( !this.subjectId ) return; 
       console.log("in loadPerson", this.subjectId);
-      this.$.ajax_load_person.url="http://sc3:8600/api/person:get?subject_id=" + this.subjectId;
+      this.$.ajax_load_person.url=window.APIBASEURL+"api/person:get?subject_id=" + this.subjectId;
       this.$.ajax_load_person.generateRequest();
     },
     loadPersonResponse: function(e){

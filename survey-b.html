@@ -355,7 +355,7 @@ Example:
       if ( !this.taskId ) return;
 
       this._reset();
-      this.$.ajax_load_task.url="http://sc3:8600/api/task:get?task_id="+this.taskId;
+      this.$.ajax_load_task.url=window.APIBASEURL+"api/task:get?task_id="+this.taskId;
       console.log("["+this.$.ajax_load_task.url+"]");
       this.$.ajax_load_task.generateRequest();
       return;
@@ -369,7 +369,7 @@ Example:
     loadTaskResponded: function(e){ 
       this.set("task",e.detail.response.task);
       this.set("subjectId",this.task.subject_id);
-      this._loadSurvey(this.task.url);
+      this._loadSurvey(window.APIBASEURL+this.task.url);
       return;
     },
 
@@ -380,10 +380,11 @@ Example:
       this.taskId = "";
       this._reset();
       this.subjectId = "STUB";
-      this._loadSurvey("http://sc3:8600/flows/" + this.directSurveyUrl + ".json");
+      this._loadSurvey(window.APIBASEURL + this.directSurveyUrl + ".json");
     },
 
     _loadSurvey: function(surveyUrl){
+      console.log("surveyUrl",surveyUrl);
       this.$.ajax_load_survey.url=surveyUrl;
       this.$.ajax_load_survey.generateRequest();
     },

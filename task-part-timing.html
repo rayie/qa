@@ -1,0 +1,198 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-item/paper-icon-item.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-styles/color.html">
+<link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../moment-display/moment-display.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-date-picker/paper-date-picker.html">
+
+<!--
+An element providing a solution to no problem in particular.
+
+Example:
+
+    <seed-element></seed-element>
+
+@demo
+-->
+<dom-module id="task-part-timing">
+  <style is="custom-style">
+    paper-button.custom {
+      --paper-button-ink-color: var(--paper-pink-a200);
+      /* These could also be individually defined for each of the
+        specific css classes, but we'll just do it once as an example */
+      --paper-button-flat-keyboard-focus: {
+        background-color: var(--paper-pink-a200);
+        color: white !important;
+      };
+      --paper-button-raised-keyboard-focus: {
+        background-color: var(--paper-pink-a200) !important;
+        color: white !important;
+      };
+      display: block;
+      font-size: .82em;
+    }
+    paper-button.custom:hover {
+      background-color: var(--paper-indigo-100);
+    }
+    paper-button.pink {
+      color: var(--paper-pink-a200);
+
+    }
+    paper-button.indigo {
+      background-color: var(--paper-indigo-500);
+      color: white;
+      --paper-button-raised-keyboard-focus: {
+        background-color: var(--paper-pink-a200) !important;
+        color: white !important;
+      };
+    }
+    paper-button.green {
+      background-color: var(--paper-green-500);
+      color: white;
+    }
+    paper-button.green[active] {
+      background-color: var(--paper-red-500);
+    }
+    paper-button.disabled {
+      color: white;
+    }
+</style>
+
+  <template>
+    <div hidden="[[!isAsap]]" >
+      <paper-button raised
+       on-click="workTask"
+       class="custom indigo"
+      >
+        Work this Task
+      </paper-button>
+    </div>
+
+    <div hidden="[[!mustSchedule]]" on-click="openDatePicker" >
+      <span 
+       hidden="[[plannedFor.start]]"
+       title="Task is unscheduled but scheduling is required. Click to schedule"
+      >Scheduling Required [[plannedFor.start]] x</span>  
+
+      <span 
+       hidden="[[!plannedFor.start]]"
+       title="Task is unscheduled but scheduling is required. Click to schedule"
+      >
+        Planned For:
+        <moment-display
+          dt="[[plannedFor.start]]"
+        >
+        </moment-display>
+      </span>
+
+
+      <iron-icon icon="perm-contact-calendar"></iron-icon>
+    </div>
+
+
+
+    <paper-dialog 
+      id="dialog" class="paper-date-picker-dialog" modal
+      on-iron-overlay-closed="gotDismissDialog"
+    >
+      <paper-date-picker id="picker" date="{{selectedPlanDate}}" >
+      </paper-date-picker>
+      <div class="buttons">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button dialog-confirm>OK</paper-button>
+      </div>
+    </paper-dialog>
+
+
+  </template>
+
+</dom-module>
+
+<script>
+  var QSTATE = [
+    "Pristine",
+    "InProgress",
+    "Complete",
+    "Marked as NA"
+  ];
+
+  Polymer({
+
+    is: 'task-part-timing',
+
+    properties: {
+      plannedFor: {
+        type: Object,
+        value: null
+      },
+      taskState: {
+        type: Object,
+        value: null
+      },
+      isAsap: {
+        value: false 
+      },
+      mustSchedule: {
+        value: false 
+      },
+      selectedPlanDate: {
+        type: Object,
+        value: new Date()
+      }
+
+    },
+
+    gotDismissDialog:function(){
+      console.log(this.selectedPlanDate); 
+      this.set("plannedFor.start", new Date(this.selectedPlanDate));
+    },
+
+    openDatePicker: function(){
+      console.log("opening dialog");
+      this.$.dialog.open();
+    },
+
+    attached: function(){
+      console.log(this.plannedFor);
+      switch(this.plannedFor.kind){
+        case "asap":
+          this.isAsap=true; 
+          break;
+        case "schedule":
+          if ( this.plannedFor.start ){
+            //has a planned start date
+            this.mustSchedule=false; 
+          }
+          else{
+            //no start date 
+            this.mustSchedule=true; 
+          }
+          break;
+        default:
+          this.isAsap=true; 
+          break;
+      }
+      
+    },
+
+  });
+
+</script>
