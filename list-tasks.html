@@ -158,12 +158,11 @@ Example:
             <iron-icon icon="av:add-to-queue" item-icon></iron-icon>
             <paper-item-body two-line>
               <a href$="patients/[[t.subject_id]]">
-                [[t.subject_display_as]] 
+                [[t.subject_display_as]] - [[t.name]]
               </a>
 
 
               <div >
-                [[t.name]]
                 <small>Task created: <small>
                 <moment-display time dt="[[t.init_by.ts]]"></moment-display>
               </div>

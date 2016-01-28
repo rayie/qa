@@ -19,6 +19,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-styles/color.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../moment-display/moment-import.html">
 <link rel="import" href="../moment-display/moment-display.html">
 <link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../paper-date-picker/paper-date-picker.html">
@@ -77,43 +78,77 @@ Example:
 </style>
 
   <template>
-    <div hidden="[[!isAsap]]" >
+
+
+    <div>
+
+      <strong
+       title="Task is scheduled and current."
+       hidden="[[!isAsap]]"
+       on-click="openDatePicker"
+      >ASAP</strong>
+
+      <strong
+       hidden="[[!isPlannedPast]]"
+       title="Task is OVERDUE."
+       on-click="openDatePicker"
+      >
+        OVERDUE
+      </strong>
+
+      <strong
+       hidden="[[!isPlannedPast]]"
+       title="Task is OVERDUE."
+       on-click="openDatePicker"
+      >
+        Planned For 
+      </strong>
+
+      <strong
+       hidden="[[!isPlannedFuture]]"
+       title="Task is scheduled for a future date."
+       on-click="openDatePicker"
+      >
+        Planned For 
+      </strong>
+
+      <moment-display
+        hidden="[[mustSchedule]]"
+        dt="[[plannedFor.start]]"
+        time
+      >
+      </moment-display>
+
+      <paper-button raised
+        hidden="[[!mustSchedule]]" 
+        on-click="openDatePicker" 
+        title="Task is unscheduled but scheduling is required. Click to schedule"
+        class="custom indigo"
+      >
+        <iron-icon icon="perm-contact-calendar"></iron-icon>
+        Schedule It
+      </paper-button>
+
+
+      <!--
       <paper-button raised
        on-click="workTask"
-       class="custom indigo"
+       class="custom green"
       >
         Work this Task
       </paper-button>
-    </div>
-
-    <div hidden="[[!mustSchedule]]" on-click="openDatePicker" >
-      <span 
-       hidden="[[plannedFor.start]]"
-       title="Task is unscheduled but scheduling is required. Click to schedule"
-      >Scheduling Required [[plannedFor.start]] x</span>  
-
-      <span 
-       hidden="[[!plannedFor.start]]"
-       title="Task is unscheduled but scheduling is required. Click to schedule"
-      >
-        Planned For:
-        <moment-display
-          dt="[[plannedFor.start]]"
-        >
-        </moment-display>
-      </span>
+      -->
 
 
-      <iron-icon icon="perm-contact-calendar"></iron-icon>
     </div>
 
 
-
+    <!--- DATEPICKER MODAL CONTENT -->
     <paper-dialog 
       id="dialog" class="paper-date-picker-dialog" modal
       on-iron-overlay-closed="gotDismissDialog"
     >
-      <paper-date-picker id="picker" date="{{selectedPlanDate}}" >
+      <paper-date-picker id="picker" date="{{selectedStartDate}}" >
       </paper-date-picker>
       <div class="buttons">
         <paper-button dialog-dismiss>Cancel</paper-button>
@@ -147,22 +182,31 @@ Example:
         type: Object,
         value: null
       },
-      isAsap: {
-        value: false 
-      },
-      mustSchedule: {
-        value: false 
-      },
-      selectedPlanDate: {
-        type: Object,
-        value: new Date()
-      }
+      isAsap: { type: Boolean, value: false },
+      mustSchedule: { type: Boolean, value: false },
+      plannedPast: { type: Boolean, value: false },
+      plannedCurrent: { type: Boolean, value: false },
+      plannedFuture: { type: Boolean, value: false },
 
     },
 
     gotDismissDialog:function(){
-      console.log(this.selectedPlanDate); 
-      this.set("plannedFor.start", new Date(this.selectedPlanDate));
+
+
+      var s = moment(this.selectedStartDate);
+      var e = moment(this.selectedStartDate);
+      s.hour(5).minute(30);
+      e.hour(18).minute(30);
+      console.log( "start",s.format("dddd, MMMM Do YYYY, h:mm:ss a") );
+      console.log( "end",e.format("dddd, MMMM Do YYYY, h:mm:ss a") );
+
+      this.set("plannedFor.kind", "schedule");
+      this.set("plannedFor.start", s.toDate() );
+      this.set("plannedFor.end", e.toDate() );
+
+      this.set("plannedFor", this.plannedFor);
+      console.log("plannedFor:", this.plannedFor);
+      this._evaluate();
     },
 
     openDatePicker: function(){
@@ -171,23 +215,49 @@ Example:
     },
 
     attached: function(){
-      console.log(this.plannedFor);
+      this._evaluate();
+    },
+
+    _evaluate: function(){
+      this.mustSchedule=false; 
+      this.isPlannedPast = false;
+      this.isPlannedCurrent = false;
+      this.isPlannedFuture = false;
+      this.isAsap=false; 
+
       switch(this.plannedFor.kind){
         case "asap":
           this.isAsap=true; 
+          this.set("okToStartTask",true);
           break;
         case "schedule":
-          if ( this.plannedFor.start ){
-            //has a planned start date
-            this.mustSchedule=false; 
+          if ( 
+            this.plannedFor.start && this.plannedFor.end
+          ){
+            //check if schedule is current
+            if ( moment().isBefore(this.plannedFor.start) ){
+              this.isPlannedFuture = true;
+              this.set("okToStartTask",false);
+            }
+            else if ( moment().isAfter(this.plannedFor.end) ){
+              this.isPlannedPast = true;
+              this.set("okToStartTask",true);
+            }
+            else{
+              this.isPlannedCurrent = true;
+              this.set("okToStartTask",true);
+            }
+
           }
           else{
             //no start date 
             this.mustSchedule=true; 
+            this.set("okToStartTask",false);
           }
           break;
         default:
           this.isAsap=true; 
+          this.set("okToStartTask",true);
           break;
       }
       
