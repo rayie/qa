@@ -253,6 +253,12 @@ Example:
 
     },
 
+    attached: function(){
+      this.$.ajax_login.url = window.APIBASEURL + "api/session:login";
+      this.$.ajax_logout.url = window.APIBASEURL + "api/session:logout";
+      this.$.ajax_test.url = window.APIBASEURL + "api/status";
+    },
+
     _scenariouserChanged: function(newVal,oldVal){
       //console.log("scenariouserChanged in LoginForm",newVal,oldVal);
     },

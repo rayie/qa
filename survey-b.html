@@ -380,12 +380,12 @@ Example:
       this.taskId = "";
       this._reset();
       this.subjectId = "STUB";
-      this._loadSurvey(window.APIBASEURL + this.directSurveyUrl + ".json");
+      this._loadSurvey(window.APIBASEURL +"flows/"+ this.directSurveyUrl + ".json");
     },
 
     _loadSurvey: function(surveyUrl){
-      console.log("surveyUrl",surveyUrl);
-      this.$.ajax_load_survey.url=surveyUrl;
+      this.$.ajax_load_survey.url= surveyUrl;
+      console.log("surveyUrl",this.$.ajax_load_survey.url);
       this.$.ajax_load_survey.generateRequest();
     },
 
@@ -433,8 +433,10 @@ Example:
 
     loadSurveyResponded: function(event){
       //console.log(event.detail.response);
-      this.surveyData = event.detail.response;
-      this.surveyData.subtitle = "For Subject: " + this.subjectId;
+      var surveyData = event.detail.response;
+      surveyData.submitUrl = window.APIBASEURL + surveyData.submitUrl;
+      surveyData.subtitle = "For Subject: " + this.subjectId;
+      this.set("surveyData",surveyData);
       this.questions = {};
       var self = this;
       /*
