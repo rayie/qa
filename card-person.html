@@ -157,7 +157,7 @@ Example:
 
           <div class=''>     
             <h3>
-              <span>[[person.display_as]] ([[person.sex]])
+              <span>[[person.displayAs]] ([[person.sex]])
             </span>
             <moment-display dt="[[person.dob]]" ></moment-display>
             (<moment-display dob dt="[[person.dob]]" ></moment-display>)
@@ -235,7 +235,7 @@ Example:
     loadPerson: function(){
       if ( !this.subjectId ) return; 
       this.set("person",null);
-      this.$.ajax_load_person.url=window.APIBASEURL+"api/person:get?subject_id=" + this.subjectId;
+      this.$.ajax_load_person.url=window.APIBASEURL+"api/person:get?subjectId=" + this.subjectId;
       this.$.ajax_load_person.generateRequest();
     },
 
@@ -254,7 +254,7 @@ Example:
               rd[q].city , 
               rd[q].state, 
               rd[q].zip,
-              rd[q].applies_to.join("|") 
+              (rd[q].applies_to)?rd[q].applies_to.join("|"):""
             ].join(", ")
           }
           else var val = rd[q];

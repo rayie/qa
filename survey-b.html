@@ -137,7 +137,7 @@ Example:
       <div class="survey-hdr">
         <div class="hdr-left">
           <div class='survey-title'>[[surveyData.title]]</div>
-          <div hidden="[[!taskId]]" class='survey-subtitle'>[[task.subject_display_as]]</div>
+          <div hidden="[[!taskId]]" class='survey-subtitle'>[[task.subjectDisplayAs]]</div>
         </div>
         <div class="hdr-right">
           <div>[[summaryTxt]]</div>
@@ -197,7 +197,7 @@ Example:
               >
               </iron-icon>
               <div class="">
-                [[ t.name ]] for [[ t.subject_display_as ]]
+                [[ t.name ]] for [[ t.subjectDisplayAs ]]
                 <a href$="{{baseUrl}}tasks/{{t._id}}">
                   Start
                 </a>
@@ -358,7 +358,7 @@ Example:
 
     loadTaskResponded: function(e){ 
       this.set("task",e.detail.response.task);
-      this.set("subjectId",this.task.subject_id);
+      this.set("subjectId",this.task.subjectId);
       this._loadSurvey(window.APIBASEURL+this.task.url);
       return;
     },
@@ -545,7 +545,7 @@ Example:
 
     save_survey: function(){
       this.$.ajax_save_survey.url="/api/save";
-      this.$.ajax_save_survey.body = { subject_id: this.subjectId, answers: this.answers };
+      this.$.ajax_save_survey.body = { subjectId: this.subjectId, answers: this.answers };
       this.$.ajax_load_surey.generateRequest();
     },
 
@@ -561,13 +561,13 @@ Example:
       this.$.locstore.reload();
 
       var payload = { 
-        subject_id: this.subjectId, 
+        subjectId: this.subjectId, 
         csrfToken: this.scenariouser.csrfToken,
         on_done: this.surveyData.on.done.concat( this.surveyData.tasksToAdd ),
-        parent_task_id: this.taskId
+        parentTaskId: this.taskId
       }
       if ( this.task ){
-        payload.parent_task_name = this.task.name;
+        payload.parentTaskName = this.task.name;
       }
 
       switch( this.surveyData.type ){

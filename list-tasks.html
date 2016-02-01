@@ -224,7 +224,7 @@ Example:
                 href$="{{baseUrl}}tasks/{{t._id}}"
               >
                 <iron-icon icon="create"></iron-icon> 
-                Work this Task
+                Start this Task
               </a>
               <!--
               <paper-button raised
@@ -239,8 +239,8 @@ Example:
 
             <paper-item-body two-line>
               <div>
-                <a href$="patients/[[t.subject_id]]">
-                  [[t.subject_display_as]] - [[t.name]]
+                <a href$="patients/[[t.subjectId]]">
+                  [[t.subjectDisplayAs]] - [[t.name]]
                 </a>
                 </div >
               <div secondary>
@@ -256,7 +256,7 @@ Example:
             <task-part-timing
               task-id="[[t._id]]"
               task-ts="{{t.ts}}"
-              planned-for="{{t.planned_for}}"
+              planned-for="{{t.plannedFor}}"
               ok-to-start-task="{{t.isOkToStart}}"
               on-change="gotTaskTimingChange"
             >
