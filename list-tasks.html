@@ -23,6 +23,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
 <link rel="import" href="../moment-display/moment-display.html">
+<link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="task-part-timing.html">
 
 <!--
@@ -145,32 +146,122 @@ Example:
     }
     paper-button {
       @apply(--paper-font-button);
+      font-size: 10px;
+    }
+
+    paper-icon-item {
+      margin-top: 2px;
+      margin-bottom: 2px;
+      border-bottom: 1px solid var(--paper-pink-a200);
+      --paper-item-icon-width: 186px;
+    }
+
+    paper-button.custom {
+      --paper-button-ink-color: var(--paper-pink-a200);
+      /* These could also be individually defined for each of the
+        specific css classes, but we'll just do it once as an example */
+      --paper-button-flat-keyboard-focus: {
+        background-color: var(--paper-pink-a200);
+        color: white !important;
+      };
+      --paper-button-raised-keyboard-focus: {
+        background-color: var(--paper-pink-a200) !important;
+        color: white !important;
+      };
+      display: block;
+    }
+
+    paper-button.custom:hover {
+      background-color: var(--paper-indigo-100);
+    }
+
+    paper-button.pink {
+      color: var(--paper-pink-a200);
+    }
+
+    paper-button.red {
+      background-color: var(--paper-red-500);
+      color: white;
+      --paper-button-raised-keyboard-focus: {
+        background-color: var(--paper-red-a200) !important;
+        color: white !important;
+      };
+    }
+
+    paper-button.indigo {
+      background-color: var(--paper-indigo-500);
+      color: white;
+      --paper-button-raised-keyboard-focus: {
+        background-color: var(--paper-pink-a200) !important;
+        color: white !important;
+      };
+    }
+
+    paper-button.green {
+      background-color: var(--paper-green-500);
+      color: white;
+    }
+    paper-button.green[active] {
+      background-color: var(--paper-red-500);
+    }
+    paper-button.disabled {
+      color: white;
+    }
+    a { 
+      text-decoration: none;
     }
 
   </style>
 
   <template>
     <div class="container">
-      <h2>Open Tasks</h2>
-      <div >
-        <template is="dom-repeat" items="[[tasks]]" as="t">
+      <div hidden="[[!tasksLoaded]]" >
+        <template id="taskRptr" is="dom-repeat" items="[[tasks]]" as="t">
           <paper-icon-item>
-            <iron-icon icon="av:add-to-queue" item-icon></iron-icon>
-            <paper-item-body two-line>
-              <a href$="patients/[[t.subject_id]]">
-                [[t.subject_display_as]] - [[t.name]]
+            <div item-icon icon="favorite">
+              <a 
+                hidden="[[!t.isOkToStart]]"
+                href$="{{baseUrl}}tasks/{{t._id}}"
+              >
+                <iron-icon icon="create"></iron-icon> 
+                Work this Task
               </a>
+              <!--
+              <paper-button raised
+               class="custom green"
+               hidden="[[!t.isOkToStart]]"
+               on-click="workTask"
+              >
+                Work this Task
+              </paper-button>
+              -->
+            </div>
 
-
-              <div >
-                <small>Task created: <small>
-                <moment-display time dt="[[t.init_by.ts]]"></moment-display>
+            <paper-item-body two-line>
+              <div>
+                <a href$="patients/[[t.subject_id]]">
+                  [[t.subject_display_as]] - [[t.name]]
+                </a>
+                </div >
+              <div secondary>
+                <span>Task ts: <span>
+                  <moment-display 
+                    time
+                    dt="[[t.ts]]"
+                  >
+                  </moment-display>
               </div>
             </paper-item-body>
+
             <task-part-timing
-              planned-for="[[t.planned_for]]"
+              task-id="[[t._id]]"
+              task-ts="{{t.ts}}"
+              planned-for="{{t.planned_for}}"
+              ok-to-start-task="{{t.isOkToStart}}"
+              on-change="gotTaskTimingChange"
             >
             </task-part-timing>  
+
           </paper-icon-item>
         </template>
       </div>
@@ -181,6 +272,13 @@ Example:
         on-error="loadTasksError"
         loading="{{is_loading}}"
       ></iron-ajax>
+      <qa-ajax-poster
+        id="ajax_update_task"       
+        on-response="updateTaskResponse"
+        on-error="updateTaskError"
+        loading="{{is_loading}}"
+        endpoint="api/task:schedule"
+      ></qa-ajax-poster>
     </div>
   </template>
 
@@ -192,8 +290,12 @@ Example:
   Polymer({
 
     is: 'list-tasks',
-
+    
     properties: {
+      tasksLoaded: {
+        type: Boolean,
+        value: false
+      },
       tasks: {
         type: Array,
         value: []
@@ -201,27 +303,84 @@ Example:
       baseUrl: {
         type: String,
         value: ""
+      },
+      subjectId: {
+        type: String,
+        value: ""
+      },
+      isReady: {
+        type: Boolean,
+        value: false
+      },
+      isAttached: {
+        type: Boolean,
+        value: false
       }
     },
 
     attached: function(){
-      this.loadTasks();
+      this.isAttached=true;
+      this.$.ajax_load_tasks.url=window.APIBASEURL+"api/tasks:get";
+    },
+    ready: function(){
+      this.isReady=true;
+    },
+
+    workTask: function(e){
+      console.log(e);
+    },
+
+    resetTasks: function(){
+      this.set("tasks",[]);
+      this.set("tasksLoaded",false);
     },
 
     loadTasks: function(){
-      console.log("in loadTasks");
-      this.$.ajax_load_tasks.url=window.APIBASEURL+"api/tasks:get";
-      this.$.ajax_load_tasks.params={state_code:["init","inprog"]};
+      var defaultListParams = {state_code:["init","inprog"]};
+
+      if (this.subjectId){
+        defaultListParams.subjectId = this.subjectId.toString();
+      }
+
+      this.$.ajax_load_tasks.params=defaultListParams;
       this.$.ajax_load_tasks.generateRequest();
     },
 
     loadTasksResponse: function(e){
-      console.log(e.detail.response.tasks);
-      this.set("tasks",e.detail.response.tasks);
+      this.applyTasks(e.detail.response.tasks);
+    },
+
+    applyTasks: function(tasks){
+      this.resetTasks();
+      this.$.taskRptr.render();
+      this.set("tasks",tasks);
+      this.set("tasksLoaded",true);
+      //this.$.taskRptr.render();
     },
 
     loadTasksError: function(e){
-      console.log(e);
+      console.log("loadTasksError",e);
+    },
+
+    gotTaskTimingChange: function(e,timingChange){
+      this.$.ajax_update_task.payload=timingChange;
+      this.$.ajax_update_task.send(e.target);
+    },
+
+    updateTaskResponse: function(e,data){
+      //console.log("in tasklist, updateTaskResposne", e, data);
+      data.passBack.confirm(data.newTs);
+      app.$.toast.text = "Task UPDATED"; 
+      if ( data.msg ) app.$.toast.text += data.msg;
+      app.$.toast.show();
+    },
+
+    updateTaskError: function(e, data){
+      //console.log("in tasklist, updateTaskError", e, data);
+      app.$.toast.text = "Task NOT UPDATED !!!! - "; 
+      if ( data.msg ) app.$.toast.text += data.msg;
+      app.$.toast.show();
+      if ( data.passBack ) data.passBack.revert();
     }
 
   });

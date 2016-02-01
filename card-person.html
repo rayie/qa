@@ -19,7 +19,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../moment-display/moment-display.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="list-tasks.html">
 
 <!--
 
@@ -147,51 +149,30 @@ Example:
 
   <template>
     <div class="container">
-      <paper-card  elevation=1>
+      <paper-card  
+      hidden="[[!person]]"
+      elevation=1>
 
         <div class="card-content">
 
           <div class=''>     
-            <h3>[[person.display_as]] ([[person.sex]]) [[person.dob]]  ([[person.ageStr]])</h3>
-            <small>RecordID: [[subjectId]]</small>
+            <h3>
+              <span>[[person.display_as]] ([[person.sex]])
+            </span>
+            <moment-display dt="[[person.dob]]" ></moment-display>
+            (<moment-display dob dt="[[person.dob]]" ></moment-display>)
+          </h3>
+          <small>RecordID: [[subjectId]]</small>
           </div>
 
         </div>
 
         <div class='card-footer' >
           <h3>Tasks:</h3>
-          <paper-menu>
-            <template is="dom-repeat" items="[[person.tasks]]" as="t">
-
-              <paper-icon-item 
-              >
-                <iron-icon 
-                  item-icon
-                  icon="icons:chevron-right"
-                >
-                </iron-icon>
-                <template is="dom-if" if="{{!t.is_done}}">
-                  <div class="">
-                    [[ t.name ]] for [[ t.subject_display_as ]]
-                    <a href$="{{baseUrl}}tasks/{{t._id}}">
-                      Start
-                    </a>
-                  </div>
-                </template>
-                <template is="dom-if" if="{{t.is_done}}">
-                  <div class="">
-                    [[ t.name ]] for [[ t.subject_display_as ]] - 
-                    <strong>DONE</strong>
-                    <br/>
-                    <small>
-                    - [[t.state.u_id]] on [[t.state.ts]]
-                    </small>
-                  </div>
-                </template>
-              </paper-icon-item>
-
-            </template>
-          </paper-menu>
+          <list-tasks
+            id="patientTasks"
+            subject-id="[[subjectId]]"
+          ></list-tasks>
         </div>
 
       </paper-card>
@@ -212,7 +193,6 @@ Example:
       </paper-card>
 
 
-
       <iron-ajax
         id="ajax_load_person"       
         handle-as="json",
@@ -220,7 +200,6 @@ Example:
         on-error="loadPersonError"
         loading="{{is_loading}}"
       ></iron-ajax>
-
 
     </div>
   </template>
@@ -245,8 +224,7 @@ Example:
       },
       subjectId: {
         type: String,
-        value: "",
-        observer: "loadPerson"
+        value: ""
       },
       baseUrl: {
         type: String,
@@ -254,33 +232,17 @@ Example:
       }
     },
 
-    attached: function(){
-      if ( !this.subjectId ) return; 
-      this.loadPerson();
-    },
-
     loadPerson: function(){
       if ( !this.subjectId ) return; 
-      console.log("in loadPerson", this.subjectId);
+      this.set("person",null);
       this.$.ajax_load_person.url=window.APIBASEURL+"api/person:get?subject_id=" + this.subjectId;
       this.$.ajax_load_person.generateRequest();
     },
+
     loadPersonResponse: function(e){
 
       var person = e.detail.response.person;
-      var dob = moment( person.dob,"YYYY-MM-DD" );
       var now = new Date();
-      //person.dob = dob.toDate();
-      //person.dobStr = dob.format("MM-DD-YYYY");
-      //var months = dob.diff(now,'month') * -1;
-      //person.ageStr = Math.floor(months/12) + " Years, " + ( months % 12 ) + " Months";
-      //person.ageStr = util.age(person.dob,now);
-
-      //e.detail.response.person.dob  = e.detail.response.person.dob.toString().substr(0,10);
-      e.detail.response.person.tasks.forEach(function(t){
-        if ( t.state.code=="done") t.is_done=true; 
-        else t.is_done=false;
-      });
       var rd = e.detail.response.recentdata;
       var list=[];
       if ( rd ){
@@ -301,9 +263,12 @@ Example:
         });
         rd.list = list;
       }
-      this.set("person",e.detail.response.person);
+
+      this.set("person",person);
       this.set("recentdata",rd);
+      this.$.patientTasks.applyTasks(this.person.tasks);
     },
+
     loadPersonError: function(e){
       console.log(e);
     },

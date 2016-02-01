@@ -302,11 +302,6 @@ Example:
         value: ""
       },
 
-      scenariouser: {
-        observer: "_scenariouserChanged",
-        value: function(){ return null }
-      },
-    
       submitError: {
         value: null,
         notifies: true
@@ -323,10 +318,6 @@ Example:
       }
     },
 
-    _scenariouserChanged: function(newVal,oldVal){
-      //console.log("scenariouserChanged in Survey",newVal,oldVal);
-    },
-
     ready: function(){
       this._reset();
     },
@@ -341,7 +332,6 @@ Example:
       this.submitSuccessful = null;
       this.ok_to_submit = false;
       Polymer.dom(this.$.qlist).children.forEach(function(el,idx){
-        console.log("removing",idx);
         el.remove(); //removeChild();
       });
     },
@@ -351,11 +341,11 @@ Example:
     * loading a survey based on the task selected
     */
     loadTask: function(){ 
-      console.log("in loadTask",this.taskId);
+      //console.log("in loadTask",this.taskId);
       if ( !this.taskId ) return;
 
       this._reset();
-      this.$.ajax_load_task.url=window.APIBASEURL+"api/task:get?task_id="+this.taskId;
+      this.$.ajax_load_task.url=window.APIBASEURL+"api/task:get?taskId="+this.taskId;
       console.log("["+this.$.ajax_load_task.url+"]");
       this.$.ajax_load_task.generateRequest();
       return;
@@ -374,7 +364,7 @@ Example:
     },
 
     directToSurvey: function(){
-      console.log("in directToSurvey",this.directSurveyUrl);
+      //console.log("in directToSurvey",this.directSurveyUrl);
       if ( !this.directSurveyUrl) return;
 
       this.taskId = "";
@@ -599,9 +589,7 @@ Example:
     },
 
     submit_survey_responded: function(e){
-      console.log("detail:", e.detail);
       if ( e.detail.response ){
-        console.log("resp", e.detail.response );
         this.set("submitError", null);
         this.set("submitSuccessful", e.detail.response);
         console.log(this.submitSuccessful);

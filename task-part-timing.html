@@ -35,111 +35,78 @@ Example:
 -->
 <dom-module id="task-part-timing">
   <style is="custom-style">
-    paper-button.custom {
-      --paper-button-ink-color: var(--paper-pink-a200);
-      /* These could also be individually defined for each of the
-        specific css classes, but we'll just do it once as an example */
-      --paper-button-flat-keyboard-focus: {
-        background-color: var(--paper-pink-a200);
-        color: white !important;
-      };
-      --paper-button-raised-keyboard-focus: {
-        background-color: var(--paper-pink-a200) !important;
-        color: white !important;
-      };
-      display: block;
-      font-size: .92em;
-    }
-    paper-button.custom:hover {
-      background-color: var(--paper-indigo-100);
-    }
-    paper-button.pink {
-      color: var(--paper-pink-a200);
 
+    .main { 
+      padding: 4px;
     }
-    paper-button.indigo {
-      background-color: var(--paper-indigo-500);
-      color: white;
-      --paper-button-raised-keyboard-focus: {
-        background-color: var(--paper-pink-a200) !important;
-        color: white !important;
-      };
+    .flexchild {
+      @apply(--layout-flex);
     }
-    paper-button.green {
-      background-color: var(--paper-green-500);
-      color: white;
+    .displaytxt {
+      cursor: pointer;
+      text-align: right;
+      margin: 4px;
     }
-    paper-button.green[active] {
-      background-color: var(--paper-red-500);
-    }
-    paper-button.disabled {
-      color: white;
-    }
+      
+
 </style>
 
   <template>
 
 
-    <div>
+    <div class="main">
+      <div class="displaytxt">
+        <strong
+         title="Task has no schedule date."
+         hidden="[[!isAsap]]"
+         on-click="openDatePicker"
+         >
+         ASAP
+       </strong>
 
-      <strong
-       title="Task is scheduled and current."
-       hidden="[[!isAsap]]"
-       on-click="openDatePicker"
-      >ASAP</strong>
+        <strong
+         hidden="[[!isPlannedPast]]"
+         title="Task is OVERDUE."
+         on-click="openDatePicker"
+        >
+          OVERDUE
+        </strong>
 
-      <strong
-       hidden="[[!isPlannedPast]]"
-       title="Task is OVERDUE."
-       on-click="openDatePicker"
-      >
-        OVERDUE
-      </strong>
+        <strong
+         hidden="[[!isPlannedFuture]]"
+         title="Task is scheduled for a future date."
+         on-click="openDatePicker"
+        >
+          Planned For 
+        </strong>
 
-      <strong
-       hidden="[[!isPlannedPast]]"
-       title="Task is OVERDUE."
-       on-click="openDatePicker"
-      >
-        Planned For 
-      </strong>
 
-      <strong
-       hidden="[[!isPlannedFuture]]"
-       title="Task is scheduled for a future date."
-       on-click="openDatePicker"
-      >
-        Planned For 
-      </strong>
+        <strong
+         hidden="[[!isPlannedCurrent]]"
+         title="Task is Current."
+         on-click="openDatePicker"
+        >
+          Planned For
+        </strong>
 
-      <moment-display
-        hidden="[[mustSchedule]]"
-        dt="[[plannedFor.start]]"
-        time
-      >
-      </moment-display>
+        <moment-display
+          hidden="[[!plannedFor.start]]"
+          dt="[[plannedFor.start]]"
+          on-click="openDatePicker"
+        >
+        </moment-display>
 
-      <paper-button raised
-        hidden="[[!mustSchedule]]" 
-        on-click="openDatePicker" 
-        title="Task is unscheduled but scheduling is required. Click to schedule"
-        class="custom indigo"
-      >
+        <strong
+          hidden="[[!mustSchedule]]" 
+          on-click="openDatePicker" 
+          title="Task is unscheduled but scheduling is required. Click to schedule"
+        >
+          Schedule It
+        </strong>
+
+        <!--<span>Test: [[selectedStartDate]]</span>-->
         <iron-icon icon="perm-contact-calendar"></iron-icon>
-        Schedule It
-      </paper-button>
-
-
-      <!--
-      <paper-button raised
-       on-click="workTask"
-       class="custom green"
-      >
-        Work this Task
-      </paper-button>
-      -->
-
-
+      </div>
     </div>
 
 
@@ -174,47 +141,96 @@ Example:
     is: 'task-part-timing',
 
     properties: {
+      taskId: {
+        type: String
+      },
+      taskTs: {
+        type: String,
+        notify: true
+      },
       plannedFor: {
         type: Object,
-        value: null
+        value: null,
+        notify: true
       },
       taskState: {
         type: Object,
         value: null
       },
+      okToStartTask: { type: Boolean, value: false , notify: true },
       isAsap: { type: Boolean, value: false },
       mustSchedule: { type: Boolean, value: false },
       plannedPast: { type: Boolean, value: false },
       plannedCurrent: { type: Boolean, value: false },
-      plannedFuture: { type: Boolean, value: false },
+      plannedFuture: { type: Boolean, value: false }
 
     },
 
-    gotDismissDialog:function(){
+    attached: function(){
 
-
-      var s = moment(this.selectedStartDate);
-      var e = moment(this.selectedStartDate);
-      s.hour(5).minute(30);
-      e.hour(18).minute(30);
-      console.log( "start",s.format("dddd, MMMM Do YYYY, h:mm:ss a") );
-      console.log( "end",e.format("dddd, MMMM Do YYYY, h:mm:ss a") );
-
-      this.set("plannedFor.kind", "schedule");
-      this.set("plannedFor.start", s.toDate() );
-      this.set("plannedFor.end", e.toDate() );
-
-      this.set("plannedFor", this.plannedFor);
-      console.log("plannedFor:", this.plannedFor);
+      //console.log(this.plannedFor.kind, this.selectedStartDate, this.plannedFor.start);
+      this._lastSaved = _.clone(this.plannedFor);
       this._evaluate();
     },
 
     openDatePicker: function(){
-      console.log("opening dialog");
       this.$.dialog.open();
     },
 
-    attached: function(){
+    gotDismissDialog:function(closeEvent){
+
+      if ( closeEvent.detail.confirmed !== true ){
+        
+        return;
+      }
+      this._affectTheChange();
+      this.fire('change',{
+        taskId: this.taskId,
+        lastTs: this.taskTs,
+        plannedFor: this.plannedFor
+      });
+    },
+
+    revert: function(){
+      /*9
+      if ( this._lastSaved ){
+        this.selectedStartDate = new Date( this._lastSaved );
+      }
+      else{
+        this.selectedStartDate = new Date( );
+      }
+      */
+
+      console.log("reverting");
+      this.set( "plannedFor", _.clone(this._lastSaved));
+      console.log("plannedFor.kind set back to:", this.plannedFor);
+      this._evaluate();
+      return;
+
+    },
+
+    confirm: function(newTs){
+      this._lastSaved = _.clone( this.plannedFor );
+      this.set("taskTs", newTs);
+      //console.log("taskTs set to ", newTs);
+    },
+
+    _affectTheChange: function(){
+
+      var s = moment(this.selectedStartDate);
+      var e = moment(this.selectedStartDate);
+      s.hour(5).minute(30).second(0).millisecond(0);
+      e.hour(18).minute(30).second(0).millisecond(0);
+      /*
+      console.log( "start",s.format("dddd, MMMM Do YYYY, h:mm:ss a") );
+      console.log( "end",e.format("dddd, MMMM Do YYYY, h:mm:ss a") );
+      */
+      this.set("plannedFor.kind", "schedule");
+      this.set("plannedFor.start", s.toDate() );
+      this.set("plannedFor.end", e.toDate() );
+      this.set("plannedFor", this.plannedFor);
+
+      //console.log("plannedFor:", this.plannedFor);
       this._evaluate();
     },
 
@@ -247,7 +263,6 @@ Example:
               this.isPlannedCurrent = true;
               this.set("okToStartTask",true);
             }
-
           }
           else{
             //no start date 
@@ -260,7 +275,6 @@ Example:
           this.set("okToStartTask",true);
           break;
       }
-      
     },
 
   });

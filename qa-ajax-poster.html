@@ -1,0 +1,101 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../iron-localstorage/iron-localstorage.html">
+
+<!--
+Example:
+
+    <qa-ajax-poster></qa-ajax-poster>
+
+    Events: response, error
+
+@demo
+-->
+<dom-module id="qa-ajax-poster">
+
+  <template>
+    <div class="container">
+      <span>[[ this.payload.csrfToken ]]</span>
+      <iron-ajax
+        id="main"
+        method="POST"
+        handle-as="json",
+        content-type="application/json"
+        with-credentials
+        on-response="response"
+        on-error="error"
+        loading="{{is_loading}}"
+      ></iron-ajax>
+      <iron-localstorage
+        id="locstore"
+        name="scenariouser"
+        auto-save-disabled
+        value="{{scenariouser}}"
+      >
+      </iron-localstorage>
+    </div>
+  </template>
+</dom-module>
+
+<script>
+
+
+  Polymer({
+
+    is: 'qa-ajax-poster',
+    
+    properties: {
+      /*
+       * the part of the API url after window.APIBASEURL
+       * window.APIBASEURL will be prefixed to this value
+       *
+       */
+      endpoint: {
+        type: String,
+        value: ""
+      },
+      payload: {
+        type: Object,
+        value:null
+      },
+      scenariouser: {
+        type: Object,
+        value: {}
+      }
+    },
+
+    attached: function(){
+      this.$.locstore.reload();
+      this.$.main.url = window.APIBASEURL + this.endpoint;
+    },
+
+    send: function(passBack){
+      this.passBack = passBack;
+      if (!_.has( this.scenariouser ,'csrfToken' ) ){
+        this.fire("error",{passBack: passBack, msg:"Could not load localStorage csrfToken"});
+        return;
+      }
+      this.payload.csrfToken = this.scenariouser.csrfToken;
+      this.$.main.body=this.payload;
+      this.$.main.generateRequest();
+    },
+
+    response: function(e){
+      //console.log('in ajaxhelper response, before fire', e.detail.response);
+      e.detail.response.passBack = this.passBack;
+      this.fire("response",e.detail.response);
+    },
+
+    error: function(e,f){
+      var resPkg = { 
+        passBack: this.passBack ,
+        msg: _.get( e, "detail.request.xhr.response.error" , "" ) 
+      };
+        
+      this.fire("error",resPkg);
+    }
+
+
+  });
+
+</script>
