@@ -136,8 +136,8 @@ Example:
 
       <div class="survey-hdr">
         <div class="hdr-left">
-          <div class='survey-title'>[[surveyData.title]]</div>
-          <div hidden="[[!taskId]]" class='survey-subtitle'>[[task.subjectDisplayAs]]</div>
+          <div class='survey-title'>[[surveyData.title]] - [[task.state]]</div>
+          <div hidden="[[!taskId]]" class='survey-subtitle'>[[task.subjectDisplayAs]] [[taskId]]</div>
         </div>
         <div class="hdr-right">
           <div>[[summaryTxt]]</div>
@@ -623,7 +623,7 @@ Example:
 
     qstateChanged: function(e){
       //doesn't matter which question changed, just so we know to update the summary
-      console.log("qstate changed in surveyb");
+      console.log("qstate changed in surveyb", e);
       this.summarize();
     }
 

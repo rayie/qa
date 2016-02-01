@@ -192,21 +192,17 @@ Example:
     },
 
     attached: function(){
-      this.loadPersons();
+      this.$.ajax_load_persons.url=window.APIBASEURL+"api/person:list";
     },
 
     loadPersons: function(){
       console.log("in loadPersons");
-      this.$.ajax_load_persons.url=window.APIBASEURL+"api/person:list";
       this.$.ajax_load_persons.generateRequest();
     },
 
     loadPersonsResponse: function(e){
       console.log(e);
       //e.detail.response.person.dob  = e.detail.response.person.dob.toString().substr(0,10);
-      e.detail.response.persons.forEach(function(p){
-        //p.dobstr =p.dob.substr(0,10);
-      });
       this.set("persons",e.detail.response.persons);
     },
 
