@@ -29,6 +29,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="question-ne.html">
 <link rel="import" href="form-address.html">
 <link rel="import" href="form-person.html">
+<link rel="import" href="qa-ajax-poster.html">
+<link rel="import" href="list-tasks.html">
 <!--
 An element providing a solution to no problem in particular.
 
@@ -179,33 +181,19 @@ Example:
         <paper-button 
         raised  
         disabled="[[!ok_to_submit]]"
-        on-click="submit_survey"
+        on-click="submit"
         >Submit</paper>
       </div>
 
-      <div class='card-footer' hidden="[[!submitSuccessful]]" >
+      <div class='card-footer' hidden="[[!submissionResult]]" >
         <h2>Submitted Successfully:</h2>
         <h3>Next Steps:</h3>
-        <paper-menu>
-          <template is="dom-repeat" items="[[submitSuccessful.tasks_created]]" as="t">
 
-            <paper-icon-item 
-            >
-              <iron-icon 
-                item-icon
-                icon="icons:chevron-right"
-              >
-              </iron-icon>
-              <div class="">
-                [[ t.name ]] for [[ t.subjectDisplayAs ]]
-                <a href$="{{baseUrl}}tasks/{{t._id}}">
-                  Start
-                </a>
-              </div>
-            </paper-icon-item>
+        <list-tasks
+          id="nextTasks"
+          subject-id="[[subjectId]]"
+        ></list-tasks>
 
-          </template>
-        </paper-menu>
       </div>
     </div>
 
@@ -224,33 +212,29 @@ Example:
       loading="{{is_loading}}"
     ></iron-ajax>
 
-    <iron-ajax
-      id="ajax_save_survey"       
-      handle-as="json"
-      content-type="application/json"
-      on-response="save_survey_responded"
-      loading="{{is_saving}}"
-    ></iron-ajax>
+    <qa-ajax-poster
+      id="ajax_task_inprog"       
+      on-response="taskInprogResponse"
+      on-error="taskInprogError"
+      loading="{{is_loading}}"
+      endpoint="api/task:inprog"
+    ></qa-ajax-poster>
 
-    <iron-ajax
-      id="ajax_submit_survey"       
-      handle-as="json"
-      content-type="application/json"
-      on-response="submit_survey_responded"
-      on-error="submit_survey_error"
-      url="{{surveyData.submitUrl}}"
-      with-credentials
-      loading="{{is_submitting}}"
-      method="POST"
-    ></iron-ajax>
+    <qa-ajax-poster
+      id="ajax_save_data"       
+      on-response="saveDataResponse"
+      on-error="saveDataError"
+      loading="{{is_loading}}"
+      endpoint="api/data:save"
+    ></qa-ajax-poster>
 
-    <iron-localstorage
-      id="locstore"
-      name="scenariouser"
-      auto-save-disabled
-      value="{{scenariouser}}"
-    >
-    </iron-localstorage>
+    <qa-ajax-poster
+      id="ajax_submit_entity"       
+      on-response="submitEntityResponse"
+      on-error="submitEntityError"
+      loading="{{is_loading}}"
+    ></qa-ajax-poster>
+
   </template>
 
 </dom-module>
@@ -302,12 +286,12 @@ Example:
         value: ""
       },
 
-      submitError: {
+      submissionError: {
         value: null,
         notifies: true
       },
 
-      submitSuccessful: {
+      submissionResult: {
         value: null,
         notifies: true
       },
@@ -324,18 +308,18 @@ Example:
 
     _reset: function(){
       this.surveyData = {};
+      this.dataDoc = false;
       this.task = null;
       this.subjectId = "";
       this.summaryTxt = "";
       this.state = 0;
-      this.submitError = null;
-      this.submitSuccessful = null;
+      this.submissionError = null;
+      this.submissionResult = null;
       this.ok_to_submit = false;
       Polymer.dom(this.$.qlist).children.forEach(function(el,idx){
         el.remove(); //removeChild();
       });
     },
-
 
     /*
     * loading a survey based on the task selected
@@ -358,6 +342,10 @@ Example:
 
     loadTaskResponded: function(e){ 
       this.set("task",e.detail.response.task);
+      var dataDoc = _.get(e,"detail.response.dataDoc",false);
+      if (dataDoc){
+        this.set("dataDoc",dataDoc); 
+      }
       this.set("subjectId",this.task.subjectId);
       this._loadSurvey(window.APIBASEURL+this.task.url);
       return;
@@ -422,10 +410,10 @@ Example:
 
 
     loadSurveyResponded: function(event){
-      //console.log(event.detail.response);
+      console.log(event.detail.response);
       var surveyData = event.detail.response;
-      surveyData.submitUrl = window.APIBASEURL + surveyData.submitUrl;
       surveyData.subtitle = "For Subject: " + this.subjectId;
+      this.$.ajax_submit_entity.setEndpoint(surveyData.submitUrl);
       this.set("surveyData",surveyData);
       this.questions = {};
       var self = this;
@@ -468,13 +456,30 @@ Example:
         self.questions[q._id.toString()] = new_q;
         return;
       });
-      return this.summarize();
+
+      //return this.summarize();
+      if ( this.dataDoc ) this._populateAnswers();
+
+    },
+
+    _populateAnswers: function(){
+      for(var k in this.dataDoc.qref){
+        switch( this.dataDoc[k] ){
+          case null:
+            break;
+          case undefined:
+            break;
+          default:
+            this.questions[ k.substr(0) ].populateAnswer( this.dataDoc[k] );
+            break;
+        }
+      }
     },
   
     _build_answer_sheet: function(q){
       var self = this;
-      if (q.qstate===3) var a= "N/A";
-      else if (q.qstate===0) var a= "Incomplete";
+      if (q.qstate===3) var a = null;
+      else if (q.qstate===0) var a = undefined;
       else switch(q.kind){
         case "ft":
         case "ne":
@@ -484,7 +489,8 @@ Example:
         case "mc":
           var a =[];
           q.answer.forEach(function(ans){
-            a.push( q.opts[ans].txt );
+            //a.push( q.opts[ans].txt );
+            a.push( ans );
 
             if ( q.opts[ans].task ){
               self.surveyData.tasksToAdd.push( q.opts[ans].task );
@@ -492,16 +498,19 @@ Example:
             }
 
           });
-          a = a.join(",");
+          //a = a.join(",");
           break;
       }
-      var r = {
+      if ( a===undefined ) return {
+        qnum: q.display_num,
+        q: q.txt
+      };
+
+      return {
         qnum: q.display_num,
         q: q.txt,
         a: a
       };
-      //if ( a!=="Incomplete" && a!=="N/A" ) console.log(q.kind,q.answer,a);
-      return r;
     },
 
     previewAnswers: function(){
@@ -540,71 +549,126 @@ Example:
 
       this.answers = answers;
       this.ok_to_submit = ( answers_required === ( qstate_counts[2] + qstate_counts[3] ) );
-      //console.log(this.answers);
+      console.log("end of summarize, answers:",this.answers);
+
+      if ( this.task && ( qstate_counts[2] || qstate_counts[3] || this.task.dataId) )
+        return this.saveData();
+      
     },
 
-    save_survey: function(){
-      this.$.ajax_save_survey.url="/api/save";
-      this.$.ajax_save_survey.body = { subjectId: this.subjectId, answers: this.answers };
-      this.$.ajax_load_surey.generateRequest();
+    taskInprog: function(){
+      var payload = {
+        taskId: this.taskId,
+        lastTs: this.task.ts
+      }
+      this.$.ajax_task_inprog.send(payload);
     },
 
-    save_survey_responded: function(event){
-      var a = event.detail.response;
+    taskInprogResponse: function(e,data){
+      console.log(data);   
+      this.set("task.state","inprog");
+      this.set("task.ts", data.newTs);
+      this.set("task.dataId", data.dataId);
+    
+      return this.saveData();
     },
 
-    submit_survey: function(){
+    taskInprogError: function(e,data){
+      app.$.toast.text = "Failed starting task";
+      if ( data.msg ) app.$.toast.text += data.msg;
+      app.$.toast.show();
+    },
+
+    saveData: function(){
+      if ( this.task.state !== "inprog" || undefined === this.task.dataId )
+        return this.taskInprog();
+
+      var payload = { 
+        dataId: this.task.dataId, 
+        taskId: this.task._id, 
+        lastTs: this.task.ts, 
+        answers: this.answers
+      }
+      this.$.ajax_save_data.send(payload);
+    },
+
+    saveDataResponse: function(e,data){
+      console.log(data);
+      this.set("task.ts", data.newTs);
+      app.$.toast.text = "Saved progress";
+      if ( data.msg ) app.$.toast.text += data.msg;
+      app.$.toast.show();
+    },
+
+    saveDataError: function(e,data){
+      app.$.toast.text = "Failed saving ... ";
+      if ( data.msg ) app.$.toast.text += data.msg;
+      app.$.toast.show();
+    },
+
+    submit: function(){
+      if ( this.surveyData.type=="entity" )
+        return this.submitEntity();
+
+      return this.markTaskDone();
+    },
+
+    markTaskDone: function(){
+      if ( this.is_submitting ) return console.log("Still in progress");
+      this.ok_to_submit = false;
+
+      var payload = { 
+        subjectId: this.subjectId, 
+        on_done: this.surveyData.on.done.concat( this.surveyData.tasksToAdd ),
+        parentTaskId: this.taskId
+      }
+    },
+
+    submitEntity: function(){
       
       if ( this.is_submitting ) return console.log("Still in progress");
       this.ok_to_submit = false;
 
-      this.$.locstore.reload();
-
       var payload = { 
         subjectId: this.subjectId, 
-        csrfToken: this.scenariouser.csrfToken,
         on_done: this.surveyData.on.done.concat( this.surveyData.tasksToAdd ),
         parentTaskId: this.taskId
       }
+
       if ( this.task ){
         payload.parentTaskName = this.task.name;
       }
 
-      switch( this.surveyData.type ){
-        case "entity":
-          //there should only be one answer
-          var answer = this.answers[0];
-          for(var key in answer.a){
-            payload[ key ] = answer.a[key];
-          }
-          break;
-        case "data":
-          payload.answers = this.answers;
-          break;
+      var answer = this.answers[0];
+
+      for(var key in answer.a){
+        payload[ key ] = answer.a[key];
       }
+
       console.log(payload);
-      this.$.ajax_submit_survey.body = payload;
-      this.$.ajax_submit_survey.generateRequest();
+      this.$.ajax_submit_entity.send(payload);
       return;
+
     },
 
-    submit_survey_responded: function(e){
-      if ( e.detail.response ){
-        this.set("submitError", null);
-        this.set("submitSuccessful", e.detail.response);
-        console.log(this.submitSuccessful);
-        this.set("state", 2);
-      }
+    submitEntityResponse: function(e,data){
+      this.set("submissionError", null);
+      this.set("submissionResult", data);
+      this.set("state", 2);
+
+      console.log(this.submissionResult);
+      this.$.nextTasks.applyTasks(this.submissionResult.tasks_created);
     },
 
-    submit_survey_error: function(e){
+    submitEntityError: function(e,data){
       console.log(e);
       var self = this;
-      if ( e.detail.response ){
-        //this.submitSuccessful = null;
-        this.submitError = e.detail.response;
-        this.set("state", 1);
-      }
+
+      app.$.toast.text = "Task NOT UPDATED !!!! - "; 
+      if ( data.msg ) app.$.toast.text += data.msg;
+      app.$.toast.show();
+
+      this.set("state", 1);
       setTimeout(function(){
         self.ok_to_submit = true;
       },1500);
@@ -621,10 +685,18 @@ Example:
       });
     },
 
+
     qstateChanged: function(e){
       //doesn't matter which question changed, just so we know to update the summary
-      console.log("qstate changed in surveyb", e);
-      this.summarize();
+      /*
+      var r = {
+        qnum: e.target.display_num,
+        q: e.target.txt,
+        a: e.target.answer
+      };
+      console.log("r",r);
+      */
+      return this.summarize();
     }
 
   });

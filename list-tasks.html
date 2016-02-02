@@ -218,23 +218,25 @@ Example:
       <div hidden="[[!tasksLoaded]]" >
         <template id="taskRptr" is="dom-repeat" items="[[tasks]]" as="t">
           <paper-icon-item>
-            <div item-icon icon="favorite">
+            <div item-icon> 
               <a 
                 hidden="[[!t.isOkToStart]]"
                 href$="{{baseUrl}}tasks/{{t._id}}"
               >
                 <iron-icon icon="create"></iron-icon> 
-                Start this Task
+                <span hidden="[[t.m.inprog]]">
+                  Start this Task
+                </span>
+                <span hidden="[[!t.m.inprog]]">
+                  Resume this Task
+                </span>
               </a>
-              <!--
-              <paper-button raised
-               class="custom green"
-               hidden="[[!t.isOkToStart]]"
-               on-click="workTask"
+
+              <small
+                hidden="[[!t.m.inprog]]"
               >
-                Work this Task
-              </paper-button>
-              -->
+                [[t.m.inprog.u_id]]
+              </small>
             </div>
 
             <paper-item-body two-line>
@@ -363,8 +365,7 @@ Example:
     },
 
     gotTaskTimingChange: function(e,timingChange){
-      this.$.ajax_update_task.payload=timingChange;
-      this.$.ajax_update_task.send(e.target);
+      this.$.ajax_update_task.send(timingChange, e.target);
     },
 
     updateTaskResponse: function(e,data){

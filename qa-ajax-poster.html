@@ -69,7 +69,14 @@ Example:
       this.$.main.url = window.APIBASEURL + this.endpoint;
     },
 
-    send: function(passBack){
+    setEndpoint: function(endpoint){
+      this.$.locstore.reload();
+      this.$.main.url = window.APIBASEURL + endpoint;
+    },
+
+    send: function(payload,passBack){
+      console.log("sending to url ", this.$.main.url);
+      this.set("payload",payload);
       this.passBack = passBack;
       if (!_.has( this.scenariouser ,'csrfToken' ) ){
         this.fire("error",{passBack: passBack, msg:"Could not load localStorage csrfToken"});

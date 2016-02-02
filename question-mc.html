@@ -88,16 +88,28 @@ Example:
             on-iron-select="_gatherAnswers",
             on-iron-deselect="_gatherAnswers",
           > 
-            <template is="dom-repeat" items="[[opts]]" as="opt">
+            <template id="optRptr" is="dom-repeat" items="[[opts]]" as="opt">
               <paper-icon-item 
                 toggles
                 active="{{opt.is_active}}"
               >
                 <iron-icon 
+                  icon="check-box" 
+                  item-icon
+                  hidden="[[!opt.is_active]]"
+                  ></iron-icon>
+                <iron-icon 
+                  icon="check-box-outline-blank" 
+                  item-icon
+                  hidden="[[opt.is_active]]"
+                ></iron-icon>
+                <!--
+                <iron-icon 
                   icon="{{computeIconToUse(opt.is_active)}}" 
                   item-icon
                 >
                 </iron-icon>
+                -->
                 <div class="">{{opt.txt}}</div>
               </paper-icon-item>
             </template>
@@ -161,14 +173,12 @@ Example:
         }
       },
 
-
       minmax: {
         type: Array,
         value: function(){
           return [1,2];
         }
       },
-
 
       opts:{
         type: Array
@@ -182,7 +192,29 @@ Example:
 
     },
 
+    populateAnswer: function(a){
+      if ( a===undefined ){
+        //leave as is
+        return;
+      }
+
+      if ( a===null ){
+        //mark as NA
+        return;
+      }
+      //a in array containing the positional index of ACTIVE answers
+      var self = this;
+      a.forEach(function(optPos){
+        self.set("opts."+optPos+".is_active",true);
+      });
+      this.$.optRptr.render();
+      this._gatherAnswers();
+    },
+
+
+
     computeIconToUse: function(is_active ){
+      console.log("in computeIconToUse", is_active);
       var n = 0;
       this.opts.forEach(function(o){
         if ( o.is_active ) n++;
@@ -190,7 +222,7 @@ Example:
       if ( n == (this.minmax[1] + 1) ){ 
         return   "icons:check-box-outline-blank";
       }
-      return (is_active)? this.icon_selected : this.icon_unselected;
+      return (is_active) ? this.icon_selected : this.icon_unselected;
     },
     
     gotActivateEvent: function(e,ob){
@@ -224,6 +256,7 @@ Example:
       else if ( answer.length >= this.minmax[0] ){
         this.qstate=2;
       }
+
       console.log(answer);
 
       var self=this;

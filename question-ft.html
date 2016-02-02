@@ -131,13 +131,12 @@ Example:
 
     },
 
-    gotInputChange: function(e,b){
-      //console.log("got_input_change", e, b, this.answer);
+    gotInputChange: function(){
       if (this.answer){
-        this.qstate=2;
+        this.set("qstate",2);
       }
       else {
-        this.qstate=0;
+        this.set("qstate",0);
       }
     }
 

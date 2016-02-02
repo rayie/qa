@@ -85,6 +85,21 @@
         value:{ "reveal":[], "hide": [] }
       }
 
+    },
+
+    populateAnswer: function(a){
+      if ( a===undefined ){
+        //leave as is
+        return;
+      }
+
+      if ( a===null ){
+        //mark as NA
+        return;
+      }
+
+      this.answer = a;
+      this.gotInputChange();
     }
 
   };
