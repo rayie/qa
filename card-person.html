@@ -245,7 +245,7 @@ Example:
       var now = new Date();
       var rd = e.detail.response.recentdata;
       var list=[];
-      if ( rd ){
+      if ( _.has(e,"deatail.response.recentdata.qseq") ){
         rd.qseq.forEach(function(q){
           if ( q.substr(0,4)==="F200" ){
             var val = [

@@ -22,6 +22,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../moment-display/moment-import.html">
 <link rel="import" href="../moment-display/moment-display.html">
 <link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="task-part-timing.html">
@@ -232,11 +233,12 @@ Example:
                 </span>
               </a>
 
-              <small
+              <span
                 hidden="[[!t.m.inprog]]"
               >
-                [[t.m.inprog.u_id]]
-              </small>
+                [[t.m.inprog.u_id]] 
+              </span>
+
             </div>
 
             <paper-item-body two-line>
@@ -244,14 +246,13 @@ Example:
                 <a href$="patients/[[t.subjectId]]">
                   [[t.subjectDisplayAs]] - [[t.name]]
                 </a>
-                </div >
+              </div >
               <div secondary>
-                <span>Task ts: <span>
-                  <moment-display 
-                    time
-                    dt="[[t.ts]]"
-                  >
-                  </moment-display>
+                <moment-display label="Created" age time dt="[[t.m.init.ts]]" ></moment-display>
+                <span>
+                  [[compDur(t.m)]] 
+                </span>
+
               </div>
             </paper-item-body>
 
@@ -259,6 +260,7 @@ Example:
               task-id="[[t._id]]"
               task-ts="{{t.ts}}"
               planned-for="{{t.plannedFor}}"
+              task-state="[[t.state]]"
               ok-to-start-task="{{t.isOkToStart}}"
               on-change="gotTaskTimingChange"
             >
@@ -294,6 +296,10 @@ Example:
     is: 'list-tasks',
     
     properties: {
+      state: {
+        type: Array,
+        value: ["init","inprog"]
+      },
       tasksLoaded: {
         type: Boolean,
         value: false
@@ -335,10 +341,11 @@ Example:
     resetTasks: function(){
       this.set("tasks",[]);
       this.set("tasksLoaded",false);
+      this.$.taskRptr.render();
     },
 
     loadTasks: function(){
-      var defaultListParams = {state_code:["init","inprog"]};
+      var defaultListParams = {state: this.state};
 
       if (this.subjectId){
         defaultListParams.subjectId = this.subjectId.toString();
@@ -382,6 +389,19 @@ Example:
       if ( data.msg ) app.$.toast.text += data.msg;
       app.$.toast.show();
       if ( data.passBack ) data.passBack.revert();
+    },
+    
+    compDur: function(m){
+      if ( m.done ){
+        var txt = moment( m.init.ts ).from( m.done.ts , true);
+        return "Duration:" + txt;
+      }
+
+      if ( m.inprog ){
+        var txt = moment( m.inprog.ts ).fromNow(true);
+        return ", In progress for " + txt;
+      }
+      return "";
     }
 
   });

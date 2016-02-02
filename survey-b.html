@@ -229,9 +229,17 @@ Example:
     ></qa-ajax-poster>
 
     <qa-ajax-poster
+      id="ajax_task_done"       
+      on-response="submitResponse"
+      on-error="submitError"
+      loading="{{is_loading}}"
+      endpoint="api/task:done"
+    ></qa-ajax-poster>
+
+    <qa-ajax-poster
       id="ajax_submit_entity"       
-      on-response="submitEntityResponse"
-      on-error="submitEntityError"
+      on-response="submitResponse"
+      on-error="submitError"
       loading="{{is_loading}}"
     ></qa-ajax-poster>
 
@@ -625,18 +633,21 @@ Example:
       if ( this.surveyData.type=="entity" )
         return this.submitEntity();
 
-      return this.markTaskDone();
+      return this.taskDone();
     },
 
-    markTaskDone: function(){
+    taskDone: function(){
       if ( this.is_submitting ) return console.log("Still in progress");
       this.ok_to_submit = false;
 
       var payload = { 
-        subjectId: this.subjectId, 
         on_done: this.surveyData.on.done.concat( this.surveyData.tasksToAdd ),
-        parentTaskId: this.taskId
+        taskId: this.taskId,
+        lastTs: this.task.ts
       }
+      console.log(payload);
+      this.$.ajax_task_done.send(payload);
+      return
     },
 
     submitEntity: function(){
@@ -666,7 +677,7 @@ Example:
 
     },
 
-    submitEntityResponse: function(e,data){
+    submitResponse: function(e,data){
       this.set("submissionError", null);
       this.set("submissionResult", data);
       this.set("state", 2);
@@ -675,11 +686,11 @@ Example:
       this.$.nextTasks.applyTasks(this.submissionResult.tasks_created);
     },
 
-    submitEntityError: function(e,data){
+    submitError: function(e,data){
       console.log(e);
       var self = this;
 
-      app.$.toast.text = "Task NOT UPDATED !!!! - "; 
+      app.$.toast.text = "FAILED TO SUBMIT !!!! - "; 
       if ( data.msg ) app.$.toast.text += data.msg;
       app.$.toast.show();
 
