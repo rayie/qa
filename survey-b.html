@@ -463,17 +463,28 @@ Example:
     },
 
     _populateAnswers: function(){
+      this.isPopulating=true;
+      var addons=0;
       for(var k in this.dataDoc.qref){
-        switch( this.dataDoc[k] ){
-          case null:
-            break;
-          case undefined:
-            break;
-          default:
-            this.questions[ k.substr(0) ].populateAnswer( this.dataDoc[k] );
-            break;
+        console.log(k.substr(1));
+        if ( k.search(/-/)!==-1 ){
+          //an multi instance question/form entry
+          this.questions[ k.substr(1).split("-")[0] ].$.qpartFooter.addInstance();
+          addons++;
         }
       }
+
+      if (addons){
+        Polymer.dom.flush();
+      }
+      
+
+      for(var k in this.dataDoc.qref){
+        console.log(k.substr(1));
+        this.questions[ k.substr(1) ].populateAnswer( this.dataDoc[k] );
+      }
+
+      this.isPopulating=false;
     },
   
     _build_answer_sheet: function(q){
@@ -551,7 +562,11 @@ Example:
       this.ok_to_submit = ( answers_required === ( qstate_counts[2] + qstate_counts[3] ) );
       console.log("end of summarize, answers:",this.answers);
 
-      if ( this.task && ( qstate_counts[2] || qstate_counts[3] || this.task.dataId) )
+      if ( 
+        this.task && 
+        ( qstate_counts[2] || qstate_counts[3] || this.task.dataId) &&
+        !this.isPopulating
+      )
         return this.saveData();
       
     },

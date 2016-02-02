@@ -67,6 +67,22 @@
     qstateChangedInFooter: function(e){
       console.log("qstateChangedInFooter", e.detail.value);
       this.set("qstate", e.detail.value);
+    },
+    populateAnswer: function(a){
+      if ( a===undefined ){
+        //leave as is
+        return;
+      }
+
+      if ( a===null ){
+        //mark as NA
+        this.set("qstate",3);
+        this.$.qpartFooter.querySelector("#mark_btn").set("active",true);
+        return;
+      }
+
+      this.set("qstate",2);
+      this.set("answer",a);
     }
 
   };
@@ -85,22 +101,8 @@
         value:{ "reveal":[], "hide": [] }
       }
 
-    },
-
-    populateAnswer: function(a){
-      if ( a===undefined ){
-        //leave as is
-        return;
-      }
-
-      if ( a===null ){
-        //mark as NA
-        return;
-      }
-
-      this.answer = a;
-      this.gotInputChange();
     }
+
 
   };
 
@@ -121,8 +123,6 @@
         notify: true,
       }
     }
-
-   
 
   };
 </script>

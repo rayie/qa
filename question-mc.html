@@ -125,6 +125,7 @@ Example:
         </div>
 
         <question-part-footer
+          id="qpartFooter"
           warn_msg="[[warn_msg]]"
           qstate="[[qstate]]"
           on-qstate-changed="qstateChangedInFooter"
@@ -200,6 +201,8 @@ Example:
 
       if ( a===null ){
         //mark as NA
+        this.set("qstate",3);
+        this.$.qpartFooter.querySelector("#mark_btn").set("active",true);
         return;
       }
       //a in array containing the positional index of ACTIVE answers

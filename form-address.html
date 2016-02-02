@@ -283,6 +283,7 @@ Example:
         </div>
 
         <question-part-footer
+          id="qpartFooter"
           warn_msg="[[warn_msg]]"
           qstate="[[qstate]]"
           on-qstate-changed="qstateChangedInFooter"
@@ -342,7 +343,6 @@ Example:
       console.log(this.answer);
       return;
     },
-
 
     gotInputChange: function(e){
       console.log(e.target.value); 
