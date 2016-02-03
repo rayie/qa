@@ -11,26 +11,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-card/paper-card.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
-<link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-material/paper-material.html">
-<link rel="import" href="../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="question-part-hdr.html">
 <link rel="import" href="question-part-footer.html">
 
 <!--
+An contact form with Google Maps autocomplete lookup.
+Forked from https://github.com/kunalkundaje/contact-autocomplete
 
 Example:
 
-    <form-person></form-person>
+    <contact-form></contact-form>
 
 @demo
 -->
-<dom-module id="form-person">
+<dom-module id="form-contact">
 
   <style is="custom-style">
 
@@ -67,10 +70,10 @@ Example:
       @apply(--layout-flex);
     }
 
-
-    .flex1child {
-      @apply(--layout-flex-1);
+    .flex12child {
+      @apply(--layout-flex-12);
     }
+
 
     .flex2child {
       @apply(--layout-flex-2);
@@ -80,20 +83,8 @@ Example:
       @apply(--layout-flex-3);
     }
 
-    .flex4child {
-      @apply(--layout-flex-4);
-    }
-
     .flex6child {
       @apply(--layout-flex-6);
-    }
-
-    .flex8child {
-      @apply(--layout-flex-8);
-    }
-
-    .flex12child {
-      @apply(--layout-flex-12);
     }
 
     .form-num {
@@ -118,7 +109,8 @@ Example:
     }
     paper-input ,
     paper-dropdown-menu,
-    paper-textarea {
+    paper-textarea,
+    contact-autocomplete {
       margin: 6px;
     }
     .card-actions {
@@ -140,10 +132,12 @@ Example:
   <template>
     <div class="container">
       <paper-card  elevation=1>
+
         <question-part-hdr
           txt="[[txt]]"
           sub="[[sub]]"
           display_num="[[display_num]]"
+          seq_num="[[seq_num]]"
           is_conditional="[[is_conditional]]"
         />
         </question-part-hdr>
@@ -151,138 +145,79 @@ Example:
         <div class="card-content">
 
           <div class='form-body'>     
-            <div class='flex4child'>
-              <paper-input
-                is="iron-input"
-                on-change="answerChanged"
-                input
-                required
-                validator="nonEmptyString"
-                type="text"
-                label="First Name"
-                name="FirstName",
-                error-message="Required"
-                always-float-label
-                value="{{answer.fn}}"
-                maxlength="[[maxlength]]"
-              ></paper-input>
+            <div class='flex3child'>
+              <paper-dropdown-menu label="Contact Method" 
+              >
+              <paper-listbox 
+                class="dropdown-content" 
+                selected="{{answer.method}}"
+                attr-for-selected="name"
+              >
+                  <paper-item name="Phone">Phone</paper-item>
+                  <paper-item name="Email">Email</paper-item>
+                  <paper-item name="Fax">Fax</paper-item>
+                </paper-listbox>
+              </paper-dropdown-menu>
             </div>
-            <div class='flex4child'>
+            <div class='flex6child'>
               <paper-input
                 is="iron-input"
-                on-change="answerChanged"
                 input
                 type="text"
-                label="Middle Name",
-                name="MiddleName",
+                label="[[answer.method]]"
                 always-float-label
-                value="{{answer.mn}}"
+                value="{{answer.txt}}"
                 maxlength="[[maxlength]]"
-              ></paper-input>
+                on-change="gotInputChange"
+              >
+              </paper-input>
             </div>
-            <div class='flex4child'>
-              <paper-input
-                is="iron-input"
-                on-change="answerChanged"
-                input
-                required
-                validator="nonEmptyString"
-                type="text"
-                label="Last Name",
-                name="LastName",
-                error-message="Required"
-                always-float-label
-                value="{{answer.ln}}"
-                maxlength="[[maxlength]]"
-              ></paper-input>
+            <div class='flex3child'>
+              <paper-dropdown-menu 
+                label="Text Messaging Allowed?"
+                hidden="[[hideSmsControl]]"
+              >
+                <paper-listbox class="dropdown-content"
+                  selected="{{answer.smsAllowed}}"
+                >
+                  <paper-item>N</paper-item>
+                  <paper-item>Y</paper-item>
+                </paper-listbox>
+              </paper-dropdown-menu>
             </div>
           </div>
 
           <div class='form-body'>     
-
-
             <div class='flex3child'>
-              <paper-dropdown-menu label="Sex" 
+              <paper-textarea
+                is="iron-input"
+                input
+                textarea
+                char-counter
+                type="text"
+                label="Contact Note - optional, (ie. Best time to call, etc. )",
                 always-float-label
+                value="{{answer.note}}"
+                maxlength="[[maxlength]]"
+                on-change="gotInputChange"
               >
-                <paper-listbox 
-                  class="dropdown-content" 
-                  selected="{{answer.sex}}"
-                  attr-for-selected="name"
-                >
-                  <paper-item name="M">Male</paper-item>
-                  <paper-item name="F">Female</paper-item>
-                </paper-listbox>
-              </paper-dropdown-menu>
-
-              <paper-input
-                is="iron-input"
-                hidden
-                input
-                required
-                on-change="answerChanged"
-                type="text"
-                name="Sex"
-                value="{{answer.sex}}"
-              ></paper-input>
-            </div>
-            <div class='flex3child'>
-              <paper-input
-                is="iron-input"
-                on-change="answerChanged"
-                input
-                required
-                validator="nonEmptyString"
-                type="text"
-                label="Date of Birth (m-d-y)"
-                name="DOB"
-                always-float-label
-                error-message="Required"
-                value="{{answer.dob}}"
-                maxlength="[[maxlength]]"
-              ></paper-input>
-            </div>
-            <div class='flex3child'>
-              <paper-input
-                is="iron-input"
-                on-change="answerChanged"
-                input
-                type="text"
-                label="Prefix - optional (ie Mr., Ms., Dr.)",
-                name="Prefix"
-                always-float-label
-                value="{{answer.prf}}"
-                maxlength="[[maxlength]]"
-              ></paper-input>
-            </div>
-            <div class='flex3child'>
-              <paper-input
-                is="iron-input"
-                on-change="answerChanged"
-                input
-                type="text"
-                label="Suffix - optional (ie Jr., Sr.)",
-                name="Suffix"
-                always-float-label
-                value="{{answer.suf}}"
-                maxlength="[[maxlength]]"
-              ></paper-input>
+              </paper-input>
             </div>
           </div>
-
         </div>
-
 
         <div class='card-footer' hidden="[[!showSubmitBtn]]">     
           <paper-button raised on-click="submit">Submit</paper>
         </div>
 
         <question-part-footer
-          hide-na="[[hideNa]]"
-          hide-notes="[[hideNotes]]"
+          id="qpartFooter"
           warn_msg="[[warn_msg]]"
           qstate="[[qstate]]"
+          sn="{{sn}}"
           on-qstate-changed="qstateChangedInFooter"
+          additional-instances-allowed="[[additionalInstancesAllowed]]"
+          additional-instances-added="{{additionalInstancesAdded}}"
         >
         </question-part-footer>
 
@@ -297,7 +232,7 @@ Example:
 
   Polymer({
 
-    is: 'form-person',
+    is: 'form-contact',
 
     behaviors: [ QuestionBehaviors.Basic, QuestionBehaviors.FormsOnly ],
 
@@ -309,26 +244,23 @@ Example:
           return 256;
         }
       },
-
-      hideNa: {
-        type: Boolean,
-        value: true
-      },
-
-      hideNotes: {
-        type: Boolean,
-        value: true
-      },
-
       answer: { 
-        value: {
-          fn:"",mn:"",ln:"",sex:"",dob:"",suf:"",pf:""
+        type: Object,
+        notify: true,
+        value: { 
+          smsAllowed: 1,
+          method: "Phone"
         }
       },
+      hideSmsControl:{
+        type: Boolean,
+        value: false
+      },
+      minmax_records: { value: [1,1] },
 
       showSubmitBtn: {
         type: Boolean,
-        value: false 
+        value: false
       },
 
       submitBtnLbl: {
@@ -336,23 +268,26 @@ Example:
         value: "Submit"
       }
     },
-    answerChanged: function(e){
-      e.target.validate();
-      var n_invalid=0;
-      Polymer.dom(this.root).querySelectorAll("paper-input").forEach(function(input){
-        //console.log(input.name,input.required,input.invalid);
-        if ( input.invalid || ( input.required && _.trim(input.value)==="" ) ){
-          n_invalid++;
-        }
-      });
-      if ( n_invalid ) this.qstate=1;
-      else this.qstate=2;
+
+    observers: [ "gotContactMethodChange(answer.method)" ],
+
+    gotContactMethodChange: function(newMethod){
+      this.set("hideSmsControl",(newMethod !== "Phone"));
+      console.log(newMethod,this.hideSmsControl);
+      return;
     },
-    nonEmptyString: function(val){
-      if ( val.length ) return true;
-      return false;
+
+    gotInputChange: function(e){
+      if (this.answer.txt)
+        this.set("qstate",2);
+      else
+        this.set("qstate",0);
+
+      return;
     },
-    submit: function(e){
+
+    submit: function(){
+      console.log(this.answer);
       return;
     }
   });

@@ -286,6 +286,7 @@ Example:
           id="qpartFooter"
           warn_msg="[[warn_msg]]"
           qstate="[[qstate]]"
+          sn="{{sn}}"
           on-qstate-changed="qstateChangedInFooter"
           additional-instances-allowed="[[additionalInstancesAllowed]]"
           additional-instances-added="{{additionalInstancesAdded}}"
@@ -348,10 +349,13 @@ Example:
     },
 
     populateNext: function(a){
-      for(var i = 0; i < a.applies_to.length; i++){
-        Polymer.dom(this.root).querySelector("#ap"+a.applies_to[i]).checked=true;;
-        Polymer.dom.flush();
-      };
+      if ( a.length ){
+        for(var i = 0; i < a.applies_to.length; i++){
+          Polymer.dom(this.root).querySelector("#ap"+a.applies_to[i]).checked=true;;
+          Polymer.dom.flush();
+        };
+      }
+
       this.set("qstate",2);
       this.set("answer",a);
       return;

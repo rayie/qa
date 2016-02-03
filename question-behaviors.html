@@ -59,16 +59,15 @@
     },
 
     qstateChanged: function(e){
-      console.log("qstateChanged", e);
+      //console.log("qstateChanged", e);
     },
 
     qstateChangedInFooter: function(e){
-      console.log("qstateChangedInFooter", e.detail.value);
+      //console.log("qstateChangedInFooter", e.detail.value);
       this.set("qstate", e.detail.value);
     },
 
     populateNote: function(note){
-      console.log("populating note", note);
       this.set("sn",note);
     },
 

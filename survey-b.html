@@ -28,6 +28,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="question-ft.html">
 <link rel="import" href="question-ne.html">
 <link rel="import" href="form-address.html">
+<link rel="import" href="form-contact.html">
 <link rel="import" href="form-person.html">
 <link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="list-tasks.html">
@@ -338,7 +339,7 @@ Example:
 
       this._reset();
       this.$.ajax_load_task.url=window.APIBASEURL+"api/task:get?taskId="+this.taskId;
-      console.log("["+this.$.ajax_load_task.url+"]");
+      //console.log("["+this.$.ajax_load_task.url+"]");
       this.$.ajax_load_task.generateRequest();
       return;
     },
@@ -371,7 +372,7 @@ Example:
 
     _loadSurvey: function(surveyUrl){
       this.$.ajax_load_survey.url= surveyUrl;
-      console.log("surveyUrl",this.$.ajax_load_survey.url);
+      //console.log("surveyUrl",this.$.ajax_load_survey.url);
       this.$.ajax_load_survey.generateRequest();
     },
 
@@ -418,7 +419,7 @@ Example:
 
 
     loadSurveyResponded: function(event){
-      console.log(event.detail.response);
+      //console.log(event.detail.response);
       var surveyData = event.detail.response;
       surveyData.subtitle = "For Subject: " + this.subjectId;
       this.$.ajax_submit_entity.setEndpoint(surveyData.submitUrl);
