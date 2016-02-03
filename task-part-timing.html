@@ -174,8 +174,8 @@ Example:
     },
 
     openDatePicker: function(){
-      if ( this.taskState==="done" ) {
-        app.$.toast.text="You can not (re)schedule completed tasks";
+      if ( this.taskState!=="init" ) {
+        app.$.toast.text="You can not schedule tasks aready in progress or completed";
         app.$.toast.show();
         return;
       }

@@ -257,13 +257,13 @@ Example:
 
           <div class='form-body'>     
             <div class='flexchild'>
-              <paper-checkbox value="PR" checked on-change="gotCheckBoxChanged">
+              <paper-checkbox id="apPR" value="PR" on-change="gotCheckBoxChanged">
                 Primary Residence
               </paper-checkbox>
-              <paper-checkbox value="MA" checked on-change="gotCheckBoxChanged">
+              <paper-checkbox id="apMA" value="MA" on-change="gotCheckBoxChanged">
                 Mailing Address
               </paper-checkbox>
-              <paper-checkbox value="BIZ" checked on-change="gotCheckBoxChanged">
+              <paper-checkbox id="apBL" value="BL" on-change="gotCheckBoxChanged">
                 Billing Address
               </paper-checkbox>
             </div>
@@ -319,7 +319,7 @@ Example:
       answer: { 
         type: Object,
         notify: true,
-        value: {} 
+        value: { applies_to: ["PR","MA","BL"] } 
       },
 
       minmax_records: { value: [1,1] },
@@ -337,27 +337,34 @@ Example:
 
     gotAddressFromGoogle: function(e){
       //for(var addr_part in this.answer) e.detail.value[addr_part] = this.answer[addr_part];
-      
-      this.answer = e.detail.value; 
-      this.qstate = 2;
-      console.log(this.answer);
+      this.set("answer", e.detail.value);
+      this.set("qstate", 2);
       return;
     },
 
     gotInputChange: function(e){
-      console.log(e.target.value); 
-      console.log(this.answer);
+      this.fire("qstate-changed");
       return;
     },
 
-    gotCheckBoxChanged: function(e){
+    populateNext: function(a){
+      for(var i = 0; i < a.applies_to.length; i++){
+        Polymer.dom(this.root).querySelector("#ap"+a.applies_to[i]).checked=true;;
+        Polymer.dom.flush();
+      };
+      this.set("qstate",2);
+      this.set("answer",a);
+      return;
+    },
+
+    gotCheckBoxChanged: function(e,data){
       var applies_to=[];
       Polymer.dom(this.root).querySelectorAll("paper-checkbox").forEach(function(el){
-        console.log( el.checked );
         if ( el.checked ) applies_to.push(el.value);
       });
-      this.answer.applies_to=applies_to;
-      console.log(this.answer);
+      
+      this.set("answer.applies_to",applies_to);
+      this.fire("qstate-changed");
     },
 
     submit: function(){

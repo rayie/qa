@@ -105,7 +105,7 @@ Example:
         class="note-area"
         label="Surveyor notes:"
         maxlength="250"
-        bind-value="{{surveyor_notes}}"
+        value="{{sn}}"
         input
       >
       </paper-input>
@@ -158,6 +158,13 @@ Example:
 
       qstate: {
         type: Number,
+        notify: true
+      },
+
+      /* surveyor notes */
+      sn: {
+        type: String,
+        value: "",
         notify: true
       },
 

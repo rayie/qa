@@ -18,7 +18,7 @@ Example:
       <span>[[ this.payload.csrfToken ]]</span>
       <iron-ajax
         id="main"
-        method="POST"
+        method="[[verb]]"
         handle-as="json",
         content-type="application/json"
         with-credentials
@@ -45,6 +45,10 @@ Example:
     is: 'qa-ajax-poster',
     
     properties: {
+      verb: {
+        type: String,
+        value: "POST"
+      },
       /*
        * the part of the API url after window.APIBASEURL
        * window.APIBASEURL will be prefixed to this value
@@ -75,6 +79,7 @@ Example:
     },
 
     send: function(payload,passBack){
+      this.$.locstore.reload();
       console.log("sending to url ", this.$.main.url);
       this.set("payload",payload);
       this.passBack = passBack;

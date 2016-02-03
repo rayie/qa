@@ -465,7 +465,6 @@ Example:
         return;
       });
 
-      //return this.summarize();
       if ( this.dataDoc ) this._populateAnswers();
 
     },
@@ -474,7 +473,6 @@ Example:
       this.isPopulating=true;
       var addons=0;
       for(var k in this.dataDoc.qref){
-        console.log(k.substr(1));
         if ( k.search(/-/)!==-1 ){
           //an multi instance question/form entry
           this.questions[ k.substr(1).split("-")[0] ].$.qpartFooter.addInstance();
@@ -485,11 +483,12 @@ Example:
       if (addons){
         Polymer.dom.flush();
       }
-      
 
       for(var k in this.dataDoc.qref){
-        console.log(k.substr(1));
         this.questions[ k.substr(1) ].populateAnswer( this.dataDoc[k] );
+
+        if ( this.dataDoc.noteRef[k] )
+          this.questions[ k.substr(1) ].populateNote( this.dataDoc.noteRef[k] );
       }
 
       this.isPopulating=false;
@@ -520,16 +519,25 @@ Example:
           //a = a.join(",");
           break;
       }
+
+      q.sn=_.trim(q.sn);
       if ( a===undefined ) return {
         qnum: q.display_num,
+        sn: q.sn,
         q: q.txt
       };
 
-      return {
+      var r = {
         qnum: q.display_num,
+        sn: q.sn,
         q: q.txt,
         a: a
       };
+
+      if ( q.sn ){
+        r.sn = q.sn;
+      }
+      return r;
     },
 
     previewAnswers: function(){
@@ -567,8 +575,8 @@ Example:
       ].join(" ");
 
       this.answers = answers;
+
       this.ok_to_submit = ( answers_required === ( qstate_counts[2] + qstate_counts[3] ) );
-      console.log("end of summarize, answers:",this.answers);
 
       if ( 
         this.task && 
