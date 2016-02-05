@@ -168,13 +168,27 @@ Example:
         </div>
 
         <div class='card-footer' >
-          <h3>Tasks:</h3>
+          <h3>Tasks Not Yet Started</h3>
           <list-tasks
-            id="patientTasks"
+            id="openTasks"
             subject-id="[[subjectId]]"
+            state='["init"]'
+          ></list-tasks>
+
+          <h3>Tasks In Progress</h3>
+          <list-tasks
+            id="inprogTasks"
+            subject-id="[[subjectId]]"
+            state='["inprog"]'
+          ></list-tasks>
+
+          <h3>Completed Tasks:</h3>
+          <list-tasks
+            id="completedTasks"
+            subject-id="[[subjectId]]"
+            state='["done"]'
           ></list-tasks>
         </div>
-
       </paper-card>
 
       
@@ -266,7 +280,9 @@ Example:
 
       this.set("person",person);
       this.set("recentdata",rd);
-      this.$.patientTasks.applyTasks(this.person.tasks);
+      this.$.openTasks.loadTasks();
+      this.$.inprogTasks.loadTasks();
+      this.$.completedTasks.loadTasks();
     },
 
     loadPersonError: function(e){

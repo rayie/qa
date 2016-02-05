@@ -321,16 +321,21 @@ Example:
     _reset: function(){
       console.log("Reset");
       //this.set("taskId","");
-      this.set("answers",[]);
-      this.set("surveyData",{});
-      this.set("dataDoc", false);
-      this.set("task",null);
-      this.subjectId = "";
-      this.summaryTxt = "";
-      this.state = 0;
-      this.submissionError = null;
-      this.submissionResult = null;
-      this.ok_to_submit = false;
+      var ref = { 
+        answers: [],
+        surveyData: {},
+        dataDoc: null,
+        task: null,
+        subjectId: "",
+        summaryTxt: "",
+        state:0,
+        submissionError : null,
+        submissionResult : null,
+        ok_to_submit : false
+      };
+      for(var k in ref){
+        this.set(k,ref[k]);
+      }
 
       Polymer.dom(this.$.qlist).children.forEach(function(el,idx){
         el.remove(); //removeChild();
