@@ -150,8 +150,11 @@ Example:
         </div>
       </div>
 
-      <div id="qlist">
+      <div id="qlistWrap">
         <!--the container for our question components, dynamically inserted-->
+        <div id="qlist">
+          <!--the container for our question components, dynamically inserted-->
+        </div>
       </div>
 
       <paper-dialog id="answerSheetDialog">
@@ -210,6 +213,7 @@ Example:
       id="ajax_load_survey"       
       handle-as="json",
       on-response="loadSurveyResponded"
+      on-error="loadSurveyError"
       loading="{{is_loading}}"
     ></iron-ajax>
 
@@ -269,8 +273,7 @@ Example:
 
       directSurveyUrl: {
         type: String,
-        value: function(){ return ""; },
-        observer: "directToSurvey"
+        value: function(){ return ""; }
       },
 
       taskId: {
@@ -316,18 +319,23 @@ Example:
     },
 
     _reset: function(){
-      this.surveyData = {};
-      this.dataDoc = false;
-      this.task = null;
+      console.log("Reset");
+      //this.set("taskId","");
+      this.set("answers",[]);
+      this.set("surveyData",{});
+      this.set("dataDoc", false);
+      this.set("task",null);
       this.subjectId = "";
       this.summaryTxt = "";
       this.state = 0;
       this.submissionError = null;
       this.submissionResult = null;
       this.ok_to_submit = false;
+
       Polymer.dom(this.$.qlist).children.forEach(function(el,idx){
         el.remove(); //removeChild();
       });
+      Polymer.dom.flush();
     },
 
     /*
@@ -361,10 +369,9 @@ Example:
     },
 
     directToSurvey: function(){
-      //console.log("in directToSurvey",this.directSurveyUrl);
+      console.log("in directToSurvey",this.directSurveyUrl);
       if ( !this.directSurveyUrl) return;
 
-      this.taskId = "";
       this._reset();
       this.subjectId = "STUB";
       this._loadSurvey(window.APIBASEURL +"flows/"+ this.directSurveyUrl + ".json");
@@ -417,9 +424,19 @@ Example:
 
     },
 
+    loadSurveyError: function(e){
+      console.log(e);
+      this.set("subjectId",null);
+      return;
+    },
 
     loadSurveyResponded: function(event){
       //console.log(event.detail.response);
+      if (!event.detail.response){
+        this.set("subjectId",null);
+        return;
+      }
+
       var surveyData = event.detail.response;
       surveyData.subtitle = "For Subject: " + this.subjectId;
       this.$.ajax_submit_entity.setEndpoint(surveyData.submitUrl);
@@ -438,6 +455,7 @@ Example:
           qn++;
           q.seq_num=qn*1;
           var new_frm = self.create("form-"+q.form.toLowerCase(),q);
+          console.log("created new frm");
           self.listen(new_frm,"qstate-changed","qstateChanged");
           self.listen(new_frm,"additional-instances-added-changed","addedInstance");
           //self.listen(new_frm,"clone-changed","cloneFired");
@@ -575,7 +593,7 @@ Example:
         qstate_counts[3]
       ].join(" ");
 
-      this.answers = answers;
+      this.set("answers",answers);
 
       this.ok_to_submit = ( answers_required === ( qstate_counts[2] + qstate_counts[3] ) );
 
@@ -650,7 +668,7 @@ Example:
       this.ok_to_submit = false;
 
       var payload = { 
-        on_done: this.surveyData.on.done.concat( this.surveyData.tasksToAdd ),
+        uponSubmit: this.surveyData.upon.submit.concat( this.surveyData.tasksToAdd ),
         taskId: this.taskId,
         lastTs: this.task.ts
       }
@@ -666,7 +684,7 @@ Example:
 
       var payload = { 
         subjectId: this.subjectId, 
-        on_done: this.surveyData.on.done.concat( this.surveyData.tasksToAdd ),
+        uponSubmit: this.surveyData.upon.submit.concat( this.surveyData.tasksToAdd ),
         parentTaskId: this.taskId
       }
 

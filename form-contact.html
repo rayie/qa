@@ -148,11 +148,11 @@ Example:
             <div class='flex3child'>
               <paper-dropdown-menu label="Contact Method" 
               >
-              <paper-listbox 
-                class="dropdown-content" 
-                selected="{{answer.method}}"
-                attr-for-selected="name"
-              >
+                <paper-listbox 
+                  class="dropdown-content" 
+                  selected="{{answer.method}}"
+                  attr-for-selected="name"
+                >
                   <paper-item name="Phone">Phone</paper-item>
                   <paper-item name="Email">Email</paper-item>
                   <paper-item name="Fax">Fax</paper-item>
@@ -166,7 +166,7 @@ Example:
                 type="text"
                 label="[[answer.method]]"
                 always-float-label
-                value="{{answer.txt}}"
+                value="{{answer.contact_value}}"
                 maxlength="[[maxlength]]"
                 on-change="gotInputChange"
               >
@@ -184,6 +184,48 @@ Example:
                   <paper-item>Y</paper-item>
                 </paper-listbox>
               </paper-dropdown-menu>
+            </div>
+          </div>
+
+          <div class='form-body'>     
+            <div class='flex3child'>
+              <paper-dropdown-menu 
+                always-float-label
+                label="Relationship to Patient"
+              >
+                <paper-listbox 
+                  class="dropdown-content" 
+                  selected="{{answer.contact_rel}}"
+                  attr-for-selected="name"
+                >
+                  <paper-item name="Self">Self</paper-item>
+                  <paper-item name="Spouse">Spouse</paper-item>
+                  <paper-item name="Mother">Mother</paper-item>
+                  <paper-item name="Father">Father</paper-item>
+                  <paper-item name="Brother">Brother</paper-item>
+                  <paper-item name="Sister">Sister</paper-item>
+                  <paper-item name="Son">Son</paper-item>
+                  <paper-item name="Daughter">Daughter</paper-item>
+                  <paper-item name="Friend">Friend</paper-item>
+                  <paper-item name="Other">Other</paper-item>
+                </paper-listbox>
+              </paper-dropdown-menu>
+            </div>
+            <div class='flex6child'>
+              <paper-input
+                is="iron-input"
+                input
+                type="text"
+                label="Contact Name"
+                hidden="[[hideContactName]]"
+                always-float-label
+                value="{{answer.contact_name}}"
+                maxlength="[[maxlength]]"
+                on-change="gotInputChange"
+              >
+              </paper-input>
+            </div>
+            <div class='flex3child'>
             </div>
           </div>
 
@@ -247,15 +289,27 @@ Example:
       answer: { 
         type: Object,
         notify: true,
-        value: { 
-          smsAllowed: 1,
-          method: "Phone"
+        value: function(){ 
+          return {
+            smsAllowed: 1,
+            method: "Phone",
+            contact_rel: "Self",
+            contact_value: "",
+            contact_name: ""
+          }
         }
       },
+
       hideSmsControl:{
         type: Boolean,
         value: false
       },
+
+      hideContactName:{
+        type: Boolean,
+        value:true 
+      },
+
       minmax_records: { value: [1,1] },
 
       showSubmitBtn: {
@@ -269,16 +323,32 @@ Example:
       }
     },
 
-    observers: [ "gotContactMethodChange(answer.method)" ],
+    observers: [ 
+      "gotContactMethodChange(answer.method)" ,
+      "gotContactRelChange(answer.contact_rel)" 
+    ],
 
     gotContactMethodChange: function(newMethod){
       this.set("hideSmsControl",(newMethod !== "Phone"));
       console.log(newMethod,this.hideSmsControl);
+      this._checkState();
+      return;
+    },
+
+    gotContactRelChange: function(newRel){
+      this.set("hideContactName",( newRel === "Self" ) );
+      console.log( newRel, ( newRel === "Self" ) );
+      this._checkState();
       return;
     },
 
     gotInputChange: function(e){
-      if (this.answer.txt)
+      console.log("input changed",this.answer.contact_value ,this.answer.contact_name ,this.answer.contact_rel==="Self"  );
+      this._checkState();
+    },
+
+    _checkState: function(){
+      if (this.answer.contact_value && ( this.answer.contact_name || this.answer.contact_rel==="Self"  ) )
         this.set("qstate",2);
       else
         this.set("qstate",0);

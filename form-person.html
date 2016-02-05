@@ -321,8 +321,11 @@ Example:
       },
 
       answer: { 
-        value: {
-          fn:"",mn:"",ln:"",sex:"",dob:"",suf:"",pf:""
+        value: function(){
+          console.log("answer default val function called");
+          return {
+            fn:"",mn:"",ln:"",sex:"",dob:"",suf:"",pf:""
+          }
         }
       },
 
@@ -336,6 +339,11 @@ Example:
         value: "Submit"
       }
     },
+
+    attached: function(e){
+      console.log("form-person attached", this.answer);
+    },
+
     answerChanged: function(e){
       e.target.validate();
       var n_invalid=0;
@@ -345,9 +353,10 @@ Example:
           n_invalid++;
         }
       });
-      if ( n_invalid ) this.qstate=1;
-      else this.qstate=2;
+      if ( n_invalid ) this.set("qstate",1);
+      else this.set("qstate",2);
     },
+
     nonEmptyString: function(val){
       if ( val.length ) return true;
       return false;

@@ -320,7 +320,11 @@ Example:
       answer: { 
         type: Object,
         notify: true,
-        value: { applies_to: ["PR","MA","BL"] } 
+        value: function(){ 
+          return {
+            applies_to: ["PR","MA","BL"] 
+          }
+        }
       },
 
       minmax_records: { value: [1,1] },
