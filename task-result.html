@@ -1,0 +1,279 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icons/av-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-item/paper-icon-item.html">
+<link rel="import" href="../paper-item/paper-item-body.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-styles/typography.html">
+<link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../moment-display/moment-import.html">
+<link rel="import" href="../moment-display/moment-display.html">
+<link rel="import" href="qa-btn.html">
+<link rel="import" href="qa-ajax-poster.html">
+<link rel="import" href="task-part-timing.html">
+
+<!--
+
+Example:
+
+    <task-result></task-result>
+
+@demo
+-->
+<dom-module id="task-result">
+
+  <style is="custom-style">
+
+    :host {
+      display: block;
+      box-sizing: border-box;
+    }
+   
+    :host > ::content .special {
+    }
+   
+    /* form hdr part */
+    .form-hdr ,
+    .form-body {
+      @apply(--layout-horizontal);
+      padding: 4px;
+    }
+
+    .form-body div {
+      margin: 4px;
+    }
+
+    .form-hdr div {
+      margin: 4px;
+    }
+
+    paper-checkbox {
+      display: inline-block;
+      margin: 6px 24px 6px 6px;
+      @apply(--paper-font-body2)
+    }
+
+    .flexchild {
+      @apply(--layout-flex);
+    }
+
+
+    .flex1child {
+      @apply(--layout-flex-1);
+    }
+
+    .flex2child {
+      @apply(--layout-flex-2);
+    }
+
+    .flex3child {
+      @apply(--layout-flex-3);
+    }
+
+    .flex4child {
+      @apply(--layout-flex-4);
+    }
+
+    .flex6child {
+      @apply(--layout-flex-6);
+    }
+
+    .flex8child {
+      @apply(--layout-flex-8);
+    }
+
+    .flex12child {
+      @apply(--layout-flex-12);
+    }
+
+    .paper-font-caption {
+      @apply(--paper-font-caption);
+    }
+    paper-card {
+      width: 100%;
+      margin-bottom: 12px;
+    }
+
+    a { 
+      text-decoration: none;
+    }
+    iron-icon {
+      --iron-icon-width: 16px;
+    }
+
+  </style>
+
+  <template>
+    <div class="container">
+      <h2>TASKREASULT</h2>
+      <table>
+        <template is="dom-repeat" items="[[qq]]" as="q" >
+          <tr>
+            <td>[[q.display_num]]</td>
+            <td>[[q.txt]]</td>
+            <td>[[q.ans]]</td>
+          </tr>
+        </template>
+      </div>
+
+      <qa-ajax-poster
+        id="ajax_load_task"       
+        on-response="loadTaskResponse"
+        on-error="loadTaskError"
+        loading="{{is_loading}}"
+        endpoint="api/task:get"
+      ></qa-ajax-poster>
+      <iron-ajax
+        id="ajax_load_survey"       
+        handle-as="json",
+        on-response="loadSurveyResponded"
+        on-error="loadSurveyError"
+        loading="{{is_loading}}"
+      ></iron-ajax>
+
+    </div>
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'task-result',
+    
+    properties: {
+      tasksLoaded: {
+        type: Boolean,
+        value: false
+      },
+      isReady: {
+        type: Boolean,
+        value: false
+      },
+      isAttached: {
+        type: Boolean,
+        value: false
+      }
+    },
+
+    attached: function(){
+      this.isAttached=true;
+    },
+    ready: function(){
+      this.isReady=true;
+    },
+
+    /*
+    * loading a survey based on the task selected
+    */
+    loadTask: function(){ 
+      //console.log("in loadTask",this.taskId);
+      if ( !this.taskId ) return;
+
+      var payload = {
+        taskId: this.taskId
+      }
+      this.$.ajax_load_task.send(payload);
+      return;
+    },
+
+    loadTaskError: function(e){ 
+      console.log(e);
+      return;
+    },
+
+    loadTaskResponse: function(e,data){ 
+      this.set("task",data.task);
+      var dataDoc = _.get(data,"dataDoc",false);
+      if (dataDoc){
+        this.set("dataDoc",dataDoc); 
+      }
+      this.set("subjectId",this.task.subjectId);
+      this._loadSurvey(window.APIBASEURL+this.task.url);
+      return;
+    },
+
+    _loadSurvey: function(surveyUrl){
+      this.$.ajax_load_survey.url= surveyUrl;
+      this.$.ajax_load_survey.generateRequest();
+    },
+
+    loadSurveyError: function(e){
+      console.log(e);
+      this.set("subjectId",null);
+      return;
+    },
+
+    loadSurveyResponded: function(event){
+      //console.log(event.detail.response);
+      if (!event.detail.response){
+        this.set("subjectId",null);
+        return;
+      }
+
+      var surveyData = event.detail.response;
+      this.set("surveyData",surveyData);
+      this.questions = {};
+      var self = this;
+      /*
+      *  This generates the Polymer questions or forms
+      */
+      var qn = 0;
+      var qq = [];
+      var self = this;
+      this.surveyData.qq.forEach(function(q,idx){
+        q.idx_in_survey = idx * 1;
+
+        if ( q.kind==="form"){
+          return;
+        }
+
+        q.display_num = "Q" + q._id;
+        var answer = _.get(self.dataDoc,q.display_num,undefined);
+        if (answer===undefined){
+          q.ans="Incomplete";
+        }
+        else if (answer===null){
+          q.ans="Marked N/A";
+        }
+        else {
+          switch(q.kind){
+            case "mc":
+              q.ans = [];
+              answer.forEach(function(a){
+                q.ans.push( q.opts[a].txt );
+              });
+              q.ans = q.ans.join(",");
+              console.log(q.ans);
+              break;
+            default:
+              q.ans = answer;
+              break;
+          }
+        }
+
+        qq.push(q);
+      })
+      this.set("qq",qq);
+    }
+
+  });
+
+</script>

@@ -1,0 +1,163 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-styles/typography.html">
+<link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="qa-ajax-poster.html">
+
+<!--
+An contact form with Google Maps autocomplete lookup.
+Forked from https://github.com/kunalkundaje/contact-autocomplete
+
+Example:
+
+    <menu-tasks></menu-tasks>
+
+@demo
+-->
+<dom-module id="menu-tasks">
+
+  <style is="custom-style">
+
+    :host {
+      display: block;
+      box-sizing: border-box;
+    }
+   
+    :host > ::content .special {
+    }
+   
+    /* form hdr part */
+    .form-hdr ,
+    .form-body {
+      @apply(--layout-horizontal);
+      padding: 4px;
+    }
+
+    .form-body div {
+      margin: 4px;
+    }
+
+    .form-hdr div {
+      margin: 4px;
+    }
+
+
+    .paper-font-caption {
+      @apply(--paper-font-caption);
+    }
+
+    .card-footer {
+      margin: 12px 6px 12px 6px;
+      padding-top: 16px;
+      padding-left: 16px;
+      border-top: 1px solid lightgrey;
+    }
+    paper-button {
+      @apply(--paper-font-button);
+    }
+
+  </style>
+
+  <template>
+    <div id="container" subject-id="[[!subjectId]]">
+      <paper-dropdown-menu label="Create Task" hidden="[[isCreatingTask]]"
+      >
+        <paper-listbox 
+          class="dropdown-content" 
+          selected="{{selectedTaskType}}"
+        >
+          <template id="rptr" is="dom-repeat" items="[[taskTypes]]" as="t">
+            <paper-item >[[t.name]]</paper-item>
+          </template>
+        </paper-listbox>
+      </paper-dropdown-menu>
+      <span hidden="[[!isCreatingTask]]">...creating task</span>
+
+      <qa-ajax-poster
+        id="ajax_init_task"       
+        on-response="taskInitResponse"
+        on-error="taskInitError"
+        loading="{{is_loading}}"
+        endpoint="api/task:init"
+      ></qa-ajax-poster>
+    </div>
+  </template>
+
+</dom-module>
+
+<script>
+
+
+  Polymer({
+
+    is: 'menu-tasks',
+
+    properties: {
+      isCreatingTask: {
+        type: Boolean,
+        value: function(){ return false; },
+        notify: true
+      },
+      subjectLastTs: { 
+        type: String, 
+        value: function(){ return null },
+        noitfy: true
+      },
+      subjectId: { type: String, value: function(){ return null } },
+      selectedTaskType: { 
+        type: String, value: function(){ return null },
+        observer: "gotSelectedTaskType"
+      },
+      taskTypes: {
+        type: Array,
+        value: function(){
+          return [
+            { url: "flows/sc.copd_pharmacy.json", name: "COPD Pharmacy Review" },
+            { url: "flows/sc.copd_treatment_regiment.json", name: "COPD Treatment Regiment Survey" },
+            { url: "flows/sc.copd_pharmacy.json", name: "COPD Pharmacy Review" }
+          ];
+        }
+      }
+    },
+
+    gotSelectedTaskType: function(){
+      //console.log(this.selectedTaskType)
+      if ( this.selectedTaskType === null ) return;
+      var payload = _.merge( 
+        this.taskTypes[ this.selectedTaskType ],
+        { subjectId: this.subjectId, lastTs: this.subjectLastTs , plannedFor: "schedule" } 
+      );
+      console.log(payload);
+      this.$.ajax_init_task.send(payload);
+      return;
+    },
+
+    taskInitResponse: function(e,data){
+      this.fire("newtask", data);
+      this.set("selectedTaskType",null);
+    },
+
+    taskInitError: function(e,data){
+    },
+
+    submit: function(){
+      console.log(this.answer);
+      return;
+    }
+  });
+
+</script>

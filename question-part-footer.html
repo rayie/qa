@@ -38,11 +38,6 @@ Example:
       padding-bottom: 18px ;
     }
 
-      #mark_btn {
-        @apply(--layout-flex-2);
-        @apply(--paper-font-body2)
-      }
-
       .note-area {
         @apply(--layout-flex-5);
         @apply(--paper-font-caption);
@@ -69,7 +64,7 @@ Example:
         }
 
     paper-button {
-      @apply(--paper-font-button);
+      @apply(--paper-font-body2)
     }
 
     paper-button[active] {
@@ -118,9 +113,8 @@ Example:
         <span class='warn_msg'>
           {{warn_msg}}
         </span>
-        <span class=''>
-          {{additionalInstancesAllowed}},
-          {{additionalInstancesAdded}}
+        <span hidden='[[!additionalInstancesAllowed]]'>
+          {{additionalInstancesAdded}} / {{additionalInstancesAllowed}} Added
         </span>
       </div>
     </div>

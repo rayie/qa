@@ -257,13 +257,13 @@ Example:
 
           <div class='form-body'>     
             <div class='flexchild'>
-              <paper-checkbox id="apPR" value="PR" on-change="gotCheckBoxChanged">
+              <paper-checkbox id="apPR" value="PR" on-change="gotCheckBoxChanged" checked>
                 Primary Residence
               </paper-checkbox>
-              <paper-checkbox id="apMA" value="MA" on-change="gotCheckBoxChanged">
+              <paper-checkbox id="apMA" value="MA" on-change="gotCheckBoxChanged" checked>
                 Mailing Address
               </paper-checkbox>
-              <paper-checkbox id="apBL" value="BL" on-change="gotCheckBoxChanged">
+              <paper-checkbox id="apBL" value="BL" on-change="gotCheckBoxChanged" checked>
                 Billing Address
               </paper-checkbox>
             </div>
@@ -353,9 +353,16 @@ Example:
     },
 
     populateNext: function(a){
-      if ( a.length ){
+      Polymer.dom(this.root).querySelectorAll("paper-checkbox").forEach(function(el){
+        el.checked=false;
+      });
+
+      if ( a.applies_to === undefined ) a.applies_to=[];
+      console.log("populateNext",a.applies_to);
+      if ( a.applies_to.length ){
         for(var i = 0; i < a.applies_to.length; i++){
-          Polymer.dom(this.root).querySelector("#ap"+a.applies_to[i]).checked=true;;
+          console.log("populating ", a.applies_to[i]);
+          Polymer.dom(this.root).querySelector("#ap"+a.applies_to[i]).checked=true;
           Polymer.dom.flush();
         };
       }

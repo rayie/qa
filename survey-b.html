@@ -72,11 +72,11 @@ Example:
       @apply(--paper-font-body2)
       text-align: right;
     }
-    .survey-title {
-      @apply(--paper-font-title)
+    .headline {
+      @apply(--paper-font-headline)
     }
-    .survey-subtitle{
-      @apply(--paper-font-subhead)
+    .subtitle{
+      @apply(--paper-font-subtitle)
     }
     .card-actions {
       border-bottom: 1px solid lightgrey;
@@ -139,14 +139,11 @@ Example:
 
       <div class="survey-hdr">
         <div class="hdr-left">
-          <div class='survey-title'>[[surveyData.title]] - [[task.state]]</div>
-          <div hidden="[[!taskId]]" class='survey-subtitle'>[[task.subjectDisplayAs]] [[taskId]]</div>
+          <div class='headline'>[[task.subjectDisplayAs]] - [[surveyData.name]]</div>
         </div>
         <div class="hdr-right">
-          <div>[[summaryTxt]]</div>
-          <div>
-            <paper-button on-click="previewAnswers">Preview Answers</paper-button>
-          </div>
+          <div class='headline'>[[stateMsg]]</div>
+          <div class='subtitle'>[[summaryTxt]]</div>
         </div>
       </div>
 
@@ -259,11 +256,6 @@ Example:
     "Complete",
     "Marked as NA"
   ];
-  var SURVEYSTATE = [
-    "Ready", //no submission attempted yet
-    "Error", //submission resulted in error
-    "Success" //submission successful
-  ];
 
   Polymer({
 
@@ -278,8 +270,7 @@ Example:
 
       taskId: {
         type: String,
-        value: function(){ return ""; },
-        observer: "loadTask"
+        value: function(){ return ""; }
       },
 
       surveyData: {
@@ -319,7 +310,7 @@ Example:
     },
 
     _reset: function(){
-      console.log("Reset");
+      //console.log("Reset");
       //this.set("taskId","");
       var ref = { 
         answers: [],
@@ -347,7 +338,7 @@ Example:
     * loading a survey based on the task selected
     */
     loadTask: function(){ 
-      //console.log("in loadTask",this.taskId);
+      console.log("in survey-b loadTask",this.taskId);
       if ( !this.taskId ) return;
 
       this._reset();
@@ -490,7 +481,25 @@ Example:
       });
 
       if ( this.dataDoc ) this._populateAnswers();
+      this._updateStateMsg();
 
+    },
+
+    _updateStateMsg: function(){
+      if ( !this.task) return;
+      switch(this.task.state){
+        case "init":
+          var t = "No data has been saved yet";
+          break;
+        case "inprog":
+          var t = "Task is In Progress";
+          break;
+        case "done":
+          var t = "Task Completed";
+          break;
+      }
+
+      this.set("stateMsg",t);
     },
 
     _populateAnswers: function(){
@@ -572,35 +581,25 @@ Example:
       var qstate_counts = [ 0, 0, 0, 0];
       var count_hidden = 0;
       var answers = [];
-      var answers_required = 0;
       this.surveyData.tasksToAdd = [];
       for(var qnum in this.questions){
         if(this.questions[ qnum ].hidden){ 
           count_hidden++;
         }
         else{
-          answers_required++;
           qstate_counts[ this.questions[qnum].qstate ]++;
           answers.push( this._build_answer_sheet(this.questions[qnum]) );
         }
       }
-      //console.log(qstate_counts);
-      qstate_counts = qstate_counts;
-      count_hidden = count_hidden;
-      this.summaryTxt = [
-        "Required:", 
-        answers_required,
-        " InProgress:",
-        qstate_counts[1],
-        " Complete:",
-        qstate_counts[2],
-        " NA:",
-        qstate_counts[3]
-      ].join(" ");
+      console.log(qstate_counts);
+      this.set("summaryTxt",[
+        qstate_counts[2], "of", answers.length, " Completed",
+        qstate_counts[3], "NA"
+      ].join(" "));
 
       this.set("answers",answers);
-
-      this.ok_to_submit = ( answers_required === ( qstate_counts[2] + qstate_counts[3] ) );
+      var incomplete = this.answers.length - ( qstate_counts[2] + qstate_counts[3] );
+      this.ok_to_submit = ( answers.length === ( qstate_counts[2] + qstate_counts[3] ) );
 
       if ( 
         this.task && 
@@ -648,17 +647,12 @@ Example:
     },
 
     saveDataResponse: function(e,data){
-      console.log(data);
       this.set("task.ts", data.newTs);
-      app.$.toast.text = "Saved progress";
-      if ( data.msg ) app.$.toast.text += data.msg;
-      app.$.toast.show();
+      this._updateStateMsg();
     },
 
     saveDataError: function(e,data){
-      app.$.toast.text = "Failed saving ... ";
-      if ( data.msg ) app.$.toast.text += data.msg;
-      app.$.toast.show();
+
     },
 
     submit: function(){
@@ -712,7 +706,8 @@ Example:
     submitResponse: function(e,data){
       this.set("submissionError", null);
       this.set("submissionResult", data);
-      this.set("state", 2);
+
+      if ( this.task ) this.set("task.state", "done");
 
       console.log(this.submissionResult);
       this.$.nextTasks.applyTasks(this.submissionResult.tasks_created);
@@ -726,7 +721,6 @@ Example:
       if ( data.msg ) app.$.toast.text += data.msg;
       app.$.toast.show();
 
-      this.set("state", 1);
       setTimeout(function(){
         self.ok_to_submit = true;
       },1500);

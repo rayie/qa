@@ -13,7 +13,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-material/paper-material.html">
-<link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-item/paper-item-body.html">
 <link rel="import" href="../paper-input/paper-input.html">
@@ -21,7 +20,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../moment-display/moment-display.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../paper-tabs/paper-tabs.html">
+<link rel="import" href="../iron-pages/iron-pages.html">
+<link rel="import" href="menu-tasks.html">
 <link rel="import" href="list-tasks.html">
+<link rel="import" href="card-contact.html">
 
 <!--
 
@@ -44,30 +47,15 @@ Example:
     }
    
     /* form hdr part */
-    .form-hdr ,
-    .form-body {
+    .hdr {
       @apply(--layout-horizontal);
-      padding: 4px;
-    }
-
-    .form-body div {
-      margin: 4px;
-    }
-
-    .form-hdr div {
-      margin: 4px;
-    }
-
-    paper-checkbox {
-      display: inline-block;
-      margin: 6px 24px 6px 6px;
+      @apply(--layout-justified);
       @apply(--paper-font-body2)
     }
 
     .flexchild {
       @apply(--layout-flex);
     }
-
 
     .flex1child {
       @apply(--layout-flex-1);
@@ -125,21 +113,29 @@ Example:
     }
     paper-card {
       width: 100%;
-      margin-bottom: 12px;
+      margin-bottom: 4px;
+      --paper-card-content : {
+      }
+      --paper-card-header : {
+
+      };
+      --paper-card-header-text: {
+        font-size: 16px;
+        color: gray;
+      }
     }
+
     paper-input ,
     paper-textarea {
       margin: 6px;
     }
     .card-actions {
       background-color: #B2DFDB;
-      border-bottom: 1px solid lightgrey;
     }
     .card-footer {
       margin: 12px 6px 12px 6px;
       padding-top: 16px;
       padding-left: 16px;
-      border-top: 1px solid lightgrey;
     }
     paper-button {
       @apply(--paper-font-button);
@@ -150,61 +146,87 @@ Example:
   <template>
     <div class="container">
       <paper-card  
-      hidden="[[!person]]"
-      elevation=1>
-
-        <div class="card-content">
-
-          <div class=''>     
-            <h3>
-              <span>[[person.displayAs]] ([[person.sex]])
-            </span>
+        heading="[[person.displayAs]]  ([[person.sex]])"
+        hidden="[[!person]]" elevation=1
+      > 
+        <div class="card-content hdr">
+          <div >
             <moment-display dt="[[person.dob]]" ></moment-display>
             (<moment-display dob dt="[[person.dob]]" ></moment-display>)
-          </h3>
-          <small>RecordID: [[subjectId]]</small>
           </div>
-
-        </div>
-
-        <div class='card-footer' >
-          <h3>Tasks Not Yet Started</h3>
-          <list-tasks
-            id="openTasks"
-            subject-id="[[subjectId]]"
-            state='["init"]'
-          ></list-tasks>
-
-          <h3>Tasks In Progress</h3>
-          <list-tasks
-            id="inprogTasks"
-            subject-id="[[subjectId]]"
-            state='["inprog"]'
-          ></list-tasks>
-
-          <h3>Completed Tasks:</h3>
-          <list-tasks
-            id="completedTasks"
-            subject-id="[[subjectId]]"
-            state='["done"]'
-          ></list-tasks>
+          <div >
+            <menu-tasks 
+              id="menuTask"
+              subject-id="[[person._id]]"
+              subject-last-ts="{{person.ts}}"
+              on-newtask="gotNewTask"
+            ></menu-tasks>
+          </div>
         </div>
       </paper-card>
 
-      
-      <paper-card  elevation=1 hidden="[[!recentdata]]">
-        <div class="card-content">
-          <h3>Most Recent Data Collected - [[ recentdata.parent_task_name ]]</h3>
-          <paper-menu>
-            <template is="dom-repeat" items="[[recentdata.list]]" >
-              <paper-item class='listing'>
-                [[ item.lbl ]] :
-                <strong>[[ item.val ]] </strong>
-              </paper-item>
-            </template>
-          </paper-menu>
-        </div>
-      </paper-card>
+      <paper-tabs selected="{{selectedTab}}">
+        <paper-tab>Primary Info</paper-tab>
+        <paper-tab>Tasks</paper-tab>
+        <paper-tab>Answers</paper-tab>
+        <paper-tab>Notes</paper-tab>
+      </paper-tabs>
+
+      <iron-pages selected="{{selectedTab}}">
+
+        <section data-tab='primaryInfo' >
+          <card-contact 
+            id="contactCard"
+            subject-id="[[person._id]]">
+          </card-contact>
+        </section>
+
+        <section data-tab='tasks' >
+          <paper-card  
+            heading="Tasks Not Yet Started"
+            hidden="[[!person]]"
+            elevation=1>
+            <list-tasks
+              class='card-content' 
+              id="openTasks"
+              subject-id="[[subjectId]]"
+              state='["init"]'
+            ></list-tasks>
+          </paper-card>
+
+          <paper-card  
+          heading="Tasks In Progress"
+          hidden="[[!person]]"
+          elevation=1>
+            <list-tasks
+              class='card-content' 
+              id="inprogTasks"
+              subject-id="[[subjectId]]"
+              state='["inprog"]'
+            ></list-tasks>
+          </paper-card>
+
+          <paper-card  
+          heading="Tasks Completed"
+          hidden="[[!person]]"
+          elevation=1>
+            <list-tasks
+              class='card-content'
+              id="completedTasks"
+              subject-id="[[subjectId]]"
+              state='["done"]'
+            ></list-tasks>
+          </paper-card>
+        </section>
+
+        <section data-tab='answers' >
+        </section>
+
+        <section data-tab='notestream' >
+        </section>
+
+
+      </iron-pages>
 
 
       <iron-ajax
@@ -240,9 +262,9 @@ Example:
         type: String,
         value: ""
       },
-      baseUrl: {
-        type: String,
-        value: ""
+      selectedTab: {
+        type: Number,
+        value: 0 
       }
     },
 
@@ -283,6 +305,13 @@ Example:
       this.$.openTasks.loadTasks();
       this.$.inprogTasks.loadTasks();
       this.$.completedTasks.loadTasks();
+      this.$.contactCard.load();
+    },
+
+    gotNewTask: function(e,data){
+      console.log(data);
+      this.set("person.ts", data.newTs);
+      this.$.openTasks.loadTasks();
     },
 
     loadPersonError: function(e){

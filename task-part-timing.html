@@ -53,13 +53,13 @@ Example:
 
   <template>
 
-
-    <div class="main">
+    <div class="main"
+      on-click="openDatePicker"
+      >
       <div class="displaytxt">
         <strong
          title="Task has no schedule date."
          hidden="[[!isAsap]]"
-         on-click="openDatePicker"
          >
          ASAP
        </strong>
@@ -67,7 +67,6 @@ Example:
         <strong
          hidden="[[!isPlannedPast]]"
          title="Task is OVERDUE."
-         on-click="openDatePicker"
         >
           OVERDUE
         </strong>
@@ -75,7 +74,6 @@ Example:
         <strong
          hidden="[[!isPlannedFuture]]"
          title="Task is scheduled for a future date."
-         on-click="openDatePicker"
         >
           Planned For 
         </strong>
@@ -84,7 +82,6 @@ Example:
         <strong
          hidden="[[!isPlannedCurrent]]"
          title="Task is Current."
-         on-click="openDatePicker"
         >
           Planned For
         </strong>
@@ -92,13 +89,11 @@ Example:
         <moment-display
           hidden="[[!plannedFor.start]]"
           dt="[[plannedFor.start]]"
-          on-click="openDatePicker"
         >
         </moment-display>
 
         <strong
           hidden="[[!mustSchedule]]" 
-          on-click="openDatePicker" 
           title="Task is unscheduled but scheduling is required. Click to schedule"
         >
           Schedule It

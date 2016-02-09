@@ -65,6 +65,10 @@ Example:
       scenariouser: {
         type: Object,
         value: {}
+      },
+      noToast: {
+        type:Boolean,
+        value: false
       }
     },
 
@@ -80,7 +84,7 @@ Example:
 
     send: function(payload,passBack){
       this.$.locstore.reload();
-      console.log("sending to url ", this.$.main.url);
+      //console.log("sending to url ", this.$.main.url);
       this.set("payload",payload);
       this.passBack = passBack;
       if (!_.has( this.scenariouser ,'csrfToken' ) ){
@@ -94,6 +98,12 @@ Example:
 
     response: function(e){
       //console.log('in ajaxhelper response, before fire', e.detail.response);
+      if (!this.noToast){
+        app.$.toast.text = "Success"; 
+        if ( this.successMsg )
+          app.$.toast.text += ":" + this.sucessMsg;
+        app.$.toast.show();
+      }
       e.detail.response.passBack = this.passBack;
       this.fire("response",e.detail.response);
     },
@@ -103,6 +113,12 @@ Example:
         passBack: this.passBack ,
         msg: _.get( e, "detail.request.xhr.response.error" , "" ) 
       };
+
+      if (!this.noToast){
+        app.$.toast.text = "Error: ";
+        app.$.toast.text += resPkg.msg;
+        app.$.toast.show();
+      }
         
       this.fire("error",resPkg);
     }

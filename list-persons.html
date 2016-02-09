@@ -143,6 +143,18 @@ Example:
     paper-button {
       @apply(--paper-font-button);
     }
+    .entry { 
+      margin-bottom: 16px;
+    }
+    a {
+      text-decoration: none;
+      display:block;
+    }
+
+    a .main {
+      font-size: 1.2em;
+      display: block;
+    }
 
   </style>
 
@@ -150,14 +162,17 @@ Example:
     <div class="container">
       <paper-menu>
         <template is="dom-repeat" items="[[persons]]" as="p">
-          <div class=''>    
-            <a href$="patients/[[p._id]]">[[p.displayAs]] ([[p.sex]]) 
-              <moment-display
-              str="[[p.dob]]"
-              >
-              </moment-display>
+          <div class='entry'>
+            <a href$="patient/[[p._id]]">
+              <span class='main'>
+              [[p.displayAs]] ([[p.sex]]) 
+              <moment-display str="[[p.dob]]" ></moment-display>
+              </span>
             </a>
-            <small>RecordID: [[p._id]]</small>
+            <small>
+              Last activity: 
+              <moment-display time str="[[p.ts]]" ></moment-display>
+            <small>
           </div>
         </template>
       </paper-menu>

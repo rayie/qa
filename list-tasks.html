@@ -24,6 +24,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-ajax/iron-ajax.html">
 <link rel="import" href="../moment-display/moment-import.html">
 <link rel="import" href="../moment-display/moment-display.html">
+<link rel="import" href="qa-btn.html">
 <link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="task-part-timing.html">
 
@@ -137,13 +138,13 @@ Example:
     }
     .card-actions {
       background-color: #B2DFDB;
-      border-bottom: 1px solid lightgrey;
+      /* border-bottom: 1px solid lightgrey; */
     }
     .card-footer {
       margin: 12px 6px 12px 6px;
       padding-top: 16px;
       padding-left: 16px;
-      border-top: 1px solid lightgrey;
+      /* border-top: 1px solid lightgrey; */
     }
     paper-button {
       @apply(--paper-font-button);
@@ -153,7 +154,7 @@ Example:
     paper-icon-item {
       margin-top: 2px;
       margin-bottom: 2px;
-      border-bottom: 1px solid var(--paper-pink-a200);
+      /* border-bottom: 1px solid var(--paper-pink-a200); */
       --paper-item-icon-width: 186px;
     }
 
@@ -211,6 +212,9 @@ Example:
     a { 
       text-decoration: none;
     }
+    iron-icon {
+      --iron-icon-width: 16px;
+    }
 
   </style>
 
@@ -219,18 +223,26 @@ Example:
       <div hidden="[[!tasksLoaded]]" >
         <template id="taskRptr" is="dom-repeat" items="[[tasks]]" as="t">
           <paper-icon-item>
-            <div item-icon> 
+            <div item-icon 
+              hidden="[[!t.hasBeenCancelled]]"
+            >
+              <h3>Cancelled</h3>
+            </div>
+
+            <div item-icon 
+              hidden="[[t.hasBeenCancelled]]"
+            >
               <a 
                 hidden="[[!t.isOkToStart]]"
                 href$="{{baseUrl}}tasks/{{t._id}}"
               >
                 <iron-icon icon="create"></iron-icon> 
-                <span hidden="[[t.m.inprog]]">
+                <small hidden="[[t.m.inprog]]">
                   Start this Task
-                </span>
-                <span hidden="[[!t.m.inprog]]">
+                </small>
+                <small hidden="[[!t.m.inprog]]">
                   Resume this Task
-                </span>
+                </small>
               </a>
 
               <span
@@ -243,7 +255,7 @@ Example:
 
             <paper-item-body two-line>
               <div>
-                <a href$="patients/[[t.subjectId]]">
+                <a href$="taskresult/[[t._id]]">
                   [[t.subjectDisplayAs]] - [[t.name]]
                 </a>
               </div >
@@ -252,11 +264,25 @@ Example:
                 <span>
                   [[compDur(t.m)]] 
                 </span>
+                <div item-icon hidden="[[!t.okToCancel]]" >
+                  <qa-btn
+                    send-back="[[index]]"
+                    on-btnclick="cancelTask"
+                  >
+                    <a>
+                      <iron-icon icon="cancel"></iron-icon> 
+                      <small>Cancel</small>
+                    </a>
+                    </qa-btn>
+                </div>
 
               </div>
+
+
             </paper-item-body>
 
             <task-part-timing
+              hidden="[[t.hasBeenCancelled]]"
               task-id="[[t._id]]"
               task-ts="{{t.ts}}"
               planned-for="{{t.plannedFor}}"
@@ -269,13 +295,15 @@ Example:
           </paper-icon-item>
         </template>
       </div>
-      <iron-ajax
+
+      <qa-ajax-poster
         id="ajax_load_tasks"       
-        handle-as="json",
+        no-toast
         on-response="loadTasksResponse"
         on-error="loadTasksError"
         loading="{{is_loading}}"
-      ></iron-ajax>
+        endpoint="api/tasks:get"
+      ></qa-ajax-poster>
       <qa-ajax-poster
         id="ajax_update_task"       
         on-response="updateTaskResponse"
@@ -283,6 +311,14 @@ Example:
         loading="{{is_loading}}"
         endpoint="api/task:schedule"
       ></qa-ajax-poster>
+      <qa-ajax-poster
+        id="ajax_cancel_task"       
+        on-response="cancelTaskResponse"
+        on-error="cancelTaskError"
+        loading="{{is_loading}}"
+        endpoint="api/task:cancel"
+      ></qa-ajax-poster>
+
     </div>
   </template>
 
@@ -328,7 +364,6 @@ Example:
 
     attached: function(){
       this.isAttached=true;
-      this.$.ajax_load_tasks.url=window.APIBASEURL+"api/tasks:get";
     },
     ready: function(){
       this.isReady=true;
@@ -345,31 +380,54 @@ Example:
     },
 
     loadTasks: function(){
+      //console.log("Loading tasks", this.subjectId);
       var defaultListParams = {state: this.state};
 
       if (this.subjectId){
         defaultListParams.subjectId = this.subjectId.toString();
       }
 
-      this.$.ajax_load_tasks.params=defaultListParams;
-      this.$.ajax_load_tasks.generateRequest();
+      this.$.ajax_load_tasks.send(defaultListParams);
     },
 
-    loadTasksResponse: function(e){
-      this.applyTasks(e.detail.response.tasks);
+    loadTasksResponse: function(e,data){
+      this.applyTasks(data.tasks);
     },
+
+    loadTasksError: function(e){
+      console.log("loadTasksError",e);
+    },
+
 
     applyTasks: function(tasks){
       this.resetTasks();
       this.$.taskRptr.render();
       this.set("tasks",tasks);
       this.set("tasksLoaded",true);
-      //this.$.taskRptr.render();
     },
 
-    loadTasksError: function(e){
-      console.log("loadTasksError",e);
+    cancelTask: function(e, taskIndex){
+      var task = this.tasks[taskIndex];
+      console.log(task.name, task._id, task.ts);
+      var payload = {
+        taskId: task._id,
+        lastTs: task.ts
+      }
+      console.log(payload);
+      return this.$.ajax_cancel_task.send(payload,taskIndex);
     },
+
+    cancelTaskResponse: function(e,data){
+      console.log("passBack",data.passBack);
+      console.log("tasks." + data.passBack+".hasBeenCancelled",true);
+      this.set("tasks." + data.passBack+".hasBeenCancelled",true);
+      this.$.taskRptr.render();
+    },
+
+    cancelTaskError: function(){
+    },
+
+
 
     gotTaskTimingChange: function(e,timingChange){
       this.$.ajax_update_task.send(timingChange, e.target);
@@ -385,9 +443,6 @@ Example:
 
     updateTaskError: function(e, data){
       //console.log("in tasklist, updateTaskError", e, data);
-      app.$.toast.text = "Task NOT UPDATED !!!! - "; 
-      if ( data.msg ) app.$.toast.text += data.msg;
-      app.$.toast.show();
       if ( data.passBack ) data.passBack.revert();
     },
     

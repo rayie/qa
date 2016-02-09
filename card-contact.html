@@ -1,0 +1,292 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-item/paper-item-body.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-styles/typography.html">
+<link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../moment-display/moment-display.html">
+<link rel="import" href="qa-ajax-poster.html">
+<link rel="import" href="menu-tasks.html">
+<link rel="import" href="list-tasks.html">
+
+<!--
+
+Example:
+
+    <card-contact></card-contact>
+
+@demo
+-->
+<dom-module id="card-contact">
+
+  <style is="custom-style">
+
+    :host {
+      display: block;
+      box-sizing: border-box;
+    }
+   
+    :host > ::content .special {
+    }
+   
+    /* form hdr part */
+    .addr {
+      @apply(--layout-horizontal);
+      @apply(--layout-justified);
+      @apply(--paper-font-body2)
+      margin: 4px;
+    }
+
+    paper-checkbox {
+      display: inline-block;
+      margin: 6px 24px 6px 6px;
+      @apply(--paper-font-body2)
+    }
+
+    .flexchild {
+      @apply(--layout-flex);
+    }
+
+    .flex1child {
+      @apply(--layout-flex-1);
+    }
+
+    .flex2child {
+      @apply(--layout-flex-2);
+    }
+
+    .flex3child {
+      @apply(--layout-flex-3);
+    }
+
+    .flex4child {
+      @apply(--layout-flex-4);
+    }
+
+    .flex6child {
+      @apply(--layout-flex-6);
+    }
+
+    .flex8child {
+      @apply(--layout-flex-8);
+    }
+
+    .flex12child {
+      @apply(--layout-flex-12);
+    }
+
+    .list {
+      @apply(--layout-vertical);
+      padding-top: 12px;
+      background-color: white;
+      width: 240px;
+      height: 228px;
+      margin: 12px;
+      @apply(--shadow-elevation-2dp);
+    }
+
+    .form-num {
+      @apply(--paper-font-body2)
+      text-align: right;
+    }
+
+    .form-title {
+      @apply(--paper-font-body2)
+    }
+
+    .form-sub-title {
+      @apply(--paper-font-caption)
+    }
+
+    .paper-font-caption {
+      @apply(--paper-font-caption);
+    }
+    paper-card {
+      width: 100%;
+      margin-bottom: 4px;
+      --paper-card-header-text:{
+        font-size: 16px;
+        color: orange;
+      }
+    }
+    paper-input ,
+    paper-textarea {
+      margin: 6px;
+    }
+    .card-actions {
+      background-color: #B2DFDB;
+    }
+    .card-footer {
+      margin: 12px 6px 12px 6px;
+      padding-top: 16px;
+      padding-left: 16px;
+    }
+    paper-button {
+      @apply(--paper-font-button);
+    }
+
+  </style>
+
+  <template>
+    <div class="container">
+      <paper-card elevation=1
+        heading="Contact Info"
+      > 
+        <template is="dom-repeat" id="contactRptr" items="[[contacts]]" as="c">
+          <div class="card-content addr">
+            <div>
+              <strong>[[c.method]]: [[c.contact_value]]</strong>
+              <br/>
+              <small>[[c.note]]</small>
+            </div>
+
+            <div>
+              <cite>[[c.contact_rel]] [[c.contact_name]]</cite>
+            </div>
+
+            <div>
+              <moment-display str="[[a.m.]]">
+              </moment-display>
+            </div>
+          </div>
+        </template>
+      </paper-card>
+
+      <paper-card elevation=1
+        heading="Addresses"
+      > 
+        <template is="dom-repeat" id="addrRptr" items="[[addrs]]" as="a">
+          <div class="card-content addr">
+            <div>
+              <strong>[[a.addr1]]</strong>
+              <strong hidden="[[!a.addr2]]">[[a.addr2]]</strong>
+              <strong>[[a.city]],[[a.state]] [[a.zip]]</strong>
+              <br/>
+              <small>[[a.note]]</small>
+            </div>
+
+            <div>
+              <template is="dom-repeat" items="[[a.lbls]]" as="lbl">
+                <cite>[[lbl]]</cite>
+              </template>
+            </div>
+
+            <div>
+              <moment-display str="[[a.m.]]">
+              </moment-display>
+            </div>
+          </div>
+        </template>
+      </paper-card>
+      <qa-ajax-poster
+        id="ajax_load_contact"       
+        on-response="loadResponse"
+        on-error="loadError"
+        endpoint="api/data:qids"
+      ></qa-ajax-poster>
+
+    </div>
+  </template>
+
+</dom-module>
+
+<script>
+  var addr_ref  = {
+    "PR": "Primary Residence",
+    "MA": "Mailing",
+    "BL": "Billing"
+  };
+
+
+  Polymer({
+
+    is: 'card-contact',
+
+    properties: {
+      ad: {
+        type: Object,
+        value: null
+      },
+      subjectId: {
+        type: String,
+        value: ""
+      }
+    },
+
+    load: function(){
+      if (!this.subjectId) return;
+      var payload = {
+        qids: ["F200","F210"],
+        subjectId: this.subjectId
+      }
+      this.$.ajax_load_contact.send(payload);
+
+    },
+
+    loadResponse: function(e,data){
+      console.log(data);
+      var addrs = [];
+      var contacts = [];
+      data.records.forEach(function(r){
+
+        if ( r["F200"] ){
+          r["F200"].lbls = r["F200"].applies_to.map(function(b){
+            return addr_ref[b];
+          });
+          r["F200"].ts = r.m.update.ts;
+          addrs.push(r["F200"]);
+
+          [1,2,3,4,5,6].forEach(function(n){
+            if ( r["F200-"+n] ){
+              r["F200-"+n].lbls = r["F200-"+n].applies_to.map(function(b){
+                return addr_ref[b];
+              });
+              r["F200-"+n].ts = r.m.update.ts;
+              addrs.push(r["F200-"+n]);
+            }
+          });
+        }
+        
+        if ( r["F210"] ){
+          r["F210"].ts = r.m.update.ts;
+          contacts.push(r["F210"]);
+
+          [1,2,3,4,5,6].forEach(function(n){
+            if ( r["F210-"+n] ){
+              r["F210-"+n].ts = r.m.update.ts;
+              contacts.push(r["F210-"+n]);
+            }
+          });
+        }
+
+
+      });
+      this.set("addrs",addrs);
+      this.set("contacts",contacts);
+    },
+
+    loadError: function(e){
+      console.log(e);
+    },
+
+    submit: function(e){
+      return;
+    }
+  });
+
+</script>
