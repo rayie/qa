@@ -1,0 +1,23 @@
+<script src="../lodash/lodash.min.js"></script>
+<script>
+  window.TaskBehaviors = window.TaskBehaviors || {};
+  TaskBehaviors.Basic = {
+
+    properties: {
+
+    },
+    compDur: function(m){
+      if ( m.done ){
+        var txt = moment( m.init.ts ).from( m.done.ts , true);
+        return "Duration:" + txt;
+      }
+
+      if ( m.inprog ){
+        var txt = moment( m.inprog.ts ).fromNow(true);
+        return ", In progress for " + txt;
+      }
+      return "";
+    }
+  };
+
+</script>

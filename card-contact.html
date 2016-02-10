@@ -152,7 +152,7 @@ Example:
             <div>
               <strong>[[c.method]]: [[c.contact_value]]</strong>
               <br/>
-              <small>[[c.note]]</small>
+              <small hidden="[[!c.note]]">Note: [[c.note]]</small>
             </div>
 
             <div>
@@ -177,7 +177,7 @@ Example:
               <strong hidden="[[!a.addr2]]">[[a.addr2]]</strong>
               <strong>[[a.city]],[[a.state]] [[a.zip]]</strong>
               <br/>
-              <small>[[a.note]]</small>
+              <small hidden="[[!a.note]]">Note: [[a.note]]</small>
             </div>
 
             <div>

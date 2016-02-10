@@ -24,6 +24,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-ajax/iron-ajax.html">
 <link rel="import" href="../moment-display/moment-import.html">
 <link rel="import" href="../moment-display/moment-display.html">
+<link rel="import" href="task-behaviors.html">
 <link rel="import" href="qa-btn.html">
 <link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="task-part-timing.html">
@@ -158,57 +159,6 @@ Example:
       --paper-item-icon-width: 186px;
     }
 
-    paper-button.custom {
-      --paper-button-ink-color: var(--paper-pink-a200);
-      /* These could also be individually defined for each of the
-        specific css classes, but we'll just do it once as an example */
-      --paper-button-flat-keyboard-focus: {
-        background-color: var(--paper-pink-a200);
-        color: white !important;
-      };
-      --paper-button-raised-keyboard-focus: {
-        background-color: var(--paper-pink-a200) !important;
-        color: white !important;
-      };
-      display: block;
-    }
-
-    paper-button.custom:hover {
-      background-color: var(--paper-indigo-100);
-    }
-
-    paper-button.pink {
-      color: var(--paper-pink-a200);
-    }
-
-    paper-button.red {
-      background-color: var(--paper-red-500);
-      color: white;
-      --paper-button-raised-keyboard-focus: {
-        background-color: var(--paper-red-a200) !important;
-        color: white !important;
-      };
-    }
-
-    paper-button.indigo {
-      background-color: var(--paper-indigo-500);
-      color: white;
-      --paper-button-raised-keyboard-focus: {
-        background-color: var(--paper-pink-a200) !important;
-        color: white !important;
-      };
-    }
-
-    paper-button.green {
-      background-color: var(--paper-green-500);
-      color: white;
-    }
-    paper-button.green[active] {
-      background-color: var(--paper-red-500);
-    }
-    paper-button.disabled {
-      color: white;
-    }
     a { 
       text-decoration: none;
     }
@@ -255,9 +205,14 @@ Example:
 
             <paper-item-body two-line>
               <div>
-                <a href$="taskresult/[[t._id]]">
+                <a hidden="[[!t.m.done]]" href$="taskresult/[[t._id]]">
                   [[t.subjectDisplayAs]] - [[t.name]]
                 </a>
+
+                <span hidden="[[t.m.done]]">
+                  [[t.subjectDisplayAs]] - [[t.name]]
+                </span>
+      
               </div >
               <div secondary>
                 <moment-display label="Created" age time dt="[[t.m.init.ts]]" ></moment-display>
@@ -275,10 +230,7 @@ Example:
                     </a>
                     </qa-btn>
                 </div>
-
               </div>
-
-
             </paper-item-body>
 
             <task-part-timing
@@ -330,6 +282,8 @@ Example:
   Polymer({
 
     is: 'list-tasks',
+
+    behaviors: [ TaskBehaviors.Basic ],
     
     properties: {
       state: {
@@ -444,20 +398,8 @@ Example:
     updateTaskError: function(e, data){
       //console.log("in tasklist, updateTaskError", e, data);
       if ( data.passBack ) data.passBack.revert();
-    },
-    
-    compDur: function(m){
-      if ( m.done ){
-        var txt = moment( m.init.ts ).from( m.done.ts , true);
-        return "Duration:" + txt;
-      }
-
-      if ( m.inprog ){
-        var txt = moment( m.inprog.ts ).fromNow(true);
-        return ", In progress for " + txt;
-      }
-      return "";
     }
+    
 
   });
 

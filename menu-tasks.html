@@ -126,10 +126,14 @@ Example:
         type: Array,
         value: function(){
           return [
-            { url: "flows/sc.copd_pharmacy.json", name: "COPD Pharmacy Review" },
-            { url: "flows/sc.copd_treatment_regiment.json", name: "COPD Treatment Regiment Survey" },
-            { url: "flows/sc.copd_pharmacy.json", name: "COPD Pharmacy Review" }
-          ];
+            { url: "flows/sc.interaction.json", name: "Interaction/Communication Record" , plannedFor: {kind:"asap"} },
+            { url: "flows/sc.teamaction.json", name: "Team Action" },
+            { url: "flows/sc.copd.pharmacy.json", name: "COPD Pharmacy Review" },
+            { url: "flows/sc.copd.treatment_regiment.json", name: "COPD Treatment Regiment Survey" },
+            { url: "flows/sc.copd.social.json", name: "COPD Social Worker Eval" },
+            { url: "flows/sc.contact.json", name: "Contact Form", plannedFor: {kind:"asap"} },
+            { url: "flows/sc.address.json", name: "Address Form", plannedFor: {kind:"asap"} }
+          ]
         }
       }
     },

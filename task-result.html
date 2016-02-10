@@ -24,6 +24,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-ajax/iron-ajax.html">
 <link rel="import" href="../moment-display/moment-import.html">
 <link rel="import" href="../moment-display/moment-display.html">
+<link rel="import" href="task-behaviors.html">
 <link rel="import" href="qa-btn.html">
 <link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="task-part-timing.html">
@@ -121,7 +122,23 @@ Example:
 
   <template>
     <div class="container">
-      <h2>TASKREASULT</h2>
+
+      <paper-item-body two-line>
+        <div>
+          <h3>
+            [[task.subjectDisplayAs]] - [[task.name]]
+          </h3>
+        </div>
+
+        <div secondary>
+          <moment-display label="Created" age time dt="[[task.m.init.ts]]" ></moment-display>
+          <span>
+            [[compDur(task.m)]] 
+          </span>
+        </div>
+      </paper-item-body>
+
+
       <table>
         <template is="dom-repeat" items="[[qq]]" as="q" >
           <tr>
@@ -158,8 +175,10 @@ Example:
 
     is: 'task-result',
     
+    behaviors: [ TaskBehaviors.Basic ],
+
     properties: {
-      tasksLoaded: {
+      taskLoaded: {
         type: Boolean,
         value: false
       },

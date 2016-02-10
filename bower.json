@@ -9,7 +9,6 @@
     "es6",
     "node"
   ],
-  "main": "question-mc.html",
   "license": "MIT",
   "ignore": [
     "**/.*",

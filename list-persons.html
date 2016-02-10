@@ -12,6 +12,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-fab/paper-fab.html">
 <link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-item/paper-item.html">
@@ -21,6 +22,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
 <link rel="import" href="../moment-display/moment-display.html">
+<link rel="import" href="qa-ajax-poster">
 
 <!--
 
@@ -155,12 +157,20 @@ Example:
       font-size: 1.2em;
       display: block;
     }
+    .newFab {
+      position: fixed;
+      top: 80px;
+      left: 92%;
+    }
 
   </style>
 
   <template>
     <div class="container">
-      <paper-menu>
+      <a class="newFab" title="Create New Patient Record" href$="{{baseUrl}}directsurvey/sc.copd_newpatient">
+        <paper-fab icon="add"></paper-fab>
+      </a>
+      <div>
         <template is="dom-repeat" items="[[persons]]" as="p">
           <div class='entry'>
             <a href$="patient/[[p._id]]">
@@ -175,14 +185,14 @@ Example:
             <small>
           </div>
         </template>
-      </paper-menu>
-      <iron-ajax
+      </div>
+      <qa-ajax-poster
         id="ajax_load_persons"       
-        handle-as="json",
         on-response="loadPersonsResponse"
         on-error="loadPersonsError"
         loading="{{is_loading}}"
-      ></iron-ajax>
+        endpoint="api/persons:get"
+      ></qa-ajax-poster>
     </div>
   </template>
 
@@ -206,19 +216,15 @@ Example:
       }
     },
 
-    attached: function(){
-      this.$.ajax_load_persons.url=window.APIBASEURL+"api/person:list";
-    },
-
     loadPersons: function(){
       console.log("in loadPersons");
-      this.$.ajax_load_persons.generateRequest();
+      this.$.ajax_load_persons.send();
     },
 
-    loadPersonsResponse: function(e){
+    loadPersonsResponse: function(e,data){
       console.log(e);
       //e.detail.response.person.dob  = e.detail.response.person.dob.toString().substr(0,10);
-      this.set("persons",e.detail.response.persons);
+      this.set("persons",data.persons);
     },
 
     loadPersonsError: function(e){
