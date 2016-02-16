@@ -23,7 +23,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../iron-localstorage/iron-localstorage.html">
-<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="question-behaviors.html">
 <link rel="import" href="question-mc.html">
 <link rel="import" href="question-ft.html">
@@ -33,7 +32,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="form-person.html">
 <link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="list-tasks.html">
-<link rel="import" href="team-dropdown.html">
 <!--
 An element providing a solution to no problem in particular.
 
@@ -55,8 +53,6 @@ Example:
       margin-bottom: 4px;
       border-bottom: 1px solid gray;
     }
-
-
     .survey-hdr {
       @apply(--layout-horizontal);
       @apply(--layout-flex);
@@ -69,34 +65,9 @@ Example:
       @apply(--layout-flex-8);
       text-align: right;
     }
-
-    .next-task-preview {
-      margin-top: 32px;
-      @apply(--layout-horizontal);
-      @apply(--layout-justified);
-    }
-
-    .submit-area {
-      margin-top: 64px;
-      @apply(--layout-horizontal);
-      @apply(--layout-justified);
-    }
-
-    paper-button.bad {
-      --paper-button: {
-        background: red;
-        color: #fff;
-      }
-    }
-
     paper-button {
       @apply(--paper-font-button);
     }
-
-    paper-menu {
-      --paper-menu-color: #fff;
-    }
-
     .display_num {
       @apply(--paper-font-body2)
       text-align: right;
@@ -106,6 +77,9 @@ Example:
     }
     .subtitle{
       @apply(--paper-font-subtitle)
+    }
+    .card-actions {
+      border-bottom: 1px solid lightgrey;
     }
 
     /* answer sheet */
@@ -152,17 +126,6 @@ Example:
       @apply(--paper-font-body2)
     }
 
-    #incompletionDialog {
-      --paper-dialog: {
-        width: 50%;
-        padding-bottom: 16px;
-      };
-
-      --paper-dialog-button-color: orange;
-      --paper-dialog-color: #fff;
-      --paper-dialog-background-color: #F44336;
-    }
-
   </style>
 
   <template>
@@ -176,7 +139,7 @@ Example:
 
       <div class="survey-hdr">
         <div class="hdr-left">
-          <div class='headline'>[[task.subjectDisplayAs]] - [[taskDefinition.name]]</div>
+          <div class='headline'>[[task.subjectDisplayAs]] - [[surveyData.name]]</div>
         </div>
         <div class="hdr-right">
           <div class='headline'>[[stateMsg]]</div>
@@ -191,122 +154,49 @@ Example:
         </div>
       </div>
 
-      <div hidden="[[!taskDefinition.tasksToAdd.length]]" >
-        <h3>The following tasks will be created when you submit this task</h3>
-        <ul>
-          <template is="dom-repeat" items="[[taskDefinition.tasksToAdd]]" as="tta">
-            <li class="next-task-preview">
-              <div>[[tta.name]]</div>
-              <div>
-                <team-dropdown
-                  selected-user="{{tta.assignedTo}}"
-                >
-                </team-dropdown>
+      <paper-dialog id="answerSheetDialog">
+        <paper-dialog-scrollable>
+          <h2>Answers:</h2>
+          <template 
+            is="dom-repeat"
+            items="[[answers]]"
+            as="answer"
+          >
+            <paper-icon-item>
+              <div class="" item-icon>
+                [[answer.qnum]]
               </div>
-            </li>
+              <paper-item-body two-line>
+                <div>[[answer.q]]</div>
+                <div class='blue' secondary>[[answer.a]]</div>
+              </paper-item-body>
+            </paper-icon-item>
           </template>
-        </ul>
-      </div>
+        </paper-dialog-scrollable>
+        <div class="buttons">
+          <paper-button dialog-dismiss>Dismiss</paper-button>
+        </div>
+      </paper-dialog>
 
-      <div class='submit-area' hidden="[[submissionResult]]" >
-        <div hidden="[[taskDefinition.mustComplete]]">
-          <paper-button 
-          class='bad'
-          raised
-          disabled="[[ok_to_submit]]"
-          on-click="openIncompletionDialog"
-          >Submit as Incomplete</paper-button>
-        </div>
-        <div><!--stub for justify--></div>
-        <div>
-          <paper-button 
-          raised  
-          disabled="[[!ok_to_submit]]"
-          on-click="submit"
-          >Submit as Complete</paper-button>
-        </div>
+      <div class='card-footer' >
+        <paper-button 
+        raised  
+        disabled="[[!ok_to_submit]]"
+        on-click="submit"
+        >Submit</paper>
       </div>
 
       <div class='card-footer' hidden="[[!submissionResult]]" >
         <h2>Submitted Successfully:</h2>
         <h3>Next Steps:</h3>
+
         <list-tasks
           id="nextTasks"
           subject-id="[[subjectId]]"
         ></list-tasks>
+
       </div>
     </div>
-
-    <paper-dialog 
-      id="incompletionDialog" 
-      on-iron-overlay-closed="taskIncomplete"
-    >
-      <h2>Submit Task as Incomplete</h2>
-      <div class="" >
-        <paper-dropdown-menu label="Reason for Incompletion">
-          <paper-listbox
-            class="dropdown-content"
-            selected="{{incompletion.reason.code}}"
-            attr-for-selected="name"
-          > 
-            <paper-item name='AU'>Assignee unavailable</paper-item>
-            <paper-item name='NLN'>Situation changed, No longer necessary</paper-time>
-            <paper-item name='NLN'>Task created in error</paper-time>
-          </paper-listbox>
-        </paper-dropdown-menu>
-
-        <paper-dropdown-menu label="Re-Assign To:">
-          <paper-listbox
-            class="dropdown-content"
-            selected="{{incompletion.reAssignTo}}"
-            attr-for-selected="u_id"
-          > 
-            <paper-item u_id='mjindra@supercare.com'>mjindra@supercare.com</paper-item>
-            <paper-item u_id='linda@supercare.com'>linda@supercare.com</paper-item>
-          </paper-listbox>
-
-        </paper-dropdown-menu>
-        <paper-input
-          label="Enter optional note here"
-          value='{{incompletion.reason.note}}'
-        >
-        </paper-input>
-      </div>
-      <div class="buttons">
-        <paper-button 
-          raised dialog-confirm
-          hidden="[[!incompletion.reason.code]]"
-        >
-          Confirm Incompletion
-        </paper-button>
-      </div>
-    </paper-dialog>
-    <!--
-    <paper-dialog id="answerSheetDialog">
-      <paper-dialog-scrollable>
-        <h2>Answers:</h2>
-        <template 
-          is="dom-repeat"
-          items="[[answers]]"
-          as="answer"
-        >
-          <paper-icon-item>
-            <div class="" item-icon>
-              [[answer.qnum]]
-            </div>
-            <paper-item-body two-line>
-              <div>[[answer.q]]</div>
-              <div class='blue' secondary>[[answer.a]]</div>
-            </paper-item-body>
-          </paper-icon-item>
-        </template>
-      </paper-dialog-scrollable>
-      <div class="buttons">
-        <paper-button dialog-dismiss>Dismiss</paper-button>
-      </div>
-    </paper-dialog>
-    -->
-
 
     <iron-ajax
       id="ajax_load_task"
@@ -349,14 +239,6 @@ Example:
     ></qa-ajax-poster>
 
     <qa-ajax-poster
-      id="ajax_task_incomplete"       
-      on-response="submitResponse"
-      on-error="submitError"
-      loading="{{is_loading}}"
-      endpoint="api/task:incomplete"
-    ></qa-ajax-poster>
-
-    <qa-ajax-poster
       id="ajax_submit_entity"       
       on-response="submitResponse"
       on-error="submitError"
@@ -391,19 +273,20 @@ Example:
         value: function(){ return ""; }
       },
 
-      taskDefinition: {
-        type: Object,
-        value: function(){ return {}; }
+      surveyData: {
+        value: {}
       },
 
       subjectId: {
         type: String,
-        value: function(){ return ""; }
+        value: function(){ 
+          return "";
+        }
       },
 
       summaryTxt: {
         type: String,
-        value: function(){ return ""; }
+        value: ""
       },
 
       submissionError: {
@@ -414,16 +297,6 @@ Example:
       submissionResult: {
         value: null,
         notifies: true
-      },
-
-      incompletion:{
-        type: Object,
-        value: function(){
-          return {
-            reason: { note:"", code: null },
-            reAssignTo: null
-          }
-        }
       },
 
       state: {
@@ -441,7 +314,7 @@ Example:
       //this.set("taskId","");
       var ref = { 
         answers: [],
-        taskDefinition: {},
+        surveyData: {},
         dataDoc: null,
         task: null,
         subjectId: "",
@@ -449,11 +322,7 @@ Example:
         state:0,
         submissionError : null,
         submissionResult : null,
-        ok_to_submit : false,
-        incompletion:{
-          reason: { note:"", code: null },
-          reAssignTo: null
-        }
+        ok_to_submit : false
       };
       for(var k in ref){
         this.set(k,ref[k]);
@@ -463,10 +332,6 @@ Example:
         el.remove(); //removeChild();
       });
       Polymer.dom.flush();
-    },
-
-    openIncompletionDialog: function(){
-      this.$.incompletionDialog.open();
     },
 
     /*
@@ -504,7 +369,7 @@ Example:
       if ( !this.directSurveyUrl) return;
 
       this._reset();
-      this.set("subjectId", "STUB");
+      this.subjectId = "STUB";
       this._loadSurvey(window.APIBASEURL +"flows/"+ this.directSurveyUrl + ".json");
     },
 
@@ -537,7 +402,7 @@ Example:
     addedInstance: function(d){
       console.log('addedInstance',d.target.get("seq_num"));
       var pos_in_qq  = d.target.get("seq_num") - 1;
-      var q = this.taskDefinition.qq[ pos_in_qq ];
+      var q = this.surveyData.qq[ pos_in_qq ];
       var timesCloned = 1 * d.target.get("additionalInstancesAdded");
       var clone_of_q = _.cloneDeep(q);
 
@@ -556,29 +421,29 @@ Example:
     },
 
     loadSurveyError: function(e){
-      console.log("Failed to load taskDefinition");
+      console.log(e);
       this.set("subjectId",null);
       return;
     },
 
     loadSurveyResponded: function(event){
-      console.log(event.detail.response);
+      //console.log(event.detail.response);
       if (!event.detail.response){
         this.set("subjectId",null);
         return;
       }
 
-      var taskDefinition = event.detail.response;
-      taskDefinition.subtitle = "For Subject: " + this.subjectId;
-      this.$.ajax_submit_entity.setEndpoint(taskDefinition.submitUrl);
-      this.set("taskDefinition",taskDefinition);
+      var surveyData = event.detail.response;
+      surveyData.subtitle = "For Subject: " + this.subjectId;
+      this.$.ajax_submit_entity.setEndpoint(surveyData.submitUrl);
+      this.set("surveyData",surveyData);
       this.questions = {};
       var self = this;
       /*
       *  This generates the Polymer questions or forms
       */
       var qn = 0;
-      this.taskDefinition.qq.forEach(function(q,idx){
+      this.surveyData.qq.forEach(function(q,idx){
         q.idx_in_survey = idx * 1;
 
         if ( q.kind==="form"){
@@ -679,7 +544,7 @@ Example:
             a.push( ans );
 
             if ( q.opts[ans].task ){
-              self.taskDefinition.tasksFromAnswers.push( q.opts[ans].task );
+              self.surveyData.tasksToAdd.push( q.opts[ans].task );
               console.log(q.opts[ans]);
             }
 
@@ -716,7 +581,7 @@ Example:
       var qstate_counts = [ 0, 0, 0, 0];
       var count_hidden = 0;
       var answers = [];
-      this.taskDefinition.tasksFromAnswers = [];
+      this.surveyData.tasksToAdd = [];
       for(var qnum in this.questions){
         if(this.questions[ qnum ].hidden){ 
           count_hidden++;
@@ -726,6 +591,7 @@ Example:
           answers.push( this._build_answer_sheet(this.questions[qnum]) );
         }
       }
+      console.log(qstate_counts);
       this.set("summaryTxt",[
         qstate_counts[2], "of", answers.length, " Completed",
         qstate_counts[3], "NA"
@@ -734,8 +600,6 @@ Example:
       this.set("answers",answers);
       var incomplete = this.answers.length - ( qstate_counts[2] + qstate_counts[3] );
       this.ok_to_submit = ( answers.length === ( qstate_counts[2] + qstate_counts[3] ) );
-      console.log("taskDefinition", this.taskDefinition);
-      this.set("taskDefinition.tasksToAdd", this.taskDefinition.upon.submit.concat( this.taskDefinition.tasksFromAnswers ) );
 
       if ( 
         this.task && 
@@ -792,48 +656,18 @@ Example:
     },
 
     submit: function(){
-      if ( this.taskDefinition.type=="entity" )
+      if ( this.surveyData.type=="entity" )
         return this.submitEntity();
 
       return this.taskDone();
     },
 
-
-    taskIncomplete: function(dialogCloseEvent){
-      if (!_.get(dialogCloseEvent,'detail.confirmed',false)) return;
-
-      if ( this.is_submitting ) return console.log("Still in progress");
-      this.ok_to_submit = false;
-
-      var payload = { 
-        taskId: this.taskId,
-        lastTs: this.task.ts,
-        reason: _.clone( this.incompletion.reason )
-      }
-
-      if ( this.incompletion.reAssignTo ){
-        payload.uponIncomplete = [{
-          url: this.task.url,
-          name: this.task.name,
-          assignedTo: this.incompletion.reAssignTo 
-        }] 
-      }
-      else{
-        payload.uponIncomplete = [];
-      }
-
-      console.log("payload:",payload);
-      this.$.ajax_task_incomplete.send(payload);
-      return
-    },
-
-
     taskDone: function(){
       if ( this.is_submitting ) return console.log("Still in progress");
       this.ok_to_submit = false;
 
-      var payload = {
-        uponSubmit: [].concat( this.taskDefinition.tasksToAdd ),
+      var payload = { 
+        uponSubmit: this.surveyData.upon.submit.concat( this.surveyData.tasksToAdd ),
         taskId: this.taskId,
         lastTs: this.task.ts
       }
@@ -849,7 +683,7 @@ Example:
 
       var payload = { 
         subjectId: this.subjectId, 
-        uponSubmit: [].concat( this.taskDefinition.tasksToAdd ),
+        uponSubmit: this.surveyData.upon.submit.concat( this.surveyData.tasksToAdd ),
         parentTaskId: this.taskId
       }
 

@@ -143,6 +143,9 @@ Example:
         type: String,
         notify: true
       },
+      taskAssignedTo: {
+        type: String
+      },
       plannedFor: {
         type: Object,
         value: null,
@@ -152,7 +155,7 @@ Example:
         type: Object,
         value: null
       },
-      okToStartTask: { type: Boolean, value: false , notify: true },
+      okToStart: { type: Boolean, value: false , notify: true },
       isAsap: { type: Boolean, value: false },
       mustSchedule: { type: Boolean, value: false },
       plannedPast: { type: Boolean, value: false },
@@ -240,11 +243,11 @@ Example:
       this.isPlannedCurrent = false;
       this.isPlannedFuture = false;
       this.isAsap=false; 
-
+      var okToStart=false;
       switch(this.plannedFor.kind){
         case "asap":
           this.isAsap=true; 
-          this.set("okToStartTask",true);
+          okToStart=true;
           break;
         case "schedule":
           if ( 
@@ -253,30 +256,39 @@ Example:
             //check if schedule is current
             if ( moment().isBefore(this.plannedFor.start) ){
               this.isPlannedFuture = true;
-              this.set("okToStartTask",false);
+              okToStart=false;
             }
             else if ( moment().isAfter(this.plannedFor.end) ){
               this.isPlannedPast = true;
-              this.set("okToStartTask",true);
+              okToStart=true;
             }
             else{
               this.isPlannedCurrent = true;
-              this.set("okToStartTask",true);
+              okToStart=true;
             }
           }
           else{
             //no start date 
             this.mustSchedule=true; 
-            this.set("okToStartTask",false);
+            okToStart=false;
           }
           break;
         default:
           this.isAsap=true; 
-          this.set("okToStartTask",true);
+          okToStart=true;
           break;
       }
 
-      if ( this.taskState==="done" ) this.set("okToStartTask",false);
+      if ( this.taskState==="done" || this.taskAssignedTo!=="rie@supercare.com" ) {
+        console.log("not ok", this.taskAssignedTo);
+        okToStart=false;
+      }
+      else {
+        console.log("is ok", this.taskAssignedTo);
+      }
+      
+      
+      this.set("okToStart",okToStart);
 
     },
 

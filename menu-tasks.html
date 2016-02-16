@@ -126,13 +126,13 @@ Example:
         type: Array,
         value: function(){
           return [
-            { url: "flows/sc.interaction.json", name: "Interaction/Communication Record" , plannedFor: {kind:"asap"} },
-            { url: "flows/sc.teamaction.json", name: "Team Action" },
-            { url: "flows/sc.copd.pharmacy.json", name: "COPD Pharmacy Review" },
-            { url: "flows/sc.copd.treatment_regiment.json", name: "COPD Treatment Regiment Survey" },
+            { url: "flows/sc.interaction.json", name: "Interaction/Communication Record" , plannedFor: "asap" },
+            { url: "flows/sc.teamaction.json", name: "Team Action", plannedFor: "schedule" },
+            { url: "flows/sc.copd.pharmacy.json", name: "COPD Pharmacy Review", plannedFor: "schedule" },
+            { url: "flows/sc.copd.treatment_regiment.json", name: "COPD Treatment Regiment Survey", plannedFor: "schedule" },
             { url: "flows/sc.copd.social.json", name: "COPD Social Worker Eval" },
-            { url: "flows/sc.contact.json", name: "Contact Form", plannedFor: {kind:"asap"} },
-            { url: "flows/sc.address.json", name: "Address Form", plannedFor: {kind:"asap"} }
+            { url: "flows/sc.contact.json", name: "Contact Form", plannedFor: "asap" },
+            { url: "flows/sc.address.json", name: "Address Form", plannedFor: "asap" }
           ]
         }
       }
@@ -143,8 +143,9 @@ Example:
       if ( this.selectedTaskType === null ) return;
       var payload = _.merge( 
         this.taskTypes[ this.selectedTaskType ],
-        { subjectId: this.subjectId, lastTs: this.subjectLastTs , plannedFor: "schedule" } 
+        { subjectId: this.subjectId, lastTs: this.subjectLastTs }
       );
+      if (!payload.plannedFor) payload.plannedFor = "schedule";
       console.log(payload);
       this.$.ajax_init_task.send(payload);
       return;

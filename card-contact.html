@@ -11,9 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-card/paper-card.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
-<link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-material/paper-material.html">
-<link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-item/paper-item-body.html">
 <link rel="import" href="../paper-input/paper-input.html">
@@ -21,8 +19,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../moment-display/moment-display.html">
 <link rel="import" href="qa-ajax-poster.html">
-<link rel="import" href="menu-tasks.html">
-<link rel="import" href="list-tasks.html">
 
 <!--
 
@@ -50,12 +46,6 @@ Example:
       @apply(--layout-justified);
       @apply(--paper-font-body2)
       margin: 4px;
-    }
-
-    paper-checkbox {
-      display: inline-block;
-      margin: 6px 24px 6px 6px;
-      @apply(--paper-font-body2)
     }
 
     .flexchild {
@@ -117,8 +107,10 @@ Example:
       @apply(--paper-font-caption);
     }
     paper-card {
-      width: 100%;
-      margin-bottom: 4px;
+      --paper-card: {
+        margin-bottom: 4px;
+        display: block; 
+      };
       --paper-card-header-text:{
         font-size: 16px;
         color: orange;
@@ -128,23 +120,13 @@ Example:
     paper-textarea {
       margin: 6px;
     }
-    .card-actions {
-      background-color: #B2DFDB;
-    }
-    .card-footer {
-      margin: 12px 6px 12px 6px;
-      padding-top: 16px;
-      padding-left: 16px;
-    }
-    paper-button {
-      @apply(--paper-font-button);
-    }
 
   </style>
 
   <template>
     <div class="container">
-      <paper-card elevation=1
+      <paper-card 
+        elevation=1
         heading="Contact Info"
       > 
         <template is="dom-repeat" id="contactRptr" items="[[contacts]]" as="c">
@@ -160,7 +142,7 @@ Example:
             </div>
 
             <div>
-              <moment-display str="[[a.m.]]">
+              <moment-display str="[[c.ts]]" time>
               </moment-display>
             </div>
           </div>
@@ -187,7 +169,7 @@ Example:
             </div>
 
             <div>
-              <moment-display str="[[a.m.]]">
+              <moment-display str="[[a.ts]]" time>
               </moment-display>
             </div>
           </div>

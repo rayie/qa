@@ -1,0 +1,88 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../iron-localstorage/iron-localstorage.html">
+<!--
+An element providing a solution to no problem in particular.
+
+Example:
+
+    <seed-element></seed-element>
+
+@demo
+-->
+<dom-module id="team-dropdown">
+  <style is="custom-style">
+    :host ::content a {
+      cursor: pointer;
+    }
+  </style>
+
+  <template>
+    <paper-dropdown-menu 
+      label="Assign To"
+      no-label-float
+    >
+      <paper-listbox
+        class="dropdown-content"
+        selected="{{selectedUser}}"
+        attr-for-selected="em"
+      >
+        <template is="dom-repeat" items="[[users]]" as="u">
+          <paper-item em="[[u]]">[[u]]</paper-item>
+        </template>
+      </paper-listbox>
+    </paper-dropdown-menu>
+
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'team-dropdown',
+
+    properties: {
+      selectedUser: {
+        type: String, 
+        value: function(){ 
+
+          return "" 
+        } ,
+        notify: true
+      },
+      users: {
+        type: Array, 
+        value: function(){ 
+          return [
+            "mjindra@supercare.com",
+            "linda@supercare.com",
+            "rie@supercare.com"
+          ];
+        } 
+      },
+      sendBack: {
+        type: Object, value: function(){ return {}; }
+      }
+    },
+
+    attached: function(){
+      console.log("team dropdown")
+    }
+
+
+  });
+
+</script>

@@ -269,17 +269,6 @@ Example:
             </div>
           </div>
 
-          <div class='form-body'>     
-            <div class='flexchild'>
-            <b>allowed: [[additionalInstancesAllowed]]</b> 
-            &nbsp;
-            <b>Added: [[additionalInstancesAdded]]</b> 
-            </div>
-          </div>
-        </div>
-
-        <div class='card-footer' hidden="[[!showSubmitBtn]]">     
-          <paper-button raised on-click="submit">Submit</paper>
         </div>
 
         <question-part-footer
@@ -342,8 +331,19 @@ Example:
 
     gotAddressFromGoogle: function(e){
       //for(var addr_part in this.answer) e.detail.value[addr_part] = this.answer[addr_part];
-      this.set("answer", e.detail.value);
-      this.set("qstate", 2);
+      var answer = e.detail.value;
+      answer.applies_to=[];
+      Polymer.dom(this.root).querySelectorAll("paper-checkbox").forEach(function(el){
+        if ( el.checked ) answer.applies_to.push(el.value);
+      });
+
+      this.set("answer", answer);
+      if ( answer.applies_to.length ){
+        this.set("qstate", 2);
+      }
+      else{
+        this.set("qstate", 1);
+      }
       return;
     },
 
@@ -358,7 +358,6 @@ Example:
       });
 
       if ( a.applies_to === undefined ) a.applies_to=[];
-      console.log("populateNext",a.applies_to);
       if ( a.applies_to.length ){
         for(var i = 0; i < a.applies_to.length; i++){
           console.log("populating ", a.applies_to[i]);
@@ -367,24 +366,25 @@ Example:
         };
       }
 
-      this.set("qstate",2);
       this.set("answer",a);
+      this.set("qstate",2);
       return;
     },
 
-    gotCheckBoxChanged: function(e,data){
+    gotCheckBoxChanged: function(){
       var applies_to=[];
       Polymer.dom(this.root).querySelectorAll("paper-checkbox").forEach(function(el){
         if ( el.checked ) applies_to.push(el.value);
       });
       
       this.set("answer.applies_to",applies_to);
+      if ( applies_to.length ){
+        this.set("qstate", 2);
+      }
+      else{
+        this.set("qstate", 1);
+      }
       this.fire("qstate-changed");
-    },
-
-    submit: function(){
-      console.log(this.answer);
-      return;
     }
   });
 

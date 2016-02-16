@@ -179,6 +179,7 @@ Example:
 
       </paper-card>
     </div>
+
     <iron-ajax
       id="ajax_login"
       handle-as="json"
@@ -207,6 +208,16 @@ Example:
       content-type="application/json"
       on-response="test_response"
       on-error="test_error"
+      method="POST"
+      with-credentials
+      url="{{testUrl}}"
+    ></iron-ajax>
+    <iron-ajax
+      id="ajax_check"
+      handle-as="json"
+      content-type="application/json"
+      on-response="check_response"
+      on-error="check_error"
       method="POST"
       with-credentials
       url="{{testUrl}}"
@@ -247,16 +258,40 @@ Example:
       logoutUrl: { type: String, value: "" },
 
       scenariouser: {
-        observer: "_scenariouserChanged",
+        //observer: "_scenariouserChanged",
+        type: Object,
+        notify: true,
         value: function(){ return null }
+      },
+      sessionIsValid: {
+        type: Boolean,
+        notify: true,
+        value: function(){ return false }
       }
-
     },
 
     attached: function(){
       this.$.ajax_login.url = window.APIBASEURL + "api/session:login";
       this.$.ajax_logout.url = window.APIBASEURL + "api/session:logout";
+      this.$.ajax_check.url = window.APIBASEURL + "api/session:check";
       this.$.ajax_test.url = window.APIBASEURL + "api/status";
+      /*
+      * check if there is a localStore instance of the user
+      */
+      this.$.locstore.reload();
+      if ( !this.scenariouser ) {
+        console.log("no scenariouser in locstore - user must login");
+        return;
+      }
+
+      console.log("found scenariouser in locstore, checking if session still valid");
+      if (!_.has( this.scenariouser ,'csrfToken' ) ){
+        console.log("no csrfToken in locstore") 
+        return;
+      }
+
+      this.$.ajax_check.body={ csrfToken : this.scenariouser.csrfToken };
+      this.$.ajax_check.generateRequest();
     },
 
     _scenariouserChanged: function(newVal,oldVal){
@@ -275,6 +310,15 @@ Example:
       console.log(e);
     },
 
+    check_error: function(e){
+      console.log(e);
+      this.set("sessionIsValid", false);
+    },
+
+    check_response: function(e){
+      console.log("setting sessionIsValid to true");
+      this.set("sessionIsValid", true);
+    },
 
 
     logout: function(e){

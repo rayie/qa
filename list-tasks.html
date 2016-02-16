@@ -21,7 +21,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="../iron-ajax/iron-ajax.html">
 <link rel="import" href="../moment-display/moment-import.html">
 <link rel="import" href="../moment-display/moment-display.html">
 <link rel="import" href="task-behaviors.html">
@@ -165,6 +164,9 @@ Example:
     iron-icon {
       --iron-icon-width: 16px;
     }
+    .col3 { text-align: right; }
+    .col3 div { padding-right: 8px; }
+    .assignment { color: #00796B ; font-size: .9em; font-weight: bold }}
 
   </style>
 
@@ -182,8 +184,22 @@ Example:
             <div item-icon 
               hidden="[[t.hasBeenCancelled]]"
             >
+
+              <div item-icon hidden="[[!t.okToCancel]]" >
+                <qa-btn
+                  send-back="[[index]]"
+                  on-btnclick="cancelTask"
+                >
+                  <a>
+                    <iron-icon icon="cancel"></iron-icon> 
+                    <small>Cancel this Task</small>
+                  </a>
+                  </qa-btn>
+              </div>
+
+              
               <a 
-                hidden="[[!t.isOkToStart]]"
+                hidden="[[!t.okToStart]]"
                 href$="{{baseUrl}}tasks/{{t._id}}"
               >
                 <iron-icon icon="create"></iron-icon> 
@@ -194,12 +210,6 @@ Example:
                   Resume this Task
                 </small>
               </a>
-
-              <span
-                hidden="[[!t.m.inprog]]"
-              >
-                [[t.m.inprog.u_id]] 
-              </span>
 
             </div>
 
@@ -219,30 +229,22 @@ Example:
                 <span>
                   [[compDur(t.m)]] 
                 </span>
-                <div item-icon hidden="[[!t.okToCancel]]" >
-                  <qa-btn
-                    send-back="[[index]]"
-                    on-btnclick="cancelTask"
-                  >
-                    <a>
-                      <iron-icon icon="cancel"></iron-icon> 
-                      <small>Cancel</small>
-                    </a>
-                    </qa-btn>
-                </div>
               </div>
             </paper-item-body>
-
-            <task-part-timing
-              hidden="[[t.hasBeenCancelled]]"
-              task-id="[[t._id]]"
-              task-ts="{{t.ts}}"
-              planned-for="{{t.plannedFor}}"
-              task-state="[[t.state]]"
-              ok-to-start-task="{{t.isOkToStart}}"
-              on-change="gotTaskTimingChange"
-            >
-            </task-part-timing>  
+            <div class='col3'>
+              <task-part-timing
+                hidden="[[t.hasBeenCancelled]]"
+                task-assigned-to="[[t.assignedTo]]"
+                task-id="[[t._id]]"
+                task-ts="{{t.ts}}"
+                planned-for="{{t.plannedFor}}"
+                task-state="[[t.state]]"
+                ok-to-start="{{t.okToStart}}"
+                on-change="gotTaskTimingChange"
+              >
+              </task-part-timing>  
+              <div class='assignment'>[[t.assignedTo]]</div>
+            </div>
 
           </paper-icon-item>
         </template>

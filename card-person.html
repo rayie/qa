@@ -19,12 +19,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../moment-display/moment-display.html">
-<link rel="import" href="../iron-ajax/iron-ajax.html">
 <link rel="import" href="../paper-tabs/paper-tabs.html">
 <link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="menu-tasks.html">
 <link rel="import" href="list-tasks.html">
 <link rel="import" href="card-contact.html">
+<link rel="import" href="qa-ajax-poster.html">
 
 <!--
 
@@ -145,15 +145,12 @@ Example:
 
   <template>
     <div class="container">
-      <paper-card  
-        heading="[[person.displayAs]]  ([[person.sex]])"
-        hidden="[[!person]]" elevation=1
-      > 
+      <paper-card  hidden="[[!person]]" elevation=1 > 
         <div class="card-content hdr">
-          <div >
-            <moment-display dt="[[person.dob]]" ></moment-display>
-            (<moment-display dob dt="[[person.dob]]" ></moment-display>)
-          </div>
+          <h3>[[person.displayAs]] ([[person.sex]])</h3>
+          <h3>
+            <moment-display dob str="[[person.dob]]" ></moment-display>
+          </h3>
           <div >
             <menu-tasks 
               id="menuTask"
@@ -165,7 +162,7 @@ Example:
         </div>
       </paper-card>
 
-      <paper-tabs selected="{{selectedTab}}">
+      <paper-tabs id="tabSelector" selected="{{selectedTab}}">
         <paper-tab>Primary Info</paper-tab>
         <paper-tab>Tasks</paper-tab>
         <paper-tab>Activity</paper-tab>
@@ -218,21 +215,19 @@ Example:
           </paper-card>
         </section>
 
-
         <section data-tab='activity' >
         </section>
 
-
       </iron-pages>
 
-
-      <iron-ajax
+      <qa-ajax-poster
         id="ajax_load_person"       
         handle-as="json",
         on-response="loadPersonResponse"
         on-error="loadPersonError"
         loading="{{is_loading}}"
-      ></iron-ajax>
+        endpoint="api/person:get"
+      ></qa-ajax-poster>
 
     </div>
   </template>
@@ -251,10 +246,6 @@ Example:
         type: Object,
         value: null
       },
-      recentdata: {
-        type: Object,
-        value: null
-      },
       subjectId: {
         type: String,
         value: ""
@@ -268,37 +259,14 @@ Example:
     loadPerson: function(){
       if ( !this.subjectId ) return; 
       this.set("person",null);
-      this.$.ajax_load_person.url=window.APIBASEURL+"api/person:get?subjectId=" + this.subjectId;
-      this.$.ajax_load_person.generateRequest();
+      this.$.ajax_load_person.send({subjectId: this.subjectId});
     },
 
-    loadPersonResponse: function(e){
-
-      var person = e.detail.response.person;
+    loadPersonResponse: function(e,data){
+      var person = data.person;
       var now = new Date();
-      var rd = e.detail.response.recentdata;
       var list=[];
-      if ( _.has(e,"deatail.response.recentdata.qseq") ){
-        rd.qseq.forEach(function(q){
-          if ( q.substr(0,4)==="F200" ){
-            var val = [
-              rd[q].addr1 ,
-              rd[q].addr2 ,
-              rd[q].city , 
-              rd[q].state, 
-              rd[q].zip,
-              (rd[q].applies_to)?rd[q].applies_to.join("|"):""
-            ].join(", ")
-          }
-          else var val = rd[q];
-
-          list.push({ lbl: q+" "+rd.qref[q], val: val });
-        });
-        rd.list = list;
-      }
-
-      this.set("person",person);
-      this.set("recentdata",rd);
+      this.set("person",data.person);
       this.$.openTasks.loadTasks();
       this.$.inprogTasks.loadTasks();
       this.$.completedTasks.loadTasks();
@@ -308,6 +276,7 @@ Example:
     gotNewTask: function(e,data){
       console.log(data);
       this.set("person.ts", data.newTs);
+      this.set("selectedTab", 1);
       this.$.openTasks.loadTasks();
     },
 
