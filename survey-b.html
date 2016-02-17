@@ -18,8 +18,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-menu/paper-menu.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
-<link rel="import" href="../paper-dialog/paper-dialog.html">
-<link rel="import" href="../paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../iron-localstorage/iron-localstorage.html">
@@ -34,6 +32,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="list-tasks.html">
 <link rel="import" href="team-dropdown.html">
+<link rel="import" href="dialog-incompletion.html">
+<link rel="import" href="shared-styles">
 <!--
 An element providing a solution to no problem in particular.
 
@@ -44,7 +44,7 @@ Example:
 @demo
 -->
 <dom-module id="survey-b">
-
+  <style include="shared-styles"></style>
   <style is="custom-style">
     :host {
       display: block;
@@ -56,37 +56,36 @@ Example:
       border-bottom: 1px solid gray;
     }
 
+    .vbottom {
+      padding-top: 30px;
+      vertical-align: bottom;
+    }
 
     .survey-hdr {
       @apply(--layout-horizontal);
       @apply(--layout-flex);
       @apply(--paper-font-title)
     }
+
     .hdr-left {
-      @apply(--layout-flex-4);
+      @apply(--layout-flex-8);
     }
     .hdr-right {
-      @apply(--layout-flex-8);
+      @apply(--layout-flex-4);
       text-align: right;
+    }
+
+    .justified-container {
+      @apply(--layout-horizontal);
+      @apply(--layout-justified);
     }
 
     .next-task-preview {
       margin-top: 32px;
-      @apply(--layout-horizontal);
-      @apply(--layout-justified);
     }
 
     .submit-area {
       margin-top: 64px;
-      @apply(--layout-horizontal);
-      @apply(--layout-justified);
-    }
-
-    paper-button.bad {
-      --paper-button: {
-        background: red;
-        color: #fff;
-      }
     }
 
     paper-button {
@@ -152,16 +151,6 @@ Example:
       @apply(--paper-font-body2)
     }
 
-    #incompletionDialog {
-      --paper-dialog: {
-        width: 50%;
-        padding-bottom: 16px;
-      };
-
-      --paper-dialog-button-color: orange;
-      --paper-dialog-color: #fff;
-      --paper-dialog-background-color: #F44336;
-    }
 
   </style>
 
@@ -193,10 +182,12 @@ Example:
 
       <div hidden="[[!taskDefinition.tasksToAdd.length]]" >
         <h3>The following tasks will be created when you submit this task</h3>
-        <ul>
+        <ol>
           <template is="dom-repeat" items="[[taskDefinition.tasksToAdd]]" as="tta">
-            <li class="next-task-preview">
-              <div>[[tta.name]]</div>
+            <li class="justified-container next-task-preview">
+              <div class='vbottom'>
+                [[tta.name]]
+              </div>
               <div>
                 <team-dropdown
                   selected-user="{{tta.assignedTo}}"
@@ -205,10 +196,10 @@ Example:
               </div>
             </li>
           </template>
-        </ul>
+        </ol>
       </div>
 
-      <div class='submit-area' hidden="[[submissionResult]]" >
+      <div class='justified-container submit-area' hidden="[[submissionResult]]" >
         <div hidden="[[taskDefinition.mustComplete]]">
           <paper-button 
           class='bad'
@@ -236,77 +227,10 @@ Example:
         ></list-tasks>
       </div>
     </div>
-
-    <paper-dialog 
-      id="incompletionDialog" 
-      on-iron-overlay-closed="taskIncomplete"
+    <dialog-incompletion
+      id="incompletionDialog"
     >
-      <h2>Submit Task as Incomplete</h2>
-      <div class="" >
-        <paper-dropdown-menu label="Reason for Incompletion">
-          <paper-listbox
-            class="dropdown-content"
-            selected="{{incompletion.reason.code}}"
-            attr-for-selected="name"
-          > 
-            <paper-item name='AU'>Assignee unavailable</paper-item>
-            <paper-item name='NLN'>Situation changed, No longer necessary</paper-time>
-            <paper-item name='NLN'>Task created in error</paper-time>
-          </paper-listbox>
-        </paper-dropdown-menu>
-
-        <paper-dropdown-menu label="Re-Assign To:">
-          <paper-listbox
-            class="dropdown-content"
-            selected="{{incompletion.reAssignTo}}"
-            attr-for-selected="u_id"
-          > 
-            <paper-item u_id='mjindra@supercare.com'>mjindra@supercare.com</paper-item>
-            <paper-item u_id='linda@supercare.com'>linda@supercare.com</paper-item>
-          </paper-listbox>
-
-        </paper-dropdown-menu>
-        <paper-input
-          label="Enter optional note here"
-          value='{{incompletion.reason.note}}'
-        >
-        </paper-input>
-      </div>
-      <div class="buttons">
-        <paper-button 
-          raised dialog-confirm
-          hidden="[[!incompletion.reason.code]]"
-        >
-          Confirm Incompletion
-        </paper-button>
-      </div>
-    </paper-dialog>
-    <!--
-    <paper-dialog id="answerSheetDialog">
-      <paper-dialog-scrollable>
-        <h2>Answers:</h2>
-        <template 
-          is="dom-repeat"
-          items="[[answers]]"
-          as="answer"
-        >
-          <paper-icon-item>
-            <div class="" item-icon>
-              [[answer.qnum]]
-            </div>
-            <paper-item-body two-line>
-              <div>[[answer.q]]</div>
-              <div class='blue' secondary>[[answer.a]]</div>
-            </paper-item-body>
-          </paper-icon-item>
-        </template>
-      </paper-dialog-scrollable>
-      <div class="buttons">
-        <paper-button dialog-dismiss>Dismiss</paper-button>
-      </div>
-    </paper-dialog>
-    -->
-
+    </dialog-incompletion>
 
     <iron-ajax
       id="ajax_load_task"
@@ -416,16 +340,6 @@ Example:
         notifies: true
       },
 
-      incompletion:{
-        type: Object,
-        value: function(){
-          return {
-            reason: { note:"", code: null },
-            reAssignTo: null
-          }
-        }
-      },
-
       state: {
         value: 0,
         notifies: true
@@ -449,11 +363,7 @@ Example:
         state:0,
         submissionError : null,
         submissionResult : null,
-        ok_to_submit : false,
-        incompletion:{
-          reason: { note:"", code: null },
-          reAssignTo: null
-        }
+        ok_to_submit : false
       };
       for(var k in ref){
         this.set(k,ref[k]);
@@ -466,7 +376,7 @@ Example:
     },
 
     openIncompletionDialog: function(){
-      this.$.incompletionDialog.open();
+      this.$.incompletionDialog.show();
     },
 
     /*
@@ -562,7 +472,7 @@ Example:
     },
 
     loadSurveyResponded: function(event){
-      console.log(event.detail.response);
+      //console.log(event.detail.response);
       if (!event.detail.response){
         this.set("subjectId",null);
         return;
@@ -734,7 +644,7 @@ Example:
       this.set("answers",answers);
       var incomplete = this.answers.length - ( qstate_counts[2] + qstate_counts[3] );
       this.ok_to_submit = ( answers.length === ( qstate_counts[2] + qstate_counts[3] ) );
-      console.log("taskDefinition", this.taskDefinition);
+      //console.log("taskDefinition", this.taskDefinition);
       this.set("taskDefinition.tasksToAdd", this.taskDefinition.upon.submit.concat( this.taskDefinition.tasksFromAnswers ) );
 
       if ( 
@@ -799,8 +709,7 @@ Example:
     },
 
 
-    taskIncomplete: function(dialogCloseEvent){
-      if (!_.get(dialogCloseEvent,'detail.confirmed',false)) return;
+    taskIncomplete: function(e,data){
 
       if ( this.is_submitting ) return console.log("Still in progress");
       this.ok_to_submit = false;
@@ -808,14 +717,14 @@ Example:
       var payload = { 
         taskId: this.taskId,
         lastTs: this.task.ts,
-        reason: _.clone( this.incompletion.reason )
+        reason: data.reason 
       }
 
-      if ( this.incompletion.reAssignTo ){
+      if ( data.reAssignTo ){
         payload.uponIncomplete = [{
           url: this.task.url,
           name: this.task.name,
-          assignedTo: this.incompletion.reAssignTo 
+          assignedTo: data.reAssignTo 
         }] 
       }
       else{
@@ -826,7 +735,6 @@ Example:
       this.$.ajax_task_incomplete.send(payload);
       return
     },
-
 
     taskDone: function(){
       if ( this.is_submitting ) return console.log("Still in progress");

@@ -177,6 +177,7 @@ Example:
                 value="{{answer.addr1}}"
                 maxlength="[[maxlength]]"
                 on-change="gotInputChange"
+                disabled
               >
               </paper-input>
 
@@ -206,6 +207,7 @@ Example:
                 value="{{answer.city}}"
                 maxlength="[[maxlength]]"
                 on-change="gotInputChange"
+                disabled
               >
               </paper-input>
             </div>
@@ -219,6 +221,7 @@ Example:
                 value="{{answer.state}}"
                 maxlength="[[maxlength]]"
                 on-change="gotInputChange"
+                disabled
               >
               </paper-input>
             </div>
@@ -232,6 +235,7 @@ Example:
                 value="{{answer.zip}}"
                 maxlength="[[maxlength]]"
                 on-change="gotInputChange"
+                disabled
               >
               </paper-input>
             </div>
@@ -366,8 +370,13 @@ Example:
         };
       }
 
+      if ( _.every([a.addr1,a.city,a.zip,a.applies_to.length])){
+        this.set("qstate",2);
+      }
+      else{
+        this.set("qstate",0);
+      }
       this.set("answer",a);
-      this.set("qstate",2);
       return;
     },
 
@@ -378,11 +387,11 @@ Example:
       });
       
       this.set("answer.applies_to",applies_to);
-      if ( applies_to.length ){
-        this.set("qstate", 2);
+      if ( _.every([this.answer.addr1,this.answer.city,this.answer.zip,this.answer.applies_to.length])){
+        this.set("qstate",2);
       }
       else{
-        this.set("qstate", 1);
+        this.set("qstate",0);
       }
       this.fire("qstate-changed");
     }

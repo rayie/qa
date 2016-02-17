@@ -17,21 +17,20 @@ An element providing a solution to no problem in particular.
 
 Example:
 
-    <seed-element></seed-element>
-
-@demo
 -->
 <dom-module id="team-dropdown">
   <style is="custom-style">
-    :host ::content a {
-      cursor: pointer;
+    :host {
+      --paper-input-container-label: { color: var(--label-color); };
+      --paper-input-container-label-floating: { color: var(--label-floating-color); };
+      --paper-input-container-label-focus: { color: var(--label-focus-color); };
+      --paper-input-container-input-color: var(--input-color);
     }
-  </style>
 
+  </style>
   <template>
     <paper-dropdown-menu 
       label="Assign To"
-      no-label-float
     >
       <paper-listbox
         class="dropdown-content"
@@ -43,9 +42,7 @@ Example:
         </template>
       </paper-listbox>
     </paper-dropdown-menu>
-
   </template>
-
 </dom-module>
 
 <script>
@@ -58,9 +55,8 @@ Example:
       selectedUser: {
         type: String, 
         value: function(){ 
-
-          return "" 
-        } ,
+          return "";
+        },
         notify: true
       },
       users: {
@@ -79,7 +75,10 @@ Example:
     },
 
     attached: function(){
-      console.log("team dropdown")
+      console.log("team dropdown", app.scenariouser)
+      if ( app.scenariouser && !this.selectedUser){
+        this.set("selectedUser",app.scenariouser._id);
+      }
     }
 
 
