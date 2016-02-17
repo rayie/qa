@@ -1,0 +1,29 @@
+<!-- shared styles for all elements and index.html -->
+<dom-module id="qa-styles">
+  <template>
+    <style>
+      .page-title {
+        @apply(--paper-font-display2);
+      }
+
+      paper-button {
+        @apply(--paper-font-button);
+      }
+
+      paper-button.bad {
+        background: red;
+        color: #fff;
+      }
+
+      paper-button.bad[disabled] {
+        background: #eaeaea;
+        color: ##a8a8a8;
+      }
+
+      paper-menu a > *, paper-menu paper-item > *, paper-menu paper-icon-item > * {
+        pointer-events: none;
+      }
+
+    </style>
+  </template>
+</dom-module>
