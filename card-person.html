@@ -21,6 +21,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../moment-display/moment-display.html">
 <link rel="import" href="../paper-tabs/paper-tabs.html">
 <link rel="import" href="../iron-pages/iron-pages.html">
+<link rel="import" href="section-behaviors.html">
 <link rel="import" href="menu-tasks.html">
 <link rel="import" href="list-tasks.html">
 <link rel="import" href="card-contact.html">
@@ -145,28 +146,21 @@ Example:
 
   <template>
     <div class="container">
-      <paper-card  hidden="[[!person]]" elevation=1 > 
-        <div class="card-content hdr">
-          <h3>[[person.displayAs]] ([[person.sex]])</h3>
-          <h3>
-            <moment-display dob str="[[person.dob]]" ></moment-display>
-          </h3>
-          <div >
-            <menu-tasks 
-              id="menuTask"
-              subject-id="[[person._id]]"
-              subject-last-ts="{{person.ts}}"
-              on-newtask="gotNewTask"
-            ></menu-tasks>
-          </div>
-        </div>
-      </paper-card>
 
-      <paper-tabs id="tabSelector" selected="{{selectedTab}}">
-        <paper-tab>Primary Info</paper-tab>
-        <paper-tab>Tasks</paper-tab>
-        <paper-tab>Activity</paper-tab>
-      </paper-tabs>
+      <paper-toolbar>
+        <paper-tabs id="tabSelector" selected="{{selectedTab}}">
+          <paper-tab link>Primary Info</paper-tab>
+          <paper-tab>Tasks</paper-tab>
+          <paper-tab>Activity</paper-tab>
+        </paper-tabs>
+        <span class="title"><!--stub--></span>
+        <menu-tasks 
+          id="menuTask"
+          subject-id="[[person._id]]"
+          subject-last-ts="{{person.ts}}"
+          on-newtask="gotNewTask"
+        ></menu-tasks>
+      </paper-toolbar>
 
       <iron-pages selected="{{selectedTab}}">
 
@@ -239,6 +233,8 @@ Example:
 
   Polymer({
 
+    behaviors: [ SectionBehaviors.Basic ],
+
     is: 'card-person',
 
     properties: {
@@ -266,7 +262,12 @@ Example:
       var person = data.person;
       var now = new Date();
       var list=[];
+
       this.set("person",data.person);
+      var dobStr = _.trimRight( moment( data.person.dob ).fromNow(true), "s" );
+      var S = { M: "Male", F: "Female" };
+      this.applyTitle(person.displayAs + " - " + dobStr + " old " + S[person.sex]);
+
       this.$.openTasks.loadTasks();
       this.$.inprogTasks.loadTasks();
       this.$.completedTasks.loadTasks();

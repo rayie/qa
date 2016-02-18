@@ -151,6 +151,9 @@ Example:
       @apply(--paper-font-body2)
     }
 
+    .padbottom {
+      padding-bottom: 128px;
+    }
 
   </style>
 
@@ -161,14 +164,13 @@ Example:
       </div>
     </div>
 
-    <div hidden="[[!subjectId]]">
+    <div class="padbottom" hidden="[[!subjectId]]">
 
       <div class="survey-hdr">
         <div class="hdr-left">
-          <div class='headline'>[[task.subjectDisplayAs]] - [[taskDefinition.name]]</div>
+          <div class='subtitle'>[[stateMsg]]</div>
         </div>
         <div class="hdr-right">
-          <div class='headline'>[[stateMsg]]</div>
           <div class='subtitle'>[[summaryTxt]]</div>
         </div>
       </div>
@@ -206,31 +208,39 @@ Example:
           raised
           disabled="[[ok_to_submit]]"
           on-click="openIncompletionDialog"
-          >Submit as Incomplete</paper-button>
+          >
+            Submit as Incomplete
+            <iron-icon icon="thumb-down"></iron-icon>
+          </paper-button>
         </div>
         <div><!--stub for justify--></div>
         <div>
           <paper-button 
+          class='good'
           raised  
           disabled="[[!ok_to_submit]]"
           on-click="submit"
-          >Submit as Complete</paper-button>
+          >
+            Submit as Complete
+            <iron-icon icon="thumb-up"></iron-icon>
+          </paper-button>
         </div>
       </div>
 
       <div class='card-footer' hidden="[[!submissionResult]]" >
         <h2>Submitted Successfully:</h2>
-        <h3>Next Steps:</h3>
-        <list-tasks
-          id="nextTasks"
-          subject-id="[[subjectId]]"
-        ></list-tasks>
+        <div hidden="[[!hasNextTasks]]">
+          <h3>Next Steps:</h3>
+          <list-tasks
+            id="nextTasks"
+            subject-id="[[subjectId]]"
+          ></list-tasks>
+        </div>
       </div>
+
     </div>
-    <dialog-incompletion
-      id="incompletionDialog"
-    >
-    </dialog-incompletion>
+
+    <dialog-incompletion id="incompletionDialog" ></dialog-incompletion>
 
     <iron-ajax
       id="ajax_load_task"
@@ -383,7 +393,6 @@ Example:
     * loading a survey based on the task selected
     */
     loadTask: function(){ 
-      console.log("in survey-b loadTask",this.taskId);
       if ( !this.taskId ) return;
 
       this._reset();
@@ -637,7 +646,7 @@ Example:
         }
       }
       this.set("summaryTxt",[
-        qstate_counts[2], "of", answers.length, " Completed",
+        qstate_counts[2], "of", answers.length, " Question Completed,",
         qstate_counts[3], "NA"
       ].join(" "));
 
@@ -784,7 +793,11 @@ Example:
       if ( this.task ) this.set("task.state", "done");
 
       console.log(this.submissionResult);
-      this.$.nextTasks.applyTasks(this.submissionResult.tasks_created);
+      if (this.submissionResult.tasks_created.length){ 
+        this.set("hasNextTasks",true);
+        this.$.nextTasks.applyTasks(this.submissionResult.tasks_created);
+      }
+      else this.set("hasNextTasks",false);
     },
 
     submitError: function(e,data){

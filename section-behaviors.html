@@ -1,0 +1,19 @@
+<script src="../lodash/lodash.min.js"></script>
+<script>
+  window.SectionBehaviors = window.SectionBehaviors || {};
+  SectionBehaviors.Basic = {
+
+    properties: {
+      appTitle: {
+        type: String,
+        notify: true
+      }
+    },
+
+    applyTitle: function(str){
+      this.set("appTitle",str);
+      return ;
+    }
+  };
+
+</script>

@@ -34,47 +34,31 @@ Example:
 
     :host {
       display: block;
-      box-sizing: border-box;
     }
    
-    :host > ::content .special {
+    paper-dropdown-menu {
+      --paper-input-container: {
+        margin-top: -18px;
+      };
+      --paper-input-container-color: #fff;
+      --paper-input-container-label: {
+        font-size: 14px;
+        font-weight: 500;
+      };
     }
-   
-    /* form hdr part */
-    .form-hdr ,
-    .form-body {
-      @apply(--layout-horizontal);
-      padding: 4px;
-    }
-
-    .form-body div {
-      margin: 4px;
-    }
-
-    .form-hdr div {
-      margin: 4px;
-    }
-
-
-    .paper-font-caption {
-      @apply(--paper-font-caption);
-    }
-
-    .card-footer {
-      margin: 12px 6px 12px 6px;
-      padding-top: 16px;
-      padding-left: 16px;
-      border-top: 1px solid lightgrey;
-    }
-    paper-button {
-      @apply(--paper-font-button);
+    paper-item {
+      font-size: 14px;
+      font-weight: 500;
     }
 
   </style>
 
   <template>
-    <div id="container" subject-id="[[!subjectId]]">
-      <paper-dropdown-menu label="Create Task" hidden="[[isCreatingTask]]"
+    <div id="container" hidden="[[!subjectId]]">
+      <paper-dropdown-menu 
+        no-animations
+        label="Create Task" 
+        hidden="[[isCreatingTask]]"
       >
         <paper-listbox 
           class="dropdown-content" 
