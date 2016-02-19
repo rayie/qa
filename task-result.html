@@ -24,10 +24,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-ajax/iron-ajax.html">
 <link rel="import" href="../moment-display/moment-import.html">
 <link rel="import" href="../moment-display/moment-display.html">
+<link rel="import" href="section-behaviors.html">
 <link rel="import" href="task-behaviors.html">
 <link rel="import" href="qa-btn.html">
 <link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="task-part-timing.html">
+<link rel="import" href="styles/qa-styles.html">
 
 <!--
 
@@ -39,6 +41,7 @@ Example:
 -->
 <dom-module id="task-result">
 
+  <style is="custom-style" include="qa-styles" >
   <style is="custom-style">
 
     :host {
@@ -50,104 +53,58 @@ Example:
     }
    
     /* form hdr part */
-    .form-hdr ,
-    .form-body {
-      @apply(--layout-horizontal);
-      padding: 4px;
+    .duration {
+      font-size: 12px;
     }
 
-    .form-body div {
-      margin: 4px;
+    label {
+      font-size: 12px;
+      background-color: #80CBC4;
+      padding: 3px; 12px;
+      display: inline;
     }
 
-    .form-hdr div {
-      margin: 4px;
+    .answer {
+      margin-top: 8px;
+      font-size: 14px;
     }
 
-    paper-checkbox {
-      display: inline-block;
-      margin: 6px 24px 6px 6px;
-      @apply(--paper-font-body2)
+    .row {
+      margin-bottom: 16px;
     }
 
-    .flexchild {
-      @apply(--layout-flex);
-    }
-
-
-    .flex1child {
-      @apply(--layout-flex-1);
-    }
-
-    .flex2child {
-      @apply(--layout-flex-2);
-    }
-
-    .flex3child {
-      @apply(--layout-flex-3);
-    }
-
-    .flex4child {
-      @apply(--layout-flex-4);
-    }
-
-    .flex6child {
-      @apply(--layout-flex-6);
-    }
-
-    .flex8child {
-      @apply(--layout-flex-8);
-    }
-
-    .flex12child {
-      @apply(--layout-flex-12);
-    }
-
-    .paper-font-caption {
-      @apply(--paper-font-caption);
-    }
-    paper-card {
-      width: 100%;
-      margin-bottom: 12px;
-    }
-
-    a { 
-      text-decoration: none;
-    }
-    iron-icon {
-      --iron-icon-width: 16px;
+    .meta {
+      margin-bottom: 32px;
+      font-size: 14px;
     }
 
   </style>
 
   <template>
-    <div class="container">
-
-      <paper-item-body two-line>
-        <div>
-          <h3>
-            [[task.subjectDisplayAs]] - [[task.name]]
-          </h3>
-        </div>
-
-        <div secondary>
-          <moment-display label="Created" age time dt="[[task.m.init.ts]]" ></moment-display>
-          <span>
-            [[compDur(task.m)]] 
-          </span>
-        </div>
-      </paper-item-body>
+    <paper-card class="primary" elevation="4">
 
 
-      <table>
-        <template is="dom-repeat" items="[[qq]]" as="q" >
-          <tr>
-            <td>[[q.display_num]]</td>
-            <td>[[q.txt]]</td>
-            <td>[[q.ans]]</td>
-          </tr>
-        </template>
+      <div class='meta'>
+        <moment-display class='emph' label="Created" time dt="[[task.m.init.ts]]" ></moment-display>
+        <span> by [[task.m.init.u_id]]</span>
+        <br/>
+        <moment-display class='emph' label="Completed" time dt="[[task.m.done.ts]]" ></moment-display>
+        <span> by [[task.m.done.u_id]]</span>
+        <br/>
+        <span class='duration'>
+          [[compDur(task.m)]] 
+        </span>
       </div>
+
+      <template is="dom-repeat" items="[[qq]]" as="q" >
+        <div class='row'> 
+          <label>
+            [[q.display_num]]
+            [[q.txt]]
+          </label>
+          <div class='answer'>[[q.ans]]</div>
+        </div>
+      </template>
 
       <qa-ajax-poster
         id="ajax_load_task"       
@@ -175,7 +132,7 @@ Example:
 
     is: 'task-result',
     
-    behaviors: [ TaskBehaviors.Basic ],
+    behaviors: [ SectionBehaviors.Basic, TaskBehaviors.Basic ],
 
     properties: {
       taskLoaded: {
@@ -225,6 +182,8 @@ Example:
         this.set("dataDoc",dataDoc); 
       }
       this.set("subjectId",this.task.subjectId);
+      this.applyTitle( this.task.subjectDisplayAs + " - " + this.task.name );
+
       this._loadSurvey(window.APIBASEURL+this.task.url);
       return;
     },

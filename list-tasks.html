@@ -12,13 +12,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icons/av-icons.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
-<link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-material/paper-material.html">
-<link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-item/paper-icon-item.html">
 <link rel="import" href="../paper-item/paper-item-body.html">
-<link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../moment-display/moment-import.html">
@@ -27,6 +24,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="qa-btn.html">
 <link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="task-part-timing.html">
+<link rel="import" href="styles/qa-styles.html">
 
 <!--
 
@@ -38,6 +36,7 @@ Example:
 -->
 <dom-module id="list-tasks">
 
+  <style is="custom-style" include="qa-styles">
   <style is="custom-style">
 
     :host {
@@ -45,193 +44,93 @@ Example:
       box-sizing: border-box;
     }
    
-    :host > ::content .special {
-    }
-   
-    /* form hdr part */
-    .form-hdr ,
-    .form-body {
-      @apply(--layout-horizontal);
-      padding: 4px;
+    .name {
+      font-size: 14px;
+      font-weight: 800;
     }
 
-    .form-body div {
-      margin: 4px;
+    .age {
+      font-size: 12px;
     }
 
-    .form-hdr div {
-      margin: 4px;
-    }
-
-    paper-checkbox {
-      display: inline-block;
-      margin: 6px 24px 6px 6px;
-      @apply(--paper-font-body2)
-    }
-
-    .flexchild {
-      @apply(--layout-flex);
-    }
-
-
-    .flex1child {
-      @apply(--layout-flex-1);
-    }
-
-    .flex2child {
-      @apply(--layout-flex-2);
-    }
-
-    .flex3child {
-      @apply(--layout-flex-3);
-    }
-
-    .flex4child {
-      @apply(--layout-flex-4);
-    }
-
-    .flex6child {
-      @apply(--layout-flex-6);
-    }
-
-    .flex8child {
-      @apply(--layout-flex-8);
-    }
-
-    .flex12child {
-      @apply(--layout-flex-12);
-    }
-
-    .list {
-      @apply(--layout-vertical);
-      padding-top: 12px;
-      background-color: white;
-      width: 240px;
-      height: 228px;
-      margin: 12px;
-      @apply(--shadow-elevation-2dp);
-    }
-
-    .form-num {
-      @apply(--paper-font-body2)
-      text-align: right;
-    }
-
-    .form-title {
-      @apply(--paper-font-body2)
-    }
-
-    .form-sub-title {
-      @apply(--paper-font-caption)
-    }
-
-    .paper-font-caption {
-      @apply(--paper-font-caption);
-    }
-    paper-card {
-      width: 100%;
-      margin-bottom: 12px;
-    }
-    paper-input ,
-    paper-textarea {
-      margin: 6px;
-    }
-    .card-actions {
-      background-color: #B2DFDB;
-      /* border-bottom: 1px solid lightgrey; */
-    }
-    .card-footer {
-      margin: 12px 6px 12px 6px;
-      padding-top: 16px;
-      padding-left: 16px;
-      /* border-top: 1px solid lightgrey; */
-    }
-    paper-button {
-      @apply(--paper-font-button);
-      font-size: 10px;
-    }
-
-    paper-icon-item {
+    .row {
       margin-top: 2px;
-      margin-bottom: 2px;
+      margin-bottom: 12px;
       /* border-bottom: 1px solid var(--paper-pink-a200); */
-      --paper-item-icon-width: 186px;
     }
 
     a { 
       text-decoration: none;
     }
+
     iron-icon {
       --iron-icon-width: 16px;
     }
-    .col3 { text-align: right; }
-    .col3 div { padding-right: 8px; }
-    .assignment { color: #00796B ; font-size: .9em; font-weight: bold }}
 
   </style>
 
   <template>
-    <div class="container">
+    <paper-card class="primary" elevation="4" heading="[[heading]]">
       <div hidden="[[!tasksLoaded]]" >
         <template id="taskRptr" is="dom-repeat" items="[[tasks]]" as="t">
-          <paper-icon-item>
-            <div item-icon 
-              hidden="[[!t.hasBeenCancelled]]"
-            >
-              <h3>Cancelled</h3>
-            </div>
+          <div class="row horizontal layout">
 
-            <div item-icon 
-              hidden="[[t.hasBeenCancelled]]"
-            >
+            <div class="flex-5">
 
-              <div item-icon hidden="[[!t.okToCancel]]" >
-                <qa-btn
-                  send-back="[[index]]"
-                  on-btnclick="cancelTask"
-                >
-                  <a>
-                    <iron-icon icon="cancel"></iron-icon> 
-                    <small>Cancel this Task</small>
-                  </a>
-                  </qa-btn>
-              </div>
-
-              
-              <a 
-                hidden="[[!t.okToStart]]"
-                href$="{{baseUrl}}tasks/{{t._id}}"
-              >
-                <iron-icon icon="create"></iron-icon> 
-                <small hidden="[[t.m.inprog]]">
-                  Start this Task
-                </small>
-                <small hidden="[[!t.m.inprog]]">
-                  Resume this Task
-                </small>
-              </a>
-
-            </div>
-
-            <paper-item-body two-line>
               <div>
-                <a hidden="[[!t.m.done]]" href$="taskresult/[[t._id]]">
-                  [[t.subjectDisplayAs]] - [[t.name]]
-                </a>
-
-                <span hidden="[[t.m.done]]">
-                  [[t.subjectDisplayAs]] - [[t.name]]
-                </span>
-      
+                <a class='name' href$="patient/[[t.subjectId]]" title="Patient Detail">[[t.subjectDisplayAs]]</a>
+                <a class='name' hidden="[[!t.m.done]]" href$="taskresult/[[t._id]]" title="Task Data"> - [[t.name]]</a>
+                <span class='name' hidden="[[t.m.done]]"> - [[t.name]]</span>
               </div >
-              <div secondary>
+
+              <div class='age'>
                 <moment-display label="Created" age time dt="[[t.m.init.ts]]" ></moment-display>
                 <span>
                   [[compDur(t.m)]] 
                 </span>
               </div>
-            </paper-item-body>
-            <div class='col3'>
+
+            </div>
+
+
+            <div class="flex-2">
+              <div hidden="[[!t.hasBeenCancelled]]" >
+                <h3>Cancelled</h3>
+              </div>
+
+              <div hidden="[[t.hasBeenCancelled]]" >
+
+                <div item-icon hidden="[[!t.okToCancel]]" >
+                  <qa-btn
+                    send-back="[[index]]"
+                    on-btnclick="cancelTask"
+                  >
+                    <a>
+                      <iron-icon icon="cancel"></iron-icon> 
+                      <small>Cancel this Task</small>
+                    </a>
+                    </qa-btn>
+                </div>
+                
+                <a 
+                  hidden="[[!t.okToStart]]"
+                  href$="{{baseUrl}}tasks/{{t._id}}"
+                >
+                  <iron-icon icon="create"></iron-icon> 
+                  <small hidden="[[t.m.inprog]]">
+                    Start this Task
+                  </small>
+                  <small hidden="[[!t.m.inprog]]">
+                    Resume this Task
+                  </small>
+                </a>
+
+              </div>
+            </div>
+
+
+
+            <div class='flex-3'>
               <task-part-timing
                 hidden="[[t.hasBeenCancelled]]"
                 task-assigned-to="[[t.assignedTo]]"
@@ -243,10 +142,9 @@ Example:
                 on-change="gotTaskTimingChange"
               >
               </task-part-timing>  
-              <div class='assignment'>[[t.assignedTo]]</div>
             </div>
 
-          </paper-icon-item>
+          </div>
         </template>
       </div>
 
@@ -273,7 +171,7 @@ Example:
         endpoint="api/task:cancel"
       ></qa-ajax-poster>
 
-    </div>
+    </paper-card>
   </template>
 
 </dom-module>
@@ -303,6 +201,10 @@ Example:
       baseUrl: {
         type: String,
         value: ""
+      },
+      heading: {
+        type: String,
+        value: "Tasks"
       },
       subjectId: {
         type: String,

@@ -21,7 +21,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../moment-display/moment-display.html">
+<link rel="import" href="section-behaviors.html">
 <link rel="import" href="qa-ajax-poster.html">
+<link rel="import" href="styles/qa-styles.html">
 
 <!--
 
@@ -33,6 +35,7 @@ Example:
 -->
 <dom-module id="list-persons">
 
+  <style is="custom-style" include="qa-styles"></style>
   <style is="custom-style">
 
     :host {
@@ -41,70 +44,6 @@ Example:
     }
    
     :host > ::content .special {
-    }
-   
-    /* form hdr part */
-    .form-hdr ,
-    .form-body {
-      @apply(--layout-horizontal);
-      padding: 4px;
-    }
-
-    .form-body div {
-      margin: 4px;
-    }
-
-    .form-hdr div {
-      margin: 4px;
-    }
-
-    paper-checkbox {
-      display: inline-block;
-      margin: 6px 24px 6px 6px;
-      @apply(--paper-font-body2)
-    }
-
-    .flexchild {
-      @apply(--layout-flex);
-    }
-
-
-    .flex1child {
-      @apply(--layout-flex-1);
-    }
-
-    .flex2child {
-      @apply(--layout-flex-2);
-    }
-
-    .flex3child {
-      @apply(--layout-flex-3);
-    }
-
-    .flex4child {
-      @apply(--layout-flex-4);
-    }
-
-    .flex6child {
-      @apply(--layout-flex-6);
-    }
-
-    .flex8child {
-      @apply(--layout-flex-8);
-    }
-
-    .flex12child {
-      @apply(--layout-flex-12);
-    }
-
-    .list {
-      @apply(--layout-vertical);
-      padding-top: 12px;
-      background-color: white;
-      width: 240px;
-      height: 228px;
-      margin: 12px;
-      @apply(--shadow-elevation-2dp);
     }
 
     .form-num {
@@ -123,76 +62,61 @@ Example:
     .paper-font-caption {
       @apply(--paper-font-caption);
     }
-    paper-card {
-      width: 100%;
-      margin-bottom: 12px;
-    }
-    paper-input ,
-    paper-textarea {
-      margin: 6px;
-    }
-    .card-actions {
-      background-color: #B2DFDB;
-      border-bottom: 1px solid lightgrey;
-    }
-    .card-footer {
-      margin: 12px 6px 12px 6px;
-      padding-top: 16px;
-      padding-left: 16px;
-      border-top: 1px solid lightgrey;
-    }
     paper-button {
       @apply(--paper-font-button);
     }
     .entry { 
       margin-bottom: 16px;
     }
+    .name {
+      font-size: 14px;
+      font-weight: 800;
+    }
     a {
       text-decoration: none;
       display:block;
     }
 
-    a .main {
-      font-size: 1.2em;
-      display: block;
-    }
     .newFab {
       position: fixed;
-      top: 80px;
-      left: 92%;
+      top: 10%;
+      left: 90%;
     }
 
   </style>
 
   <template>
-    <div class="container">
+    <paper-card class="primary" elevation="4" heading="Patient Listing">
       <a class="newFab" title="Create New Patient Record" href$="{{baseUrl}}directsurvey/sc.addperson">
-        <paper-fab icon="add"></paper-fab>
+        <paper-fab elevation=2" icon="add"></paper-fab>
       </a>
-      <div>
-        <template is="dom-repeat" items="[[persons]]" as="p">
-          <div class='entry'>
+      <template is="dom-repeat" items="[[persons]]" as="p">
+        <div class="layout horizontal entry">
+          <div class="flex">
             <a href$="patient/[[p._id]]">
-              <span class='main'>
+              <span class='name'>
               [[p.displayAs]] ([[p.sex]]) 
               <moment-display str="[[p.dob]]" ></moment-display>
               </span>
             </a>
+          </div>
+          <div class="flex">
             <small>
               Last activity: 
               <moment-display time str="[[p.ts]]" ></moment-display>
             <small>
           </div>
-        </template>
-      </div>
+        </div>
+      </template>
       <qa-ajax-poster
         id="ajax_load_persons"       
+        no-toast
         on-response="loadPersonsResponse"
         on-error="loadPersonsError"
         loading="{{is_loading}}"
         endpoint="api/persons:get"
       ></qa-ajax-poster>
-    </div>
+    </paper>
   </template>
 
 </dom-module>
@@ -203,6 +127,8 @@ Example:
   Polymer({
 
     is: 'list-persons',
+
+    behaviors: [ SectionBehaviors.Basic ],
 
     properties: {
       persons: {
@@ -224,10 +150,12 @@ Example:
       console.log(e);
       //e.detail.response.person.dob  = e.detail.response.person.dob.toString().substr(0,10);
       this.set("persons",data.persons);
+      this.applyTitle("Patient Listing");
     },
 
     loadPersonsError: function(e){
       console.log(e);
+
     }
 
   });

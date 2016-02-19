@@ -10,19 +10,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-card/paper-card.html">
-<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-item/paper-icon-item.html">
 <link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-menu/paper-menu.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../iron-localstorage/iron-localstorage.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="question-behaviors.html">
+<link rel="import" href="section-behaviors.html">
 <link rel="import" href="question-mc.html">
 <link rel="import" href="question-ft.html">
 <link rel="import" href="question-ne.html">
@@ -92,10 +91,6 @@ Example:
       @apply(--paper-font-button);
     }
 
-    paper-menu {
-      --paper-menu-color: #fff;
-    }
-
     .display_num {
       @apply(--paper-font-body2)
       text-align: right;
@@ -143,14 +138,9 @@ Example:
       background-color: var(--paper-green-300);
     }
 
-    .card-footer {
-      margin: 12px 6px 12px 6px;
-      padding-top: 16px;
-      padding-left: 16px;
-      border-top: 1px solid lightgrey;
-      @apply(--paper-font-body2)
+    .next-task-name {
+      padding-bottom: 8px;
     }
-
     .padbottom {
       padding-bottom: 128px;
     }
@@ -166,15 +156,6 @@ Example:
 
     <div class="padbottom" hidden="[[!subjectId]]">
 
-      <div class="survey-hdr">
-        <div class="hdr-left">
-          <div class='subtitle'>[[stateMsg]]</div>
-        </div>
-        <div class="hdr-right">
-          <div class='subtitle'>[[summaryTxt]]</div>
-        </div>
-      </div>
-
       <div id="qlistWrap">
         <!--the container for our question components, dynamically inserted-->
         <div id="qlist">
@@ -182,23 +163,27 @@ Example:
         </div>
       </div>
 
-      <div hidden="[[!taskDefinition.tasksToAdd.length]]" >
-        <h3>The following tasks will be created when you submit this task</h3>
-        <ol>
+      <div hidden="[[submissionResult]]" >
+        <paper-card 
+         class="primary"
+         elevation="4"
+         hidden="[[!taskDefinition.tasksToAdd.length]]" 
+         heading="The following tasks will be created when you submit this task"
+        >
           <template is="dom-repeat" items="[[taskDefinition.tasksToAdd]]" as="tta">
-            <li class="justified-container next-task-preview">
-              <div class='vbottom'>
+            <div class="layout justified end horizontal">
+              <div class="next-task-name">
                 [[tta.name]]
               </div>
-              <div>
+              <div >
                 <team-dropdown
                   selected-user="{{tta.assignedTo}}"
                 >
                 </team-dropdown>
               </div>
-            </li>
+            </div>
           </template>
-        </ol>
+        </paper-card>
       </div>
 
       <div class='justified-container submit-area' hidden="[[submissionResult]]" >
@@ -213,7 +198,9 @@ Example:
             <iron-icon icon="thumb-down"></iron-icon>
           </paper-button>
         </div>
+
         <div><!--stub for justify--></div>
+
         <div>
           <paper-button 
           class='good'
@@ -225,13 +212,14 @@ Example:
             <iron-icon icon="thumb-up"></iron-icon>
           </paper-button>
         </div>
+
       </div>
 
-      <div class='card-footer' hidden="[[!submissionResult]]" >
-        <h2>Submitted Successfully:</h2>
+      <div class='' hidden="[[!submissionResult]]" >
+        <h2>Submitted Successfully</h2>
         <div hidden="[[!hasNextTasks]]">
-          <h3>Next Steps:</h3>
           <list-tasks
+            heading="New Tasks Generated"
             id="nextTasks"
             subject-id="[[subjectId]]"
           ></list-tasks>
@@ -243,20 +231,21 @@ Example:
     <dialog-incompletion id="incompletionDialog" ></dialog-incompletion>
 
     <iron-ajax
-      id="ajax_load_task"
-      handle-as="json",
-      on-response="loadTaskResponded"
-      on-error="loadTaskError"
-      loading="{{is_loading}}"
-    ></iron-ajax>
-
-    <iron-ajax
       id="ajax_load_survey"       
       handle-as="json",
       on-response="loadSurveyResponded"
       on-error="loadSurveyError"
       loading="{{is_loading}}"
     ></iron-ajax>
+
+    <qa-ajax-poster
+      id="ajax_load_task"
+      no-toast
+      on-response="loadTaskResponded"
+      on-error="loadTaskError"
+      loading="{{is_loading}}"
+      endpoint="api/task:get"
+    ></qa-ajax-poster>
 
     <qa-ajax-poster
       id="ajax_task_inprog"       
@@ -313,6 +302,8 @@ Example:
 
     is: 'survey-b',
 
+    behaviors: [ SectionBehaviors.Basic ],
+
     properties: {
 
       directSurveyUrl: {
@@ -336,6 +327,11 @@ Example:
       },
 
       summaryTxt: {
+        type: String,
+        value: function(){ return ""; }
+      },
+
+      stateMsg: {
         type: String,
         value: function(){ return ""; }
       },
@@ -396,9 +392,8 @@ Example:
       if ( !this.taskId ) return;
 
       this._reset();
-      this.$.ajax_load_task.url=window.APIBASEURL+"api/task:get?taskId="+this.taskId;
-      //console.log("["+this.$.ajax_load_task.url+"]");
-      this.$.ajax_load_task.generateRequest();
+      var payload = { taskId: this.taskId };
+      this.$.ajax_load_task.send(payload);
       return;
     },
 
@@ -407,9 +402,9 @@ Example:
       return;
     },
 
-    loadTaskResponded: function(e){ 
-      this.set("task",e.detail.response.task);
-      var dataDoc = _.get(e,"detail.response.dataDoc",false);
+    loadTaskResponded: function(e,data){ 
+      this.set("task",data.task);
+      var dataDoc = _.get(data,"dataDoc",false);
       if (dataDoc){
         this.set("dataDoc",dataDoc); 
       }
@@ -536,7 +531,7 @@ Example:
 
       if ( this.dataDoc ) this._populateAnswers();
       this._updateStateMsg();
-
+      this.applyTitle( this.taskDefinition.name );
     },
 
     _updateStateMsg: function(){
@@ -557,6 +552,7 @@ Example:
     },
 
     _populateAnswers: function(){
+      console.log('populating answers');
       this.isPopulating=true;
       var addons=0;
       for(var k in this.dataDoc.qref){
@@ -649,6 +645,11 @@ Example:
         qstate_counts[2], "of", answers.length, " Question Completed,",
         qstate_counts[3], "NA"
       ].join(" "));
+
+      if ( this.task )
+        this.applyTitle( [this.task.subjectDisplayAs , this.task.name , this.summaryTxt ].join(" - ") );
+      else
+        this.applyTitle( this.taskDefinition.name );
 
       this.set("answers",answers);
       var incomplete = this.answers.length - ( qstate_counts[2] + qstate_counts[3] );

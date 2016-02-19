@@ -15,7 +15,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-item/paper-item-body.html">
-<link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../moment-display/moment-display.html">
@@ -26,6 +25,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="list-tasks.html">
 <link rel="import" href="card-contact.html">
 <link rel="import" href="qa-ajax-poster.html">
+<link rel="import" href="styles/qa-styles.html">
 
 <!--
 
@@ -36,7 +36,7 @@ Example:
 @demo
 -->
 <dom-module id="card-person">
-
+  <style is="custom-style" include="qa-styles"></style>
   <style is="custom-style">
 
     :host {
@@ -52,38 +52,6 @@ Example:
       @apply(--layout-horizontal);
       @apply(--layout-justified);
       @apply(--paper-font-body2)
-    }
-
-    .flexchild {
-      @apply(--layout-flex);
-    }
-
-    .flex1child {
-      @apply(--layout-flex-1);
-    }
-
-    .flex2child {
-      @apply(--layout-flex-2);
-    }
-
-    .flex3child {
-      @apply(--layout-flex-3);
-    }
-
-    .flex4child {
-      @apply(--layout-flex-4);
-    }
-
-    .flex6child {
-      @apply(--layout-flex-6);
-    }
-
-    .flex8child {
-      @apply(--layout-flex-8);
-    }
-
-    .flex12child {
-      @apply(--layout-flex-12);
     }
 
     .list {
@@ -112,32 +80,7 @@ Example:
     .paper-font-caption {
       @apply(--paper-font-caption);
     }
-    paper-card {
-      width: 100%;
-      margin-bottom: 4px;
-      --paper-card-content : {
-      }
-      --paper-card-header : {
 
-      };
-      --paper-card-header-text: {
-        font-size: 16px;
-        color: gray;
-      }
-    }
-
-    paper-input ,
-    paper-textarea {
-      margin: 6px;
-    }
-    .card-actions {
-      background-color: #B2DFDB;
-    }
-    .card-footer {
-      margin: 12px 6px 12px 6px;
-      padding-top: 16px;
-      padding-left: 16px;
-    }
     paper-button {
       @apply(--paper-font-button);
     }
@@ -150,7 +93,8 @@ Example:
       <paper-toolbar>
         <paper-tabs id="tabSelector" selected="{{selectedTab}}">
           <paper-tab link>Primary Info</paper-tab>
-          <paper-tab>Tasks</paper-tab>
+          <paper-tab>Open Tasks</paper-tab>
+          <paper-tab>Closed Tasks</paper-tab>
           <paper-tab>Activity</paper-tab>
         </paper-tabs>
         <span class="title"><!--stub--></span>
@@ -172,41 +116,33 @@ Example:
         </section>
 
         <section data-tab='tasks' >
-          <paper-card  
-            heading="Tasks Not Yet Started"
+          <list-tasks
             hidden="[[!person]]"
-            elevation=1>
-            <list-tasks
-              class='card-content' 
-              id="openTasks"
-              subject-id="[[subjectId]]"
-              state='["init"]'
-            ></list-tasks>
-          </paper-card>
+            heading="Not Yet Started"
+            class='card-content' 
+            id="openTasks"
+            subject-id="[[subjectId]]"
+            state='["init"]'
+          ></list-tasks>
+          <list-tasks
+            hidden="[[!person]]"
+            heading="In Progress"
+            class='card-content' 
+            id="inprogTasks"
+            subject-id="[[subjectId]]"
+            state='["inprog"]'
+          ></list-tasks>
+        </section>
 
-          <paper-card  
-          heading="Tasks In Progress"
-          hidden="[[!person]]"
-          elevation=1>
-            <list-tasks
-              class='card-content' 
-              id="inprogTasks"
-              subject-id="[[subjectId]]"
-              state='["inprog"]'
-            ></list-tasks>
-          </paper-card>
-
-          <paper-card  
-          heading="Tasks Completed"
-          hidden="[[!person]]"
-          elevation=1>
-            <list-tasks
-              class='card-content'
-              id="completedTasks"
-              subject-id="[[subjectId]]"
-              state='["done"]'
-            ></list-tasks>
-          </paper-card>
+        <section data-tab='closedtasks'>
+          <list-tasks
+            hidden="[[!person]]"
+            heading="Tasks Completed"
+            class='card-content'
+            id="completedTasks"
+            subject-id="[[subjectId]]"
+            state='["done"]'
+          ></list-tasks>
         </section>
 
         <section data-tab='activity' >
@@ -216,6 +152,7 @@ Example:
 
       <qa-ajax-poster
         id="ajax_load_person"       
+        no-toast
         handle-as="json",
         on-response="loadPersonResponse"
         on-error="loadPersonError"
