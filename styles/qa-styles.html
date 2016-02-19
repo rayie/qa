@@ -6,8 +6,41 @@
         @apply(--paper-font-display2);
       }
 
+      paper-card.primary {
+        width: 100%;
+        margin-bottom: 8px;
+        padding: 16px;
+        --paper-card-header-text: {
+          padding-left: 0;
+          font-size: 12px;
+          color: gray;
+          font-weight: 600;
+        }
+      }
+      
+      moment-display {
+        --display-size: 12px;
+        --label-size: 12px;
+      }
+
+      moment-display.emph {
+        --display-size: 14px;
+        --label-size: 14px;
+
+        --display-weight: 850;
+        --label-weight: 850;
+
+        --display-color: #00695C;
+        --label-color: #00695C;
+      }
+
       paper-button {
         @apply(--paper-font-button);
+      }
+
+      paper-button.good {
+        background: #388E3C;
+        color: #fff;
       }
 
       paper-button.bad {
@@ -15,6 +48,7 @@
         color: #fff;
       }
 
+      paper-button.good[disabled] ,
       paper-button.bad[disabled] {
         background: #eaeaea;
         color: ##a8a8a8;

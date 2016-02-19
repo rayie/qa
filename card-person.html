@@ -13,6 +13,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-input/paper-input-container.html">
+<link rel="import" href="../paper-input/paper-input-error.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-item/paper-item-body.html">
 <link rel="import" href="../paper-styles/typography.html">
@@ -25,6 +27,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="list-tasks.html">
 <link rel="import" href="card-contact.html">
 <link rel="import" href="qa-ajax-poster.html">
+<link rel="import" href="qa-dateinput.html">
 <link rel="import" href="styles/qa-styles.html">
 
 <!--
@@ -113,6 +116,14 @@ Example:
             id="contactCard"
             subject-id="[[person._id]]">
           </card-contact>
+          
+          <qa-dateinput
+            always-float-label
+            required
+          >
+          </qa-dateinput>
+
+
         </section>
 
         <section data-tab='tasks' >
