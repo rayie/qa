@@ -1,0 +1,184 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-styles/typography.html">
+<link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="qa-dateinput.html">
+<link rel="import" href="question-behaviors.html">
+<link rel="import" href="question-part-hdr.html">
+<link rel="import" href="question-part-footer.html">
+
+<!--
+An element providing a solution to no problem in particular.
+
+Example:
+
+    <seed-element></seed-element>
+
+@demo
+-->
+<dom-module id="question-dt">
+
+  <style is="custom-style">
+
+    :host {
+      display: block;
+      box-sizing: border-box;
+    }
+   
+    :host > ::content .special {
+      background: orange;
+    }
+   
+    .paper-font-caption {
+      @apply(--paper-font-caption);
+    }
+
+    paper-card {
+      --paper-card-header-color: blue;
+      width: 100%;
+      margin-bottom: 12px;
+    }
+    .card-content {
+      @apply(--layout-horizontal);
+      @apply(--layout-justified);
+      display: inline-block;
+    }
+   .hilite-qhdr-bg {
+     --qhdr-bgcolor: #FFFDE7;
+   }
+
+  </style>
+
+  <template>
+    <div class="">
+      <paper-card  elevation=1>
+
+        <question-part-hdr
+          txt="[[txt]]"
+          sub="[[sub]]"
+          display_num="[[display_num]]"
+          seq_num="[[seq_num]]"
+          is_conditional="[[is_conditional]]"
+        >
+        </question-part-hdr>
+
+        <div class="card-content">
+          <qa-dateinput
+            id="dateinput"
+            is="iron-input"
+            input
+            label="Date, any format, (feb 14, today, next week, etc)"
+            always-float-label
+            value="{{answer}}"
+            on-blur="gotBlur"
+          >
+          </qa-input>
+        </div>
+
+        <div class='prompt-area' id='promptdiv' hidden >
+          <strong>Prompt:</strong>
+          <span>
+            {{ prompt }}
+          </span>
+        </div>
+
+        <question-part-footer
+          id="qpartFooter"
+          warn_msg="[[warn_msg]]"
+          qstate="[[qstate]]"
+          sn="{{sn}}"
+          on-qstate-changed="qstateChangedInFooter"
+        >
+        </question-part-footer>
+
+      </paper-card>
+    </div>
+  </template>
+
+</dom-module>
+
+<script>
+  Polymer({
+
+    is: 'question-dt',
+
+    behaviors: [ QuestionBehaviors.Basic, QuestionBehaviors.QuestionsOnly ],
+
+    properties: {
+
+      answer: {
+        type: String,
+        notify: true,
+        value: function(){ return "" }
+      },
+
+      precision: {
+        type: Number,
+        value: 0
+      }
+
+    },
+
+    populateNext: function(answer){
+      console.log("answer populating:", answer);
+      if ( this.answer ){
+        this.set("qstate",2);
+      }
+      else {
+        this.set("qstate",2);
+      }
+      this.set("answer",answer);
+      this.$.dateinput.validate(this.answer);
+    },
+
+    gotBlur: function(){
+      var ask=false;
+      if (this.answer){
+        this.qstate=2;
+      }
+      else {
+        this.qstate=0;
+      }
+
+      return; 
+      /* TODO:  handlie conditionals */
+
+      if ( ask ) 
+        var sibs_to_reveal=[].concat( this.rule.ask );
+      else
+        var sibs_to_reveal=[];
+
+
+      //compare against last state of siblings to reveal
+      var to_hide = _.difference( this.siblingsrevealed, sibs_to_reveal);
+      var to_reveal = _.difference( sibs_to_reveal, this.siblingsrevealed);
+      
+      this.siblingsrevealed = [].concat(sibs_to_reveal);
+
+      if ( to_hide.length || to_reveal ){
+        this.siblingdisplay = {
+          hide: to_hide,
+          reveal: to_reveal
+        }
+      }
+
+    }
+
+  });
+
+</script>

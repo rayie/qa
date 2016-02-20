@@ -39,7 +39,8 @@
     "iron-localstorage": "PolymerElements/iron-localstorage#~1.0.5",
     "paper-menu": "PolymerElements/paper-menu#~1.2.2",
     "moment-display": "rayie/moment-display#~0.0.1",
-    "paper-date-picker": "polymer-paper-date-picker#~1.1.2"
+    "paper-date-picker": "polymer-paper-date-picker#~1.1.2",
+    "datejs-parseronly-import": "rayie/Datejs"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",

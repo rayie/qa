@@ -28,15 +28,22 @@ var parse = function(data){
 
     switch(cols[1]){
       case "mc":
-        if ( undefined === cols[3] ){
+        if ( undefined === cols[4] ){
           console.log("Missing options", cols[0]);
           process.exit();
         }
 
-        cols[3] = _.trimEnd( cols[3].replace(/,{2,}/g,","),",")
-        entry.opts = cols[3].split(/\,/g).map(function(str){
+        cols[4] = _.trimEnd( cols[4].replace(/,{2,}/g,","),"," );
+        entry.opts = cols[4].split(/\,/g).map(function(str){
           return { txt: _.upperFirst(str) }; 
         });
+
+        if ( cols[3] ){
+          var max = parseInt( cols[3] );
+          if (!isNaN(max)){
+            entry.minmax = [ 1, max ];
+          }
+        }
         break;
       default: 
         break;
@@ -57,7 +64,7 @@ var parse = function(data){
 
   tagref['all assessments'].forEach(function(e){
     for(var k in tagref){
-      if ( k=='all assessments' || k=='demographic' ) { }
+      if ( k=='all assessments' || k=='demographic' || k=='casebuild' ) { }
       else {
         console.log(k);
         tagref[k].push(e);
@@ -65,22 +72,29 @@ var parse = function(data){
     }
   });
 
-  console.log(tagref);
+  //console.log(tagref);
   var proms = [];
+  var taskdef_list = [];
   for(var k in tagref){
     if ( k !== "all assessments" ){
       var taskDef = {
         type: "data",
         name: _.upperFirst(k),
         qq: tagref[k],
-        upon: { submit: [ ] }
+        upon: { submit: [ ] },
+        url: "flows/sc.copd."+k+".json", 
       }
-      proms.push( fs.writeFileAsync( "/tmp/sc.copd."+k+".json", JSON.stringify( taskDef, null, "\t" ) ) );
+      proms.push( 
+        fs.writeFileAsync( "/var/www/superapi/public/flows/tmp/sc.copd."+k+".json", JSON.stringify( taskDef, null, "\t" )) 
+      );
+
+      taskdef_list.push( { url: taskDef.url , name: taskDef.name, plannedFor: "asap" } );
     }
   }
   Promise.all(proms)
   .then(function(results){
-    console.log("done with rpoms", results);
+    console.log("done with rpoms");
+    console.log(taskdef_list);
   });
 
 }

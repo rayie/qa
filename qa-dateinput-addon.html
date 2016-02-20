@@ -37,7 +37,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         font-weight: var(--msg-weight,300); 
       };
     </style>
-    <content></content>
+    <span>[[msg]]</span>
   </template>
 </dom-module>
 
@@ -50,6 +50,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     ],
 
     properties: {
+      msg: { 
+        type: String , 
+        value: function(){ return "Waiting for date entry..."; } 
+      },
       /**
        * True if the error is showing.
        */

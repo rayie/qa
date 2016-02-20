@@ -25,6 +25,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="question-mc.html">
 <link rel="import" href="question-ft.html">
 <link rel="import" href="question-ne.html">
+<link rel="import" href="question-dt.html">
 <link rel="import" href="form-address.html">
 <link rel="import" href="form-contact.html">
 <link rel="import" href="form-person.html">
@@ -424,7 +425,6 @@ Example:
 
     _loadSurvey: function(surveyUrl){
       this.$.ajax_load_survey.url= surveyUrl;
-      //console.log("surveyUrl",this.$.ajax_load_survey.url);
       this.$.ajax_load_survey.generateRequest();
     },
 
@@ -476,9 +476,9 @@ Example:
     },
 
     loadSurveyResponded: function(event){
-      //console.log(event.detail.response);
       if (!event.detail.response){
         this.set("subjectId",null);
+        console.log("no event response",event.detail.response);
         return;
       }
 
@@ -584,8 +584,9 @@ Example:
       else switch(q.kind){
         case "ft":
         case "ne":
+        case "dt":
         case "form":
-          var a= q.answer;
+          var a = q.answer;
           break;
         case "mc":
           var a =[];

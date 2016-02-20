@@ -20,38 +20,48 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       Polymer.IronValidatorBehavior
     ],
     properties: {
+      num: { type: Number },
       errorMessage: {
         type: String,
         notify:true
+      },
+      trueValue: {
+        type: String,
+        notify: true,
+        value: function(){ return "" }
       }
     },
     attached: function(){
       //console.log('date validator attached');
     },
     validate: function(value) {
+      // console.log("validating for num ", this.num, value);
       // this regex validates incomplete ssn's (by design)
-      console.log("parsing value", value);
       if ( !value ){
         var msg = "";
         this.set("errorMessage",msg);
+        this.set("trueValue","");
         return false;
       }
 
       if ( value.length < 4 ){
         var msg = "...keep typing";
         this.set("errorMessage",msg);
+        this.set("trueValue","");
         return false;
       }
       
       var pr = Date.parse( value );
+
       if ( pr === null ){
         var msg = "... can't interpret your entry, try again";
         this.set("errorMessage",msg);
+        this.set("trueValue","");
         return false;
       }
 
-
       var msg = pr.toString().substr(0,15);
+
       var m  = moment(pr);
 
       var now = new Date();
@@ -62,7 +72,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       else{
         msg += " (" + m.fromNow() + ")";
       }
-      console.log("validating", msg);
+
+      this.set("trueValue",m.format("MM-DD-YYYY"));
       this.set("errorMessage",msg);
       return true;
     }

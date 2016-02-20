@@ -19,6 +19,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="qa-dateinput.html">
 <link rel="import" href="question-part-hdr.html">
 <link rel="import" href="question-part-footer.html">
 
@@ -116,6 +117,8 @@ Example:
       width: 100%;
       margin-bottom: 12px;
     }
+
+    qa-dateinput,
     paper-input ,
     paper-dropdown-menu,
     paper-textarea {
@@ -227,20 +230,17 @@ Example:
               ></paper-input>
             </div>
             <div class='flex3child'>
-              <paper-input
+              <qa-dateinput
                 is="iron-input"
-                on-change="answerChanged"
+                on-blur="answerChanged"
                 input
                 required
-                validator="nonEmptyString"
                 type="text"
-                label="Date of Birth (m-d-y)"
+                label="Date of Birth, any format"
                 name="DOB"
                 always-float-label
-                error-message="Required"
                 value="{{answer.dob}}"
-                maxlength="[[maxlength]]"
-              ></paper-input>
+              ></qa-dateinput>
             </div>
             <div class='flex3child'>
               <paper-input

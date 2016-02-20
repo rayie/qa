@@ -17,9 +17,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-input/paper-input-char-counter.html">
 <link rel="import" href="../paper-input/paper-input-container.html">
 <link rel="import" href="../paper-input/paper-input-error.html">
-<link rel="import" href="qa-date-validator.html">
+<link rel="import" href="../datejs-parseronly-import/datejs-parseronly-import.html">
+<link rel="import" href="../moment-display/moment-import.html">
 <link rel="import" href="qa-dateinput-addon.html">
-
 <!--
 -->
 
@@ -47,15 +47,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
 
-    <paper-input-container no-label-float="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" 
-    invalid="[[invalid]]"
+    <paper-input-container 
+      no-label-float="[[noLabelFloat]]" 
+      always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" 
+      auto-validate$="[[autoValidate]]" 
+      disabled$="[[disabled]]" 
+      invalid="[[invalid]]"
     >
-
-      <content select="[prefix]"></content>
-
       <label hidden$="[[!label]]">[[label]]</label>
-
-      <input is="iron-input" id="input"
+      <input 
+        is="iron-input" 
+        id="input"
         aria-labelledby$="[[_ariaLabelledBy]]"
         aria-describedby$="[[_ariaDescribedBy]]"
         disabled$="[[disabled]]"
@@ -85,26 +87,39 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         accept$="[[accept]]"
         multiple$="[[multiple]]">
 
-      <content select="[suffix]"></content>
-
-      <qa-dateinput-addon >
-        [[errorMessage]]
-      </qa-dateinput-addon>
-
+      <qa-dateinput-addon 
+        num="[[num]]" 
+        msg="[[msg]]"
+      ></qa-dateinput-addon>
     </paper-input-container>
-    <qa-date-validator error-message="{{errorMessage}}"></qa-date-validator>
+
+    <!--
+    <qa-date-validator 
+      num="[[num]]"
+      error-message="{{errorMessage}}"
+      true-value="{{trueValue}}"
+    >
+    </qa-date-validator>
+    -->
+
   </template>
 </dom-module>
 
 <script>
   Polymer({
+
     is: 'qa-dateinput',
 
     behaviors: [
       Polymer.IronFormElementBehavior,
-      Polymer.IronValidatableBehavior,
       Polymer.PaperInputBehavior
     ],
+
+    attached: function(){
+      console.log("qa-dateinput attached  ", this.value);
+      this.set("num",Math.round(Math.random()*500));
+      this.validate(this.value);
+    },
 
     listeners: {
       'input': '_onInput',
@@ -113,21 +128,77 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     _onInput: function(){
       this.value = this.$.input.value;
-      console.log("got input", this.value);
+      this.validate(this.value);
     },
 
     _onBlur: function(){
-      console.log("got blur", this.value);
+      this.set("value", this.trueValue );
     },
 
     properties: {
+      num: {
+        type: Number,
+        value: function(){
+          return Math.round(Math.random()*500);
+        }
+      },
       label: {
-        value: "Date, any format, today, tomorrow"
+        type: String,
+        value: function(){ return "Date, any format (4-3-16, today, next week)"; }
       },
-      validator: {
-        value: "qa-date-validator"
-      },
-      autoValidate: { type: Boolean, value: true }
+      msg: {
+        type: String,
+        value: function(){  return "Initial msg"; }
+      }
+    },
+
+    validate: function(value) {
+      // console.log("validating for num ", this.num, value);
+      // this regex validates incomplete ssn's (by design)
+      if ( !value ){
+        var msg = "";
+        this.set("invalid",true);
+        this.set("msg",msg);
+        this.set("trueValue","");
+        return false;
+      }
+
+      if ( value.length < 4 ){
+        var msg = "..keep typing";
+        this.set("invalid",true);
+        this.set("msg",msg);
+        this.set("trueValue","");
+        return false;
+      }
+
+      var pr = Date.parse( value );
+
+      if ( pr === null ){
+        var msg = "..can't interpret,try again.";
+        this.set("invalid",true);
+        this.set("msg",msg);
+        this.set("trueValue","");
+        return false;
+      }
+
+      var msg = pr.toString().substr(0,15);
+
+      var m  = moment(pr);
+
+      var now = new Date();
+
+      if ( m.isSame(now,'day') ){
+
+      }
+      else{
+        msg += " (" + m.fromNow() + ")";
+      }
+
+      this.set("invalid",false);
+      this.set("trueValue",m.format("MM-DD-YYYY"));
+      this.set("msg",msg);
+      return true;
     }
+
   });
 </script>
