@@ -35,7 +35,7 @@ Example:
     :host {
       display: block;
       box-sizing: border-box;
-      background-color: #B2DFDB;
+      background-color: #B0BEC5;
     }
 
     :host.hilite-qhdr-bg {
@@ -46,21 +46,17 @@ Example:
       @apply(--layout-horizontal);
     }
     .qhdr div {
-      padding: 2px
+      @apply(--paper-font-body2)
+      padding: 2px;
     }
-    .flexchild {
-      @apply(--layout-flex);
-    }
-    .flex-main-child {
-      @apply(--layout-flex-6);
-    }
+
     .display_num {
-      @apply(--paper-font-body2)
       text-align: right;
+      color: #004D40;
+      font-weight: 300;
+      @apply(--paper-font-caption)
     }
-    .main-q-txt {
-      @apply(--paper-font-body2)
-    }
+
     .sub-q-txt {
       @apply(--paper-font-caption)
     }
@@ -73,9 +69,10 @@ Example:
 
   <template>
     <div class="card-actions" >
-      <div class="qhdr">
-        <div class='flex-main-child main-q-txt' title="Question ID: [[display_num]]">[[seq_num]]. [[txt]]</div>
-        <div hidden class='flexchild display_num'> - [[display_num]]</div>
+      <div class="qhdr layout horizontal">
+        <div class='flex-1'>[[seq_num]].</div>
+        <div class='flex-10 main-q-txt' title="Question ID: [[display_num]]">[[txt]]</div>
+        <div class='flex-4 display_num'>[[display_num]]</div>
       </div>
       <span class="sub-q-txt">{{sub}}</small>
     </div>

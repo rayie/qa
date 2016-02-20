@@ -530,8 +530,9 @@ Example:
       });
 
       if ( this.dataDoc ) this._populateAnswers();
+
       this._updateStateMsg();
-      this.applyTitle( this.taskDefinition.name );
+      this._applyTitle();
     },
 
     _updateStateMsg: function(){
@@ -647,10 +648,7 @@ Example:
         qstate_counts[3], "NA"
       ].join(" "));
 
-      if ( this.task )
-        this.applyTitle( [this.task.subjectDisplayAs , this.task.name , this.summaryTxt ].join(" - ") );
-      else
-        this.applyTitle( this.taskDefinition.name );
+      this._applyTitle();
 
       this.set("answers",answers);
       var incomplete = this.answers.length - ( qstate_counts[2] + qstate_counts[3] );
@@ -665,6 +663,13 @@ Example:
       )
         return this.saveData();
       
+    },
+
+    _applyTitle: function(){
+      if ( this.task )
+        this.applyTitle( [this.task.subjectDisplayAs , this.task.name , this.summaryTxt ].join(" - ") );
+      else
+        this.applyTitle( this.taskDefinition.name );
     },
 
     taskInprog: function(){

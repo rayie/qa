@@ -59,14 +59,17 @@ Example:
 
     label {
       font-size: 12px;
+      font-weight: 420;
       background-color: #80CBC4;
-      padding: 3px; 12px;
+      padding: 6px 6px;
       display: inline;
     }
 
     .answer {
       margin-top: 8px;
       font-size: 14px;
+      font-weight: 620;
+      padding: 6px 6px;
     }
 
     .row {
@@ -99,8 +102,7 @@ Example:
       <template is="dom-repeat" items="[[qq]]" as="q" >
         <div class='row'> 
           <label>
-            [[q.display_num]]
-            [[q.txt]]
+            [[q.display_num]] - [[q.txt]]
           </label>
           <div class='answer'>[[q.ans]]</div>
         </div>
@@ -235,10 +237,11 @@ Example:
           switch(q.kind){
             case "mc":
               q.ans = [];
+              answer.sort();
               answer.forEach(function(a){
-                q.ans.push( q.opts[a].txt );
+                q.ans.push( (a+1) + ") " + q.opts[a].txt );
               });
-              q.ans = q.ans.join(",");
+              q.ans = q.ans.join(", ");
               console.log(q.ans);
               break;
             default:

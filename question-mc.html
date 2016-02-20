@@ -46,7 +46,7 @@ Example:
       }; 
     }
     .prompt-area {
-      @apply(--paper-font-body2);
+      @apply(--paper-font-body1);
       border-bottom: 1px solid lightgey;
       background-color: #ffcc80;
       margin-bottom: 12px;
@@ -61,6 +61,9 @@ Example:
       --paper-card-header-color: blue;
       width: 100%;
       margin-bottom: 12px;
+    }
+    .opt-txt {
+      @apply(--paper-font-body1);
     }
 
   </style>
@@ -110,7 +113,7 @@ Example:
                 >
                 </iron-icon>
                 -->
-                <div class="">{{opt.txt}}</div>
+                <div class="opt-txt">{{opt.txt}}</div>
               </paper-icon-item>
             </template>
           </paper-listbox> 

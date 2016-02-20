@@ -25,11 +25,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 Example:
 
-    <card-contact></card-contact>
+    <card-data-display></card-data-display>
 
 @demo
 -->
-<dom-module id="card-contact">
+<dom-module id="card-data-display">
 
   <style is="custom-style" include="qa-styles">
   <style is="custom-style">
@@ -128,7 +128,6 @@ Example:
                 </address>
               </div>
 
-
               <div class="flex-2">
                 <moment-display label="Updated" str="[[a.ts]]" time></moment-display>
               </div>
@@ -160,7 +159,7 @@ Example:
 
   Polymer({
 
-    is: 'card-contact',
+    is: 'card-data-display',
 
     properties: {
       addr: {
