@@ -111,11 +111,20 @@ Example:
       <iron-pages selected="{{selectedTab}}">
 
         <section data-tab='primaryInfo' >
+          <paper-card elevation='4' class='primary'
+            heading="Patient Card"
+          >
+            <div class='main-data'>
+              Name: [[person.ln]], [[person.fn]] [[person.mn]]
+            </div>
+            <div class='main-data'>
+              DOB: [[person.dobStr]]
+            </div>
+          </paper-card> 
           <card-contact 
             id="contactCard"
             subject-id="[[person._id]]">
           </card-contact>
-
         </section>
 
         <section data-tab='tasks' >
@@ -203,11 +212,14 @@ Example:
       var now = new Date();
       var list=[];
 
-      this.set("person",data.person);
-      var dobStr = _.trimRight( moment( data.person.dob ).fromNow(true), "s" );
+      var m = moment(person.dob);
+      var age = _.trimRight( m.fromNow(true), "s" );
       var S = { M: "Male", F: "Female" };
-      this.applyTitle(person.displayAs + " - " + dobStr + " old " + S[person.sex]);
+      person.sex = S[person.sex];
+      person.dobStr = m.format("MMMM DD, YYYY"); 
 
+      this.set("person",person);
+      this.applyTitle(person.displayAs + " - " + age + " old " + person.sex);
       this.$.openTasks.loadTasks();
       this.$.inprogTasks.loadTasks();
       this.$.completedTasks.loadTasks();

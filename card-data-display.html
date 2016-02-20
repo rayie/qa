@@ -51,14 +51,6 @@ Example:
       margin: 6px;
     }
 
-    .main {
-      font-size: 14px;
-      font-weight: 600;
-      color: #455A64;
-      font-style: normal;
-      margin-top: 8px;
-    }
-
     .leftborder {
       border-left: 2px solid #512DA8;
       padding-left: 16px;
@@ -100,7 +92,7 @@ Example:
 
               <div class="flex-5">
                 <label class='lbl'>[[c.contact_rel]] [[c.contact_name]]</label>
-                <div class="main">
+                <div class="main-data">
                   [[c.method]]: [[c.contact_value]]
                   <div class='note' hidden="[[!c.note]]">Note: [[c.note]]</div>
                 </div>
@@ -120,7 +112,7 @@ Example:
                 <template is="dom-repeat" items="[[a.lbls]]" as="lbl">
                   <label class='lbl'>[[lbl]]</label>
                 </template>
-                <address class="main">
+                <address class="main-data">
                   [[a.addr1]]
                   <span class='addr2' hidden="[[!a.addr2]]">[[a.addr2]]</span>
                   [[a.city]],[[a.state]] [[a.zip]]
