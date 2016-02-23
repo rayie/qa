@@ -1,5 +1,6 @@
 
 var fs = require("fs");
+Array.prototype.insertAt = function (i,el){ return this.splice(i,0,el); }
 var Promise = require("bluebird");
 Promise.promisifyAll(fs);
 
@@ -7,6 +8,18 @@ var _ = require("lodash");
 var newID = 500000;
 var increment = 100;
 var tagref = { };
+var CONST = {
+  QTXT: 0,
+  KIND: 1,
+  NA_NOT_ALLOWED: 2,
+  CORRECTION_NOT_ALLOWED: 3,
+  EXPIRE_ALLOWED: 4,
+  CONCURRENCY_NOT_ALLOWED: 3,
+  TAGS: 6,
+  MAX_OPTS: 7,
+  OPTS: 8
+
+}
 var parse = function(data){
   //console.log(data);
   var rows = data.toString().split(/\n/);
@@ -17,29 +30,42 @@ var parse = function(data){
     var cols = row.split(/\t/g);
     newID+=increment;
 
-    var tags =  cols[2].split(/,/);
+    var tags =  cols[CONST.TAGS].split(/,/);
 
     var entry = {
       _id: newID,
-      txt: _.upperFirst(cols[0]),
-      kind: cols[1],
-      tags: tags
-    }
+      txt: _.upperFirst(cols[CONST.QTXT]),
+      kind: cols[CONST.KIND],
+      tags: tags,
+      allow: {
+        na: true,
+        survey_note: true,
+        correction: true,
+        expiration: false,
+        concurrency: true,
+        multiple: 0  //the number of additional instances within a single survey session user allowed to add
+      }
+    };
+    
+    if ( cols[CONST.NA_NOT_ALLOWED] ) entry.allow.na=false; 
+    if ( cols[CONST.CORRECTION_NOT_ALLOWED] ) entry.allow.correction=false; 
+    if ( cols[CONST.EXPIRE_ALLOWED] ) entry.allow.expiration=true;
+    if ( cols[CONST.CONCURRENCY_NOT_ALLOWED] ) entry.allow.concurrency=false;
 
-    switch(cols[1]){
+    switch(cols[CONST.KIND]){
       case "mc":
-        if ( undefined === cols[4] ){
-          console.log("Missing options", cols[0]);
+        if ( undefined === cols[CONST.OPTS] ){
+          console.log("Missing options", cols[CONST.QTXT]);
           process.exit();
         }
 
-        cols[4] = _.trimEnd( cols[4].replace(/,{2,}/g,","),"," );
-        entry.opts = cols[4].split(/\,/g).map(function(str){
+        cols[CONST.OPTS] = _.trimEnd( cols[CONST.OPTS].replace(/,{2,}/g,","),"," );
+        entry.opts = cols[CONST.OPTS].split(/\,/g).map(function(str){
           return { txt: _.upperFirst(str) }; 
         });
 
-        if ( cols[3] ){
-          var max = parseInt( cols[3] );
+        if ( cols[CONST.MAX_OPTS] ){
+          var max = parseInt( cols[CONST.MAX_OPTS] );
           if (!isNaN(max)){
             entry.minmax = [ 1, max ];
           }
@@ -62,12 +88,13 @@ var parse = function(data){
 
   });
 
-  tagref['all assessments'].forEach(function(e){
+  tagref['all assessments'].forEach(function(e,idx){
     for(var k in tagref){
       if ( k=='all assessments' || k=='demographic' || k=='casebuild' ) { }
       else {
         console.log(k);
-        tagref[k].push(e);
+        //tagref[k].push(e);
+        tagref[k].insertAt(e,idx);
       }
     }
   });

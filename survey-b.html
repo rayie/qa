@@ -487,7 +487,7 @@ Example:
       var timesCloned = 1 * d.target.get("additionalInstancesAdded");
       var clone_of_q = _.cloneDeep(q);
 
-      clone_of_q.additionalInstancesAllowed = 0;
+      clone_of_q.allow.multiple = 0;
       clone_of_q.additionalInstancesAdded = 0;
 
       clone_of_q.display_num += "-" + (timesCloned*1);

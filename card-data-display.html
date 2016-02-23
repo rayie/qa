@@ -68,6 +68,15 @@ Example:
       padding-bottom: 16px;
     } 
 
+    .record-container div {
+      @apply(--layout-flex-2)
+    }
+
+    .record-container div.primary {
+      @apply(--layout-flex-8)
+      color: blue;
+    }
+
     moment-display {
       --display-size: 12px;
       --label-size: 12px;
@@ -139,13 +148,20 @@ Example:
         <template is="dom-repeat" id="slot0Column" items="[[records.0]]" as="rec">
           <div class="horizontal layout justified record-container">
             <template is="dom-repeat" items="[[rec.rows]]" as="row" >
-              <div class="flex">
-                <label class='lbl'>[[row.q]]</label>
-                <template is='dom-repeat' items="[[row.a]]" as="ans">
-                  <div class="main-data">[[ans]]</div>
+
+              <div class$="[[row.klass]] test-klass" >
+                <template is='dom-repeat' items="[[row.a]]" as="ans" index-as="ans_idx">
+                  <div>
+                    <label class='lbl'>[[row.q]]</label>
+                    <div class="main-data">[[ans]]</div>
+                  </div>
                 </template>
                 <div class='note' hidden="[[!row.note]]">Note: [[row.note]]</div>
+                <template is="dom-if" if="[[!index]]">
+                  <moment-display label="Updated" str="[[r.ts]]" time></moment-display><small> by [[rec.m.update.u_id]]</small>
+                </template>
               </div>
+
             </template>
           </div>
         </template>
@@ -187,6 +203,10 @@ Example:
         type: String,
         value: ""
       },
+      primaryField: {
+        type: String,
+        value: "Interaction Notes"
+      },
       name: {
         type: String,
         value: ""
@@ -201,7 +221,9 @@ Example:
       if (!this.subjectId) return;
       var payload = {
         flows: this.flows,
-        subjectId: this.subjectId
+        subjectId: this.subjectId,
+        primaryField: this.primaryField,
+
       }
       this.$.ajax_load.send(payload);
     },

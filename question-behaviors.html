@@ -35,6 +35,20 @@
         }
       },
 
+      allow: {
+        type: Object,
+        value: function(){
+          return { 
+            na: true,
+            survey_note: true,
+            correction: true,
+            expiration: false,
+            concurrency: true,
+            multiple: 0
+          }
+        }
+      },
+
       sn: {
         type: String,
         value: ""
@@ -56,10 +70,6 @@
         type: Number
       },
 
-      hideNa: {
-        type: Boolean,
-        value: false 
-      }
 
     },
     detached: function(){
@@ -126,18 +136,11 @@
   QuestionBehaviors.FormsOnly = {
 
     properties: {
-      /*
-      * Interally used to track if a siblings reveal/hide change is necessary
-      */
-      additionalInstancesAllowed: {
-        type: Number,
-        value: 0 
-      },
 
       additionalInstancesAdded: {
         type: Number,
-        value: 0 ,
-        notify: true,
+        value: 0,
+        notify: true
       }
     }
 

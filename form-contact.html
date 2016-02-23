@@ -146,8 +146,7 @@ Example:
 
           <div class='form-body'>     
             <div class='flex3child'>
-              <paper-dropdown-menu label="Contact Method" 
-              >
+              <paper-dropdown-menu label="Contact Method">
                 <paper-listbox 
                   class="dropdown-content" 
                   selected="{{answer.method}}"
@@ -242,14 +241,13 @@ Example:
                 value="{{answer.note}}"
                 maxlength="[[maxlength]]"
                 on-change="gotInputChange"
-              >
-              </paper-input>
+              ></paper-textarea>
             </div>
           </div>
         </div>
 
-        <div class='card-footer' hidden="[[!showSubmitBtn]]">     
-          <paper-button raised on-click="submit">Submit</paper>
+        <div class='card-footer' hidden="[[!showSubmitBtn]]">
+          <paper-button raised on-click="submit">Submit</paper-button>
         </div>
 
         <question-part-footer
@@ -257,8 +255,8 @@ Example:
           warn_msg="[[warn_msg]]"
           qstate="[[qstate]]"
           sn="{{sn}}"
+          allow="[[allow]]"
           on-qstate-changed="qstateChangedInFooter"
-          additional-instances-allowed="[[additionalInstancesAllowed]]"
           additional-instances-added="{{additionalInstancesAdded}}"
         >
         </question-part-footer>

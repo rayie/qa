@@ -278,8 +278,7 @@ Example:
         </div>
 
         <question-part-footer
-          hide-na="[[hideNa]]"
-          hide-notes="[[hideNotes]]"
+          allow="[[allow]]"
           warn_msg="[[warn_msg]]"
           qstate="[[qstate]]"
           on-qstate-changed="qstateChangedInFooter"
@@ -308,16 +307,6 @@ Example:
         value: function(){
           return 256;
         }
-      },
-
-      hideNa: {
-        type: Boolean,
-        value: true
-      },
-
-      hideNotes: {
-        type: Boolean,
-        value: true
       },
 
       answer: { 

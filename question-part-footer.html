@@ -75,7 +75,7 @@ Example:
   <template>
     <div class='card-actions qfooter'>
       <paper-button 
-        hidden="[[hideNa]]"
+        hidden="[[!allow.na]]"
         id="mark_btn"
         toggles 
         on-click="markAsNA"
@@ -95,7 +95,7 @@ Example:
 
 
       <paper-input
-        hidden="[[hideNotes]]"
+        hidden="[[!allow.survey_note]]"
         is="iron-input"
         class="note-area"
         label="Surveyor notes:"
@@ -113,8 +113,8 @@ Example:
         <span class='warn_msg'>
           {{warn_msg}}
         </span>
-        <span hidden='[[!additionalInstancesAllowed]]'>
-          {{additionalInstancesAdded}} / {{additionalInstancesAllowed}} Added
+        <span hidden='[[!allow.multiple]]'>
+          {{additionalInstancesAdded}} / {{allow.multiple}} Added
         </span>
       </div>
     </div>
@@ -136,14 +136,18 @@ Example:
 
     properties: {
         
-      hideNa: {
-        type: Boolean,
-        value: false 
-      },
-
-      hideNotes: {
-        type: Boolean,
-        value: false 
+      allow: {
+        type: Object,
+        value: function(){
+          return { 
+            na: true,
+            survey_note: true,
+            correction: true,
+            expiration: false,
+            concurrency: true,
+            multiple: 0
+          }
+        }
       },
 
       warn_msg: {
@@ -160,11 +164,6 @@ Example:
         type: String,
         value: "",
         notify: true
-      },
-
-      additionalInstancesAllowed: {
-        type: Number,
-        value: 0
       },
 
       additionalInstancesAdded: {
@@ -186,8 +185,8 @@ Example:
     },
 
     attached: function(){
-      //console.log( this.additionalInstancesAdded , this.additionalInstancesAllowed );
-      if ( this.additionalInstancesAdded < this.additionalInstancesAllowed ){
+      //console.log( this.additionalInstancesAdded , this.allow.multiple );
+      if ( this.additionalInstancesAdded < this.allow.multiple ){
         this.set("hideAddInstanceBtn",false);
       }
     },
@@ -220,7 +219,7 @@ Example:
       if ( this.qstate===3 ) return;
 
       this.set("additionalInstancesAdded",(this.additionalInstancesAdded+1));
-      if ( this.additionalInstancesAdded == this.additionalInstancesAllowed ){
+      if ( this.additionalInstancesAdded == this.allow.multiple ){
         this.hideAddInstanceBtn=true;     
       }
     }
