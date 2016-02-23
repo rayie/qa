@@ -86,7 +86,7 @@ Example:
       heading="Address & Contact Info"
     > 
       <div class="horizontal layout justified">
-        <div class="flex-4">
+        <div class="flex-5">
           <template is="dom-repeat" id="contactRptr" items="[[contacts]]" as="c">
             <div class="horizontal layout section-container">
 
@@ -119,8 +119,6 @@ Example:
                   <div class='note' hidden="[[!a.note]]">Note: [[a.note]]</div>
                 </address>
               </div>
-
-
               <div class="flex-2">
                 <moment-display label="Updated" str="[[a.ts]]" time></moment-display>
               </div>

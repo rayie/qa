@@ -24,7 +24,7 @@ Example:
         with-credentials
         on-response="response"
         on-error="error"
-        loading="{{is_loading}}"
+        loading="{{loading}}"
       ></iron-ajax>
       <iron-localstorage
         id="locstore"
@@ -69,6 +69,10 @@ Example:
       noToast: {
         type:Boolean,
         value: false
+      },
+      loading: {
+        type:Boolean,
+        notify: true
       }
     },
 
@@ -84,7 +88,7 @@ Example:
 
     send: function(payload,passBack){
       this.$.locstore.reload();
-      //console.log("sending to url ", this.$.main.url);
+      console.log("sending to url ", this.$.main.url,payload);
       if (payload===undefined) payload={};
       this.set("payload",payload);
       this.passBack = passBack;

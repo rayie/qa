@@ -146,11 +146,18 @@ Example:
       padding-bottom: 128px;
     }
 
+    .success-area {
+       
+    }
+
   </style>
 
   <template>
     <div>
-      <div hidden="[[subjectId]]">
+      <div hidden="[[hideLoadingMsg]]">
+        <h2>...loading data</h2>
+      </div>
+      <div hidden="[[hideLoadError]]">
         <h2>The survey can not be initiated because a subject ID missing {{subjectId}} - </h2>
       </div>
     </div>
@@ -187,7 +194,8 @@ Example:
         </paper-card>
       </div>
 
-      <div class='justified-container submit-area' hidden="[[submissionResult]]" >
+      <div class='justified-container submit-area' hidden="[[hideSubmitArea]]" >
+
         <div hidden="[[taskDefinition.mustComplete]]">
           <paper-button 
           class='bad'
@@ -217,7 +225,16 @@ Example:
       </div>
 
       <div class='' hidden="[[!submissionResult]]" >
-        <h2>Submitted Successfully</h2>
+        <div class='layout horizontal justified success-area'>
+          <div>
+            <h2 >Submitted Successfully</h2>
+          </div>
+          <div>
+            <a hidden="[[!task]]" href$="{{baseUrl}}/patient/[[subjectId]]">Back to Patient</a>
+            <a hidden="[[task]]" href$="{{baseUrl}}/patients">Back to Patient List</a>
+          </div>
+        </div>
+
         <div hidden="[[!hasNextTasks]]">
           <list-tasks
             heading="New Tasks Generated"
@@ -236,7 +253,7 @@ Example:
       handle-as="json",
       on-response="loadSurveyResponded"
       on-error="loadSurveyError"
-      loading="{{is_loading}}"
+      loading="{{loading}}"
     ></iron-ajax>
 
     <qa-ajax-poster
@@ -244,7 +261,7 @@ Example:
       no-toast
       on-response="loadTaskResponded"
       on-error="loadTaskError"
-      loading="{{is_loading}}"
+      loading="{{loading}}"
       endpoint="api/task:get"
     ></qa-ajax-poster>
 
@@ -252,7 +269,7 @@ Example:
       id="ajax_task_inprog"       
       on-response="taskInprogResponse"
       on-error="taskInprogError"
-      loading="{{is_loading}}"
+      loading="{{loading}}"
       endpoint="api/task:inprog"
     ></qa-ajax-poster>
 
@@ -260,7 +277,7 @@ Example:
       id="ajax_save_data"       
       on-response="saveDataResponse"
       on-error="saveDataError"
-      loading="{{is_loading}}"
+      loading="{{loading}}"
       endpoint="api/data:save"
     ></qa-ajax-poster>
 
@@ -268,7 +285,7 @@ Example:
       id="ajax_task_done"       
       on-response="submitResponse"
       on-error="submitError"
-      loading="{{is_loading}}"
+      loading="{{loading}}"
       endpoint="api/task:done"
     ></qa-ajax-poster>
 
@@ -276,7 +293,7 @@ Example:
       id="ajax_task_incomplete"       
       on-response="submitResponse"
       on-error="submitError"
-      loading="{{is_loading}}"
+      loading="{{loading}}"
       endpoint="api/task:incomplete"
     ></qa-ajax-poster>
 
@@ -284,7 +301,7 @@ Example:
       id="ajax_submit_entity"       
       on-response="submitResponse"
       on-error="submitError"
-      loading="{{is_loading}}"
+      loading="{{loading}}"
     ></qa-ajax-poster>
 
   </template>
@@ -306,7 +323,7 @@ Example:
     behaviors: [ SectionBehaviors.Basic ],
 
     properties: {
-
+      
       directSurveyUrl: {
         type: String,
         value: function(){ return ""; }
@@ -350,6 +367,19 @@ Example:
       state: {
         value: 0,
         notifies: true
+      },
+
+      hideSubmitArea: {
+        type: Boolean,
+        value: function(){ return true; }
+      },
+      hideLoadingMsg: {
+        type: Boolean,
+        value: function(){ return false; }
+      },
+      hideLoadError: {
+        type: Boolean,
+        value: function(){ return true; }
       }
     },
 
@@ -370,8 +400,10 @@ Example:
         state:0,
         submissionError : null,
         submissionResult : null,
-        ok_to_submit : false
+        ok_to_submit : false,
+        hideSubmitArea: true 
       };
+
       for(var k in ref){
         this.set(k,ref[k]);
       }
@@ -432,17 +464,17 @@ Example:
       q.minmax=[1,1];
       q.kind="mc";
       q.opts = [
-        { txt: "YES" },
-        { txt: "NO" }
+        { txt: "NO" },
+        { txt: "YES" }
       ];
       if ( q.rule ){
-        if ( q.rule.y ){
-          for(var k in q.rule.y)
-            q.opts[0][k] = q.rule.y[k];
-        }
         if ( q.rule.n ){
           for(var k in q.rule.n)
-            q.opts[1][k] = q.rule.n[k];
+            q.opts[0][k] = q.rule.n[k];
+        }
+        if ( q.rule.y ){
+          for(var k in q.rule.y)
+            q.opts[1][k] = q.rule.y[k];
         }
       }
       return q;
@@ -479,6 +511,8 @@ Example:
       if (!event.detail.response){
         this.set("subjectId",null);
         console.log("no event response",event.detail.response);
+        this.set("hideLoadingMsg",true);
+        this.set("hideLoadError",false);
         return;
       }
 
@@ -533,6 +567,8 @@ Example:
 
       this._updateStateMsg();
       this._applyTitle();
+      this.set("hideLoadingMsg",true);
+      this.set("hideSubmitArea",false);
     },
 
     _updateStateMsg: function(){
@@ -796,6 +832,7 @@ Example:
     submitResponse: function(e,data){
       this.set("submissionError", null);
       this.set("submissionResult", data);
+      this.set("hideSubmitArea",true);
 
       if ( this.task ) this.set("task.state", "done");
 

@@ -1,0 +1,161 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../iron-localstorage/iron-localstorage.html">
+<link rel="import" href="qa-typeahead-input.html">
+<!--
+An element providing a solution to no problem in particular.
+
+Example:
+
+    <seed-element></seed-element>
+
+@demo
+-->
+<dom-module id="dialog-search">
+  <style is="custom-style">
+    :host ::content a {
+      cursor: pointer;
+    }
+
+    .justified-container {
+      @apply(--layout-horizontal);
+      @apply(--layout-justified);
+    }
+         
+    #dialog {
+
+      --paper-dialog: {
+        width: 75%;
+        padding-bottom: 16px;
+        color: #000;
+      };
+
+      --paper-dialog-background-color: #E0F7FA;
+    }
+
+    paper-button {
+      background: #000;
+      color: #fff;
+    }
+
+    paper-button[disabled] {
+      background: #BDBDBD;
+      color: #616161;
+    }
+
+  </style>
+
+  <template>
+    <paper-icon-button icon="search" on-click="show"></paper-icon-button>
+    <paper-dialog 
+      id="dialog" 
+      on-iron-overlay-closed="dialogClosed"
+      on-iron-overlay-canceled="dialogCanceled"
+    >
+      <h2>Search for Patient</h2>
+      <div>
+
+        <div>
+          <qa-typeahead-input
+            id="search"
+            autofocus
+            is-candidates-json
+            searchable-props='["displayAs"]'
+            display-prop='displayAs'
+            remote-url-wait-ms='300'
+            placeholder="Search for patient by name or acct#"
+            remote-url="api/person:search"
+            on-pt-item-select="userSelectedItem"
+            on-pt-item-confirmed="userConfirmedItem"
+            value='{{searchStr}}'
+          >
+          </qa-typeahead-input>
+        </div>
+
+      </div>
+    </paper-dialog>
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'dialog-search',
+
+    properties: {
+      searchStr: {
+        type: String, 
+        value: function(){ return ""; }
+      },
+      reasonCode: {
+        type: String, 
+        value: function(){ return ""; }
+      },
+      selectedUser: {
+        type: String, 
+        value: function(){ return ""; }
+      },
+      baseUrl : {
+        type: String
+      }
+    },
+
+    show: function(){
+      this.$.dialog.open();
+      this.$.search.focus();
+    },
+
+    userSelectedItem: function(item){
+      //console.log( this.$.search.inputObject );
+    },
+
+    userConfirmedItem: function(item){
+      console.log(item);
+      console.log( this.$.search.inputObject );
+      var url = this.baseUrl + "patient/"+ this.$.search.inputObject._id;
+      console.log(url);
+      this.$.dialog.close();
+      page(url);
+      this.set("searchStr","");
+      //this.fire("user-confirmed",url);
+    },
+
+    /*
+    * Workaround - iron-overlay-behavior fires close event whe a drop down menu is cha
+    */
+    dialogClosed: function(dialogCloseEvent){
+      if (!_.get(dialogCloseEvent,'detail.confirmed',false)) {
+        //reset
+        console.log("user didn't click confirm");
+        return;
+      }
+
+      var pkg = {
+        reason: _.clone({ code: this.reasonCode, note: this.reasonNote }),
+        reAssignTo: this.selectedUser.toString()
+      }
+      console.log(pkg);
+      this.fire("taskIncomplete",pkg);
+    },
+
+    dialogCanceled: function(dialogCloseEvent){
+      console.log("user cancelled");
+      return;
+    }
+
+  });
+
+</script>

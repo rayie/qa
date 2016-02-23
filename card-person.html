@@ -25,10 +25,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="menu-tasks.html">
 <link rel="import" href="list-tasks.html">
 <link rel="import" href="card-contact.html">
+<link rel="import" href="card-data-display.html">
 <link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="qa-dateinput.html">
 <link rel="import" href="styles/qa-styles.html">
-
 <!--
 
 Example:
@@ -97,7 +97,7 @@ Example:
           <paper-tab link>Primary Info</paper-tab>
           <paper-tab>Open Tasks</paper-tab>
           <paper-tab>Closed Tasks</paper-tab>
-          <paper-tab>Activity</paper-tab>
+          <paper-tab>Interactions</paper-tab>
         </paper-tabs>
         <span class="title"><!--stub--></span>
         <menu-tasks 
@@ -115,16 +115,24 @@ Example:
             heading="Patient Card"
           >
             <div class='main-data'>
-              Name: [[person.ln]], [[person.fn]] [[person.mn]]
+              Name: [[person.ln]]<span hidden="[[!person.suf]]"> [[person.suf]]</span>, [[person.fn]] [[person.mn]] 
             </div>
             <div class='main-data'>
               DOB: [[person.dobStr]]
             </div>
           </paper-card> 
+          <card-data-display
+            class="flex-10"
+            id="demographicCard"
+            name="Demographic / Case Info"
+            flows='["flows/sc.copd.demographic.json","flows/sc.copd.casebuild.json"]'
+            subject-id="[[person._id]]">
+          </card-data-display>
           <card-contact 
             id="contactCard"
             subject-id="[[person._id]]">
           </card-contact>
+
         </section>
 
         <section data-tab='tasks' >
@@ -157,7 +165,15 @@ Example:
           ></list-tasks>
         </section>
 
-        <section data-tab='activity' >
+        <section data-tab='interactions' >
+          <card-data-display
+            class="flex-10"
+            as-columns
+            id="interactionsCard"
+            name="Interactions"
+            flows='["flows/sc.interaction.json","flows/sc.teamaction.json"]'
+            subject-id="[[person._id]]">
+          </card-data-display>
         </section>
 
       </iron-pages>
@@ -224,6 +240,19 @@ Example:
       this.$.inprogTasks.loadTasks();
       this.$.completedTasks.loadTasks();
       this.$.contactCard.load();
+      this.$.demographicCard.load();
+      this.$.interactionsCard.load();
+
+      /*
+      Promise.all([
+        this.$.openTasks.loadTasks,
+        this.$.inprogTasks.loadTasks,
+        this.$.completedTasks.loadTasks,
+        this.$.contactCard.load,
+        this.$.demographicCard.load,
+        this.$.caseBuildCard.load,
+      ])
+      */
     },
 
     gotNewTask: function(e,data){

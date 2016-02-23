@@ -87,7 +87,7 @@ Example:
 
   <template>
     <paper-card class="primary" elevation="4" heading="Patient Listing">
-      <a class="newFab" title="Create New Patient Record" href$="{{baseUrl}}directsurvey/sc.addperson">
+      <a class="newFab" title="Create New Patient Record" href$="{{baseUrl}}/directsurvey/sc.addperson">
         <paper-fab elevation=2" icon="add"></paper-fab>
       </a>
       <template is="dom-repeat" items="[[persons]]" as="p">
@@ -134,10 +134,6 @@ Example:
       persons: {
         type: Array,
         value: []
-      },
-      baseUrl: {
-        type: String,
-        value: ""
       }
     },
 
