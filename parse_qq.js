@@ -94,7 +94,7 @@ var parse = function(data){
       else {
         console.log(k);
         //tagref[k].push(e);
-        tagref[k].insertAt(e,idx);
+        tagref[k].insertAt(idx,e);
       }
     }
   });
@@ -103,6 +103,8 @@ var parse = function(data){
   var proms = [];
   var taskdef_list = [];
   for(var k in tagref){
+    var outpath = "/var/www/superapi/public/flows/tmp/sc.copd."+k+".json";
+    outpath = "/tmp/flows/sc.copd."+k+".json";
     if ( k !== "all assessments" ){
       var taskDef = {
         type: "data",
@@ -112,7 +114,7 @@ var parse = function(data){
         url: "flows/sc.copd."+k+".json", 
       }
       proms.push( 
-        fs.writeFileAsync( "/var/www/superapi/public/flows/tmp/sc.copd."+k+".json", JSON.stringify( taskDef, null, "\t" )) 
+        fs.writeFileAsync(outpath, JSON.stringify( taskDef, null, "\t" )) 
       );
 
       taskdef_list.push( { url: taskDef.url , name: taskDef.name, plannedFor: "asap" } );

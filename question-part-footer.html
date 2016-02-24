@@ -75,7 +75,7 @@ Example:
   <template>
     <div class='card-actions qfooter'>
       <paper-button 
-        hidden="[[!allow.na]]"
+        disabled="[[!allow.na]]"
         id="mark_btn"
         toggles 
         on-click="markAsNA"
@@ -85,17 +85,17 @@ Example:
       </paper-button>
       
       <paper-button 
-        hidden="[[hideAddInstanceBtn]]"
+        hidden="[[!allow.multiple]]"
         id="add_instance_btn"
         on-click="addInstance"
         raised
       >
-        Add 
+        Add Another
       </paper-button>
 
 
       <paper-input
-        hidden="[[!allow.survey_note]]"
+        disabled="[[!allow.survey_note]]"
         is="iron-input"
         class="note-area"
         label="Surveyor notes:"

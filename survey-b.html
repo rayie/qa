@@ -607,8 +607,8 @@ Example:
       for(var k in this.dataDoc.qref){
         this.questions[ k.substr(1) ].populateAnswer( this.dataDoc[k] );
 
-        if ( this.dataDoc.noteRef[k] )
-          this.questions[ k.substr(1) ].populateNote( this.dataDoc.noteRef[k] );
+        if ( this.dataDoc.nref[k] )
+          this.questions[ k.substr(1) ].populateNote( this.dataDoc.nref[k] );
       }
 
       this.isPopulating=false;

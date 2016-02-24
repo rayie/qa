@@ -20,6 +20,6 @@
   },
   "homepage": "https://github.com/rayie/qa",
   "dependencies": {
-    "grunt": "^0.4.5",
+    "grunt": "^0.4.5"
   }
 }
