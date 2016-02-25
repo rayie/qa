@@ -530,7 +530,7 @@ Example:
         q.idx_in_survey = idx * 1;
 
         if ( q.kind==="form"){
-          q.display_num = "F" + q._id;
+          q.display_num = "Q" + q._id;
           qn++;
           q.seq_num=qn*1;
           var new_frm = self.create("form-"+q.form.toLowerCase(),q);

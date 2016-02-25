@@ -26,6 +26,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="list-tasks.html">
 <link rel="import" href="card-contact.html">
 <link rel="import" href="card-data-display.html">
+<link rel="import" href="card-hdmsdata-display.html">
 <link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="qa-dateinput.html">
 <link rel="import" href="styles/qa-styles.html">
@@ -98,6 +99,7 @@ Example:
           <paper-tab>Open Tasks</paper-tab>
           <paper-tab>Closed Tasks</paper-tab>
           <paper-tab>Interactions</paper-tab>
+          <paper-tab>HDMS Data</paper-tab>
         </paper-tabs>
         <span class="title"><!--stub--></span>
         <menu-tasks 
@@ -176,6 +178,17 @@ Example:
           </card-data-display>
         </section>
 
+
+        <section data-tab='hdmsdata' >
+          <card-hdmsdata-display
+            class="flex-10"
+            as-columns
+            id="hdmsCard"
+            name="HDMS Notes"
+            subject-id="[[person._id]]">
+          </card-data-display>
+        </section>
+
       </iron-pages>
 
       <qa-ajax-poster
@@ -242,6 +255,7 @@ Example:
       this.$.contactCard.load();
       this.$.demographicCard.load();
       this.$.interactionsCard.load();
+      this.$.hdmsCard.load();
 
       /*
       Promise.all([

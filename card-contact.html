@@ -77,6 +77,12 @@ Example:
       background-color: #90CAF9;
     }
 
+    .note {
+      font-size: .85em;
+      font-weight: 350;
+      color: #00695C;
+    }
+
   </style>
 
   <template>
@@ -166,7 +172,7 @@ Example:
     load: function(){
       if (!this.subjectId) return;
       var payload = {
-        qids: ["F200","F210"],
+        qids: ["Q200","Q210"],
         subjectId: this.subjectId
       }
       this.$.ajax_load_contact.send(payload);
@@ -179,36 +185,35 @@ Example:
       var contacts = [];
       data.records.forEach(function(r){
 
-        if ( r["F200"] ){
-          r["F200"].lbls = r["F200"].applies_to.map(function(b){
+        if ( r["Q200"] ){
+          r["Q200"].lbls = r["Q200"].applies_to.map(function(b){
             return addr_ref[b];
           });
-          r["F200"].ts = r.m.update.ts;
-          addrs.push(r["F200"]);
+          r["Q200"].ts = r.m.update.ts;
+          addrs.push(r["Q200"]);
 
           [1,2,3,4,5,6].forEach(function(n){
-            if ( r["F200-"+n] ){
-              r["F200-"+n].lbls = r["F200-"+n].applies_to.map(function(b){
+            if ( r["Q200-"+n] ){
+              r["Q200-"+n].lbls = r["Q200-"+n].applies_to.map(function(b){
                 return addr_ref[b];
               });
-              r["F200-"+n].ts = r.m.update.ts;
-              addrs.push(r["F200-"+n]);
+              r["Q200-"+n].ts = r.m.update.ts;
+              addrs.push(r["Q200-"+n]);
             }
           });
         }
         
-        if ( r["F210"] ){
-          r["F210"].ts = r.m.update.ts;
-          contacts.push(r["F210"]);
+        if ( r["Q210"] ){
+          r["Q210"].ts = r.m.update.ts;
+          contacts.push(r["Q210"]);
 
           [1,2,3,4,5,6].forEach(function(n){
-            if ( r["F210-"+n] ){
-              r["F210-"+n].ts = r.m.update.ts;
-              contacts.push(r["F210-"+n]);
+            if ( r["Q210-"+n] ){
+              r["Q210-"+n].ts = r.m.update.ts;
+              contacts.push(r["Q210-"+n]);
             }
           });
         }
-
 
       });
       this.set("addrs",addrs);

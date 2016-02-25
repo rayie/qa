@@ -25,11 +25,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 Example:
 
-    <card-data-display></card-data-display>
+    <card-hdmsdata-display></card-hdmsdata-display>
 
 @demo
 -->
-<dom-module id="card-data-display">
+<dom-module id="card-hdmsdata-display">
 
   <style is="custom-style" include="qa-styles">
   <style is="custom-style">
@@ -94,7 +94,9 @@ Example:
       font-size: .84em;
       color: #00695C;
     }
-
+    p {
+      font-size: .88em;
+    }
   </style>
 
   <template>
@@ -103,70 +105,21 @@ Example:
       elevation=4
       heading="[[name]]"
     > 
-      <div hidden="[[asColumns]]">
-        <div class="horizontal layout justified">
-          <div class="flex-5">
-            <template is="dom-repeat" id="slot0" items="[[records.0]]" as="rec">
-              <template is="dom-repeat" items="[[rec.rows]]" as="row" >
-                <div class="horizontal layout section-container">
-                  <div class="flex-5">
-                    <label class='lbl'>[[row.q]]</label>
-                    <template is='dom-repeat' items="[[row.a]]" as="ans">
-                      <div class="main-data">[[ans]]</div>
-                    </template>
-                    <div class='note' hidden="[[!row.n]]">Note: [[row.n]]</div>
-                  </div>
-                  <div class="flex-2">
-                    <template is="dom-if" if="[[!index]]">
-                      <moment-display label="Updated" str="[[r.ts]]" time></moment-display>
-                    </template>
-                  </div>
-                </div>
-              </template>
-            </template>
-          </div>
-          <div class="flex-5 leftborder">
-            <template is="dom-repeat" id="slot1" items="[[records.1]]" as="rec">
-              <template is="dom-repeat" items="[[rec.rows]]" as="row">
-                <div class="horizontal layout section-container">
-                  <div class="flex-5">
-                    <label class='lbl'>[[row.q]]</label>
-                    <template is='dom-repeat' items="[[row.a]]" as="ans">
-                      <div class="main-data">[[ans]]</div>
-                    </template>
-                    <div class='note' hidden="[[!row.n]]">Note: [[row.n]]</div>
-                  </div>
-                  <div class="flex-2">
-                    <template is="dom-if" if="[[!index]]">
-                      <moment-display label="Updated" str="[[r.ts]]" time></moment-display>
-                    </template>
-                  </div>
-                </div>
-              </template>
-            </template>
-          </div>
-        </div>
-      </div>
-      
       <div hidden="[[!asColumns]]">
-        <template is="dom-repeat" id="slot0Column" items="[[records.0]]" as="rec">
-          <div class="horizontal layout justified record-container">
-            <template is="dom-repeat" items="[[rec.rows]]" as="row" >
-
-              <div class$="[[row.klass]] test-klass" >
-                <div>
-                  <label class='lbl'>[[row.q]]</label>
-                  <template is='dom-repeat' items="[[row.a]]" as="ans" index-as="ans_idx">
-                    <div class="main-data">[[ans]]</div>
+        <template is="dom-repeat" items="[[records]]" as="rec">
+          <div class="vertical layout justified record-container">
+            <label class='lbl'>[[rec.hdr]]</label>
+            <div >
+              <template is="dom-repeat" items="[[rec.rows]]" as="row" >
+                <div class='record-container'>
+                  <strong>[[row.op_nm]]</strong>
+                  <moment-display str="[[row.dt]]" time></moment-display>
+                  <template is="dom-repeat" items="[[row.txt]]" as="txt" >
+                    <p >[[txt]]</p>
                   </template>
-                  <div class='note' hidden="[[!note]]">Note: [[row.n]]</div>
                 </div>
-                <template is="dom-if" if="[[!index]]">
-                  <moment-display label="Updated" str="[[r.ts]]" time></moment-display><small> by [[rec.m.update.u_id]]</small>
-                </template>
-              </div>
-
-            </template>
+              </template>
+            </div>
           </div>
         </template>
       </div>
@@ -176,7 +129,7 @@ Example:
         no-toast
         on-response="loadResponse"
         on-error="loadError"
-        endpoint="api/data:code"
+        endpoint="api/data:hdms"
       ></qa-ajax-poster>
 
     </div>
@@ -194,7 +147,7 @@ Example:
 
   Polymer({
 
-    is: 'card-data-display',
+    is: 'card-hdmsdata-display',
 
     properties: {
       flows: {
@@ -224,10 +177,7 @@ Example:
     load: function(){
       if (!this.subjectId) return;
       var payload = {
-        flows: this.flows,
-        subjectId: this.subjectId,
-        primaryField: this.primaryField,
-
+        subjectId: this.subjectId
       }
       this.$.ajax_load.send(payload);
     },

@@ -346,12 +346,15 @@ Example:
     },
 
     _checkState: function(){
-      if (this.answer.contact_value && ( this.answer.contact_name || this.answer.contact_rel==="Self"  ) )
+      if (this.answer.contact_value && ( this.answer.contact_name || this.answer.contact_rel==="Self"  ) ){
         this.set("qstate",2);
-      else
-        this.set("qstate",0);
 
-      return;
+      }
+      else{
+        this.set("qstate",0);
+      }
+    
+      return this.fire("qstate-changed");
     },
 
     submit: function(){
