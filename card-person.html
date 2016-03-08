@@ -27,6 +27,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="card-contact.html">
 <link rel="import" href="card-data-display.html">
 <link rel="import" href="card-hdmsdata-display.html">
+<link rel="import" href="card-hcdata-display.html">
 <link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="qa-dateinput.html">
 <link rel="import" href="styles/qa-styles.html">
@@ -94,12 +95,13 @@ Example:
     <div class="container">
 
       <paper-toolbar>
-        <paper-tabs id="tabSelector" selected="{{selectedTab}}">
+        <paper-tabs id="tabSelector" selected="{{selectedTab}}" elevation='4'>
           <paper-tab link>Primary Info</paper-tab>
           <paper-tab>Open Tasks</paper-tab>
           <paper-tab>Closed Tasks</paper-tab>
           <paper-tab>Interactions</paper-tab>
           <paper-tab>HDMS Data</paper-tab>
+          <paper-tab>HealthCall (Legacy)</paper-tab>
         </paper-tabs>
         <span class="title"><!--stub--></span>
         <menu-tasks 
@@ -114,26 +116,51 @@ Example:
 
         <section data-tab='primaryInfo' >
           <paper-card elevation='4' class='primary'
-            heading="Patient Card"
+            heading="Last Name, First Name"
           >
             <div class='main-data'>
-              Name: [[person.ln]]<span hidden="[[!person.suf]]"> [[person.suf]]</span>, [[person.fn]] [[person.mn]] 
+              [[person.ln]]
+              <span hidden="[[!person.suf]]"> 
+                [[person.suf]]
+              </span>, 
+              [[person.fn]] [[person.mn]] 
+            </div>
+            <div hidden="[[!person.suf]]" class='main-data'>
+              <span >Suffix: [[person.suf]]</span>
+            </div>
+            <div hidden="[[!person.nick]]" class='main-data'>
+              <span >Nickname: [[person.nick]]</span>
             </div>
             <div class='main-data'>
               DOB: [[person.dobStr]]
             </div>
+            <div class='main-data'>
+              HDMS Account: [[person.hdms_acct]]
+            </div>
           </paper-card> 
+
           <card-data-display
             class="flex-10"
-            id="demographicCard"
-            name="Demographic / Case Info"
-            flows='["flows/sc.copd.demographic.json","flows/sc.copd.casebuild.json"]'
+            as-columns
+            id="programCard"
+            name="Programs"
+            flows='["flows/sc.program.json"]'
             subject-id="[[person._id]]">
           </card-data-display>
+
           <card-contact 
             id="contactCard"
             subject-id="[[person._id]]">
           </card-contact>
+
+          <card-data-display
+            class="flex-10"
+            id="demographicCard"
+            name="Demographic"
+            flows='["flows/global.demographic.json"]'
+            subject-id="[[person._id]]">
+          </card-data-display>
+
 
         </section>
 
@@ -185,10 +212,20 @@ Example:
             as-columns
             id="hdmsCard"
             name="HDMS Notes"
-            subject-id="[[person._id]]">
-          </card-data-display>
+            subject-id="[[person._id]]"
+            hdms-acct="[[person.hdms_acct]]">
+          </card-hdmsdata-display>
         </section>
 
+        <section data-tab='hcdata' >
+          <card-hcdata-display
+            class="flex-10"
+            as-columns
+            id="hcCard"
+            name="HealthCall"
+            subject-id="[[person._id]]">
+          </card-hcdata-display>
+        </section>
       </iron-pages>
 
       <qa-ajax-poster
@@ -248,25 +285,22 @@ Example:
       person.dobStr = m.format("MMMM DD, YYYY"); 
 
       this.set("person",person);
-      this.applyTitle(person.displayAs + " - " + age + " old " + person.sex);
+      if ( person.hdms_acct ){
+        this.applyTitle(person.displayAs + " - " + age + " old " + person.sex + " HDMS# " + person.hdms_acct);
+        this.$.hdmsCard.load();
+      }
+      else{ 
+        this.applyTitle(person.displayAs + " - " + age + " old " + person.sex);
+      }
       this.$.openTasks.loadTasks();
       this.$.inprogTasks.loadTasks();
       this.$.completedTasks.loadTasks();
+      this.$.programCard.load();
       this.$.contactCard.load();
       this.$.demographicCard.load();
       this.$.interactionsCard.load();
-      this.$.hdmsCard.load();
+      this.$.hcCard.load();
 
-      /*
-      Promise.all([
-        this.$.openTasks.loadTasks,
-        this.$.inprogTasks.loadTasks,
-        this.$.completedTasks.loadTasks,
-        this.$.contactCard.load,
-        this.$.demographicCard.load,
-        this.$.caseBuildCard.load,
-      ])
-      */
     },
 
     gotNewTask: function(e,data){

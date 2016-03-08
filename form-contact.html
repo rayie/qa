@@ -152,7 +152,8 @@ Example:
                   selected="{{answer.method}}"
                   attr-for-selected="name"
                 >
-                  <paper-item name="Phone">Phone</paper-item>
+                  <paper-item name="Primary Phone">Primary Phone</paper-item>
+                  <paper-item name="Secondary Phone">Secondary Phone</paper-item>
                   <paper-item name="Email">Email</paper-item>
                   <paper-item name="Fax">Fax</paper-item>
                 </paper-listbox>
@@ -290,7 +291,7 @@ Example:
         value: function(){ 
           return {
             smsAllowed: 1,
-            method: "Phone",
+            method: "Primary Phone",
             contact_rel: "Self",
             contact_value: "",
             contact_name: ""
@@ -327,7 +328,7 @@ Example:
     ],
 
     gotContactMethodChange: function(newMethod){
-      this.set("hideSmsControl",(newMethod !== "Phone"));
+      this.set("hideSmsControl",(newMethod !== "Primary Phone" && newMethod !== "Secondary Phone" ));
       console.log(newMethod,this.hideSmsControl);
       this._checkState();
       return;

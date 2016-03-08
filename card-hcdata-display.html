@@ -17,6 +17,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../paper-tabs/paper-tabs.html">
+<link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="../moment-display/moment-display.html">
 <link rel="import" href="qa-collapse-block.html">
 <link rel="import" href="qa-ajax-poster.html">
@@ -26,11 +28,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 Example:
 
-    <card-hdmsdata-display></card-hdmsdata-display>
+    <card-hcdata-display></card-hcdata-display>
 
 @demo
 -->
-<dom-module id="card-hdmsdata-display">
+<dom-module id="card-hcdata-display">
 
   <style is="custom-style" include="qa-styles">
   <style is="custom-style">
@@ -50,6 +52,17 @@ Example:
     paper-input ,
     paper-textarea {
       margin: 6px;
+    }
+    label.qtxt {
+      font-size: 12px;
+      font-weight: 420;
+      background-color: #80CBC4;
+      padding: 6px 6px;
+      display: inline;
+    }
+    .atxt {
+      padding: 6px 6px;
+      font-size: 12px;
     }
 
     .leftborder {
@@ -101,39 +114,70 @@ Example:
   </style>
 
   <template>
-    <paper-card 
-      class="primary"
-      elevation=4
-      heading="[[name]]"
-    > 
-      <div hidden="[[!asColumns]]">
-        <template is="dom-repeat" items="[[records]]" as="rec">
-          <div class="vertical layout justified record-container">
-            <qa-collapse-block
-              label="[[rec.hdr]]"
-            >
-              <div >
-                <template is="dom-repeat" items="[[rec.rows]]" as="row" >
-                  <div class='record-container'>
-                    <strong>[[row.op_nm]]</strong>
-                    <moment-display str="[[row.dt]]" time></moment-display>
-                    <template is="dom-repeat" items="[[row.txt]]" as="txt" >
-                      <p >[[txt]]</p>
-                    </template>
-                  </div>
-                </template>
+
+    <paper-toolbar>
+      <paper-tabs id="hcTabSelector" selected="{{selectedTab}}" elevation='4'>
+        <paper-tab>Notes</paper-tab>
+        <paper-tab>Teams</paper-tab>
+        <paper-tab>Groups</paper-tab>
+        <paper-tab>Survey Data</paper-tab>
+      </paper-tabs>
+    </paper-toolbar>
+    <iron-pages selected="{{selectedTab}}">
+      <section>
+        <paper-card 
+          class="primary"
+          elevation=4
+          heading="[[name]]"
+        > 
+          <div hidden="[[!asColumns]]">
+            <template is="dom-repeat" items="[[hc.notes]]" as="note">
+              <div class='record-container'>
+                <strong>[[note.user]]</strong>
+                <moment-display str="[[note.dt]]" time></moment-display>
+                <p >[[note.txt]]</p>
               </div>
-            </qa-collapse-block>
-          </div>
-        </template>
-      </div>
+            </template>
+          </div>  
+        </paper-card>
+      </section>
+      <section>
+      </section>
+      <section>
+      </section>
+      <section>
+        <div hidden="[[!asColumns]]">
+          <template is="dom-repeat" items="[[hc.surveys]]" as="sur">
+            <div class="vertical layout justified record-container">
+              <qa-collapse-block
+                label="[[sur.surveyTitle]]"
+              >
+                <div >
+                  <template is="dom-repeat" items="[[sur.attempts]]" as="att" >
+                    <div class='record-container'>
+                      <strong>[[att.short_nm]]</strong>
+                      <moment-display label="Completed" str="[[att.dt]]" time></moment-display>
+                      <template is="dom-repeat" items="[[att.qq]]" as="entry" >
+                      <div>
+                        <label class='qtxt'>[[entry.qtxt]]</label>
+                        <div class='atxt'>[[entry.atxt]]</div>
+                      </div>
+                      </template>
+                    </div>
+                  </template>
+                </div>
+              </qa-collapse-block>
+            </div>
+          </template>
+        </div>
+      </section>
 
       <qa-ajax-poster
         id="ajax_load"       
         no-toast
         on-response="loadResponse"
         on-error="loadError"
-        endpoint="api/data:hdms"
+        endpoint="api/data:hc"
       ></qa-ajax-poster>
 
     </div>
@@ -151,7 +195,7 @@ Example:
 
   Polymer({
 
-    is: 'card-hdmsdata-display',
+    is: 'card-hcdata-display',
 
     properties: {
       flows: {
@@ -164,13 +208,8 @@ Example:
         type: String,
         value: ""
       },
-      hdmsAcct: {
-        type: Number,
-        value: 0
-      },
-      primaryField: {
-        type: String,
-        value: "Interaction Notes"
+      hc: {
+        type: Object
       },
       name: {
         type: String,
@@ -183,16 +222,16 @@ Example:
     },
 
     load: function(){
+      console.info(this.subjectId + "hcload");
       if (!this.subjectId) return;
       var payload = {
-        hdms_acct: this.hdmsAcct
+        subjectId: this.subjectId
       }
       this.$.ajax_load.send(payload);
     },
 
     loadResponse: function(e,data){
-      console.log(data.records);
-      this.set("records",data.records);
+      this.set("hc",data.hc);
     },
 
     loadError: function(e){

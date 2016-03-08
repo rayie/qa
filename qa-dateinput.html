@@ -113,10 +113,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     _onInput: function(){
       this.value = this.$.input.value;
-      this.validate(this.value);
+      this.validate();
+      console.log("Value after validate:", this.value, " is invalid: ", this.invalid);
     },
 
     _onBlur: function(){
+      console.log("Got blur in qa-date, value about to be set to trueValue", this.trueValue);
       this.set("value", this.trueValue );
     },
 
@@ -131,10 +133,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     },
 
-    validate: function(value) {
-      // console.log("validating for num ", this.num, value);
+    validate: function(){
+       console.log("validating ", this.value);
       // this regex validates incomplete ssn's (by design)
-      if ( !value ){
+      if ( !this.value ){
         var msg = "";
         this.set("invalid",true);
         this.set("msg",msg);
@@ -142,7 +144,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return false;
       }
 
-      if ( value.length < 4 ){
+      if ( this.value.length < 4 ){
         var msg = "..keep typing";
         this.set("invalid",true);
         this.set("msg",msg);
@@ -150,7 +152,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return false;
       }
 
-      var pr = Date.parse( value );
+      var pr = Date.parse( this.value );
 
       if ( pr === null ){
         var msg = "..can't interpret,try again.";

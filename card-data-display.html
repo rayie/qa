@@ -159,7 +159,7 @@ Example:
                   <template is='dom-repeat' items="[[row.a]]" as="ans" index-as="ans_idx">
                     <div class="main-data">[[ans]]</div>
                   </template>
-                  <div class='note' hidden="[[!note]]">Note: [[row.n]]</div>
+                  <div class='note' hidden="[[!row.n]]">Note: [[row.n]]</div>
                 </div>
                 <template is="dom-if" if="[[!index]]">
                   <moment-display label="Updated" str="[[r.ts]]" time></moment-display><small> by [[rec.m.update.u_id]]</small>

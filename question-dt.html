@@ -136,7 +136,7 @@ Example:
     },
 
     populateNext: function(answer){
-      console.log("answer populating:", answer);
+      console.info("answer populating:", answer);
       if ( this.answer ){
         this.set("qstate",2);
       }
@@ -149,6 +149,7 @@ Example:
 
     gotBlur: function(){
       var ask=false;
+      console.log("asnwer upon blur",this.answer);
       if (this.answer){
         this.qstate=2;
       }

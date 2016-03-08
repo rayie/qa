@@ -154,7 +154,7 @@ Example:
         <div class="card-content">
 
           <div class='form-body'>     
-            <div class='flex4child'>
+            <div class='flex-3'>
               <paper-input
                 is="iron-input"
                 on-change="answerChanged"
@@ -170,7 +170,7 @@ Example:
                 maxlength="[[maxlength]]"
               ></paper-input>
             </div>
-            <div class='flex4child'>
+            <div class='flex-1'>
               <paper-input
                 is="iron-input"
                 on-change="answerChanged"
@@ -183,7 +183,7 @@ Example:
                 maxlength="[[maxlength]]"
               ></paper-input>
             </div>
-            <div class='flex4child'>
+            <div class='flex-3'>
               <paper-input
                 is="iron-input"
                 on-change="answerChanged"
@@ -196,6 +196,19 @@ Example:
                 error-message="Required"
                 always-float-label
                 value="{{answer.ln}}"
+                maxlength="[[maxlength]]"
+              ></paper-input>
+            </div>
+            <div class='flex-3'>
+              <paper-input
+                is="iron-input"
+                on-change="answerChanged"
+                input
+                type="text"
+                label="Nickname (optional)",
+                name="Nickname",
+                always-float-label
+                value="{{answer.nick}}"
                 maxlength="[[maxlength]]"
               ></paper-input>
             </div>
@@ -313,7 +326,7 @@ Example:
         value: function(){
           console.log("answer default val function called");
           return {
-            fn:"",mn:"",ln:"",sex:"",dob:"",suf:"",pf:""
+            fn:"",mn:"",ln:"",nick:"",sex:"",dob:"",suf:"",prf:""
           }
         }
       },
@@ -336,12 +349,14 @@ Example:
     answerChanged: function(e){
       e.target.validate();
       var n_invalid=0;
-      Polymer.dom(this.root).querySelectorAll("paper-input").forEach(function(input){
+      Polymer.dom(this.root).querySelectorAll("paper-input,qa-dateinput").forEach(function(input){
         //console.log(input.name,input.required,input.invalid);
         if ( input.invalid || ( input.required && _.trim(input.value)==="" ) ){
           n_invalid++;
         }
       });
+
+
       if ( n_invalid ) this.set("qstate",1);
       else this.set("qstate",2);
     },
