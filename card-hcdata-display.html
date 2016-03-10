@@ -62,7 +62,9 @@ Example:
     }
     .atxt {
       padding: 6px 6px;
-      font-size: 12px;
+      font-size: 14px;
+      padding: 6px 6px;
+      margin-bottom: 6px;
     }
 
     .leftborder {
@@ -76,34 +78,11 @@ Example:
       padding-bottom: 16px;
     }
 
-    .record-container {
-      margin-bottom: 4px;
-      padding-bottom: 4px;
-    } 
-
-    .record-container div {
-      @apply(--layout-flex-2)
-    }
-
-    .record-container div.primary {
-      @apply(--layout-flex-8)
-      color: blue;
-    }
-
     moment-display {
-      --display-size: 12px;
-      --label-size: 12px;
+      --display-size: 14px;
+      --label-size: 14px;
     }
 
-    label.lbl {
-      cursor: pointer;
-      display: inline;
-      font-style: italic;
-      font-size: .82em;
-      font-weight: 420;
-      padding: 3px 12px;
-      background-color: #90CAF9;
-    }
     .note {
       font-size: .84em;
       color: #00695C;
@@ -117,7 +96,7 @@ Example:
 
     <paper-toolbar>
       <paper-tabs id="hcTabSelector" selected="{{selectedTab}}" elevation='4'>
-        <paper-tab>Notes</paper-tab>
+        <paper-tab link>Notes</paper-tab>
         <paper-tab>Teams</paper-tab>
         <paper-tab>Groups</paper-tab>
         <paper-tab>Survey Data</paper-tab>
@@ -128,22 +107,63 @@ Example:
         <paper-card 
           class="primary"
           elevation=4
-          heading="[[name]]"
+          heading="HealthCall Notes"
         > 
-          <div hidden="[[!asColumns]]">
+          <div role="listbox" hidden="[[!asColumns]]">
             <template is="dom-repeat" items="[[hc.notes]]" as="note">
-              <div class='record-container'>
-                <strong>[[note.user]]</strong>
-                <moment-display str="[[note.dt]]" time></moment-display>
-                <p >[[note.txt]]</p>
-              </div>
+              <paper-item>
+                <paper-item-body class='wrap' two-line>
+                  <div >
+                    <span>[[note.user]]</span>
+                    <moment-display display-fmt="withday" inbound-fmt="MM/DD/YYYY h:ma" str="[[note.dt]]" time></moment-display>
+                  </div>
+                  <div secondary>[[note.txt]]</div>
+                </paper-item-body two-line>
+              </paper-item>
             </template>
           </div>  
         </paper-card>
       </section>
       <section>
+        <paper-card 
+          class="primary"
+          elevation=4
+          heading="HealthCall Teams"
+        > 
+          <div role="listbox" hidden="[[!asColumns]]">
+            <template is="dom-repeat" items="[[hc.teams]]" as="team">
+              <paper-item>
+                <paper-item-body class='wrap' two-line>
+                  <div >
+                    <span>[[team.teamTitle]] - Role:[[team.Role]]</span>
+                  </div>
+                  <div secondary>
+                    <span hidden="[[!team['Primary Phone']]">[[team.PrimaryPhone]]</span>
+                  </div>
+                </paper-item-body two-line>
+              </paper-item>
+            </template>
+          </div>  
+        </paper-card>
       </section>
       <section>
+        <paper-card 
+          class="primary"
+          elevation=4
+          heading="HealthCall Groups"
+        > 
+          <div role="listbox" hidden="[[!asColumns]]">
+            <template is="dom-repeat" items="[[hc.groups]]" as="grp">
+              <paper-item>
+                <paper-item-body class='wrap' >
+                  <div >
+                    <span>[[grp.groupTitle]]</span>
+                  </div>
+                </paper-item-body two-line>
+              </paper-item>
+            </template>
+          </div>  
+        </paper-card>
       </section>
       <section>
         <div hidden="[[!asColumns]]">
@@ -155,10 +175,16 @@ Example:
                 <div >
                   <template is="dom-repeat" items="[[sur.attempts]]" as="att" >
                     <div class='record-container'>
-                      <strong>[[att.short_nm]]</strong>
-                      <moment-display label="Completed" str="[[att.dt]]" time></moment-display>
+
+                      <moment-display 
+                      label="Completed" 
+                      display-fmt="withday" 
+                      str="[[att.dt]]" 
+                      time></moment-display>
+
                       <template is="dom-repeat" items="[[att.qq]]" as="entry" >
-                      <div>
+                      <div class='qa'>
+                        <!--<strong>[[entry.short_nm]]</strong>-->
                         <label class='qtxt'>[[entry.qtxt]]</label>
                         <div class='atxt'>[[entry.atxt]]</div>
                       </div>
@@ -222,7 +248,7 @@ Example:
     },
 
     load: function(){
-      console.info(this.subjectId + "hcload");
+      //console.info(this.subjectId + "hcload");
       if (!this.subjectId) return;
       var payload = {
         subjectId: this.subjectId

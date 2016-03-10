@@ -17,6 +17,13 @@
         }
       }
 
+      paper-item-body.wrap {
+        --paper-item-body-secondary: {
+          text-overflow: inherit;
+          white-space: normal;
+        }
+      }
+
       .main-data {
         font-size: 14px;
         font-weight: 600;
@@ -24,10 +31,29 @@
         font-style: normal;
         margin-top: 8px;
       }
-      
+
+      label.answer-lbl {
+        display: inline;
+        font-style: italic;
+        font-size: .82em;
+        font-weight: 420;
+        color: #757575
+      }
+
       moment-display {
         --display-size: 12px;
         --label-size: 12px;
+      }
+
+      .main-data moment-display {
+        --display-size: 14px;
+        --label-size: 14px;
+
+        --display-weight: 600;
+        --label-weight: 600;
+
+        --display-color: #455A64;
+        --label-color: #455A64;
       }
 
       moment-display.emph {
@@ -39,6 +65,12 @@
 
         --display-color: #00695C;
         --label-color: #00695C;
+      }
+
+      .last-update-msg {
+        margin-top: 8px;
+        font-size: .92em;
+        color: #BDBDBD;
       }
 
       paper-button {

@@ -88,14 +88,14 @@ Example:
       font-style: italic;
       font-size: .82em;
       font-weight: 420;
-      padding: 3px 12px;
+      padding: 12px;
       background-color: #90CAF9;
     }
     .note {
       font-size: .84em;
       color: #00695C;
     }
-    p {
+    p.notelines {
       font-size: .88em;
     }
   </style>
@@ -114,13 +114,23 @@ Example:
             >
               <div >
                 <template is="dom-repeat" items="[[rec.rows]]" as="row" >
-                  <div class='record-container'>
-                    <strong>[[row.op_nm]]</strong>
-                    <moment-display str="[[row.dt]]" time></moment-display>
-                    <template is="dom-repeat" items="[[row.txt]]" as="txt" >
-                      <p >[[txt]]</p>
-                    </template>
-                  </div>
+                  <paper-item>
+                    <paper-item-body class='wrap' two-line>
+                      <div >
+                        <span>[[row.op_nm]]</span>
+                        <moment-display 
+                          display-fmt="withday" 
+                          str="[[row.dt]]" 
+                          time
+                        ></moment-display>
+                      </div>
+                      <div secondary>
+                        <template is="dom-repeat" items="[[row.txt]]" as="txt" >
+                          <p class='notelines'>[[txt]]</p>
+                        </template>
+                      </div>
+                    </paper-item-body>
+                  <paper-item>
                 </template>
               </div>
             </qa-collapse-block>
@@ -191,7 +201,7 @@ Example:
     },
 
     loadResponse: function(e,data){
-      console.log(data.records);
+      //console.log(data.records);
       this.set("records",data.records);
     },
 
@@ -200,7 +210,7 @@ Example:
     },
 
     toggle: function(e){
-      console.log(e);
+      //console.log(e);
       return;
     }
   });

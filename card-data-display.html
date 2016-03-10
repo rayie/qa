@@ -77,19 +77,6 @@ Example:
       color: blue;
     }
 
-    moment-display {
-      --display-size: 12px;
-      --label-size: 12px;
-    }
-
-    label.lbl {
-      display: inline;
-      font-style: italic;
-      font-size: .82em;
-      font-weight: 420;
-      padding: 3px 12px;
-      background-color: #90CAF9;
-    }
     .note {
       font-size: .84em;
       color: #00695C;
@@ -110,15 +97,21 @@ Example:
               <template is="dom-repeat" items="[[rec.rows]]" as="row" >
                 <div class="horizontal layout section-container">
                   <div class="flex-5">
-                    <label class='lbl'>[[row.q]]</label>
+                    <label class='answer-lbl'>[[row.q]]</label>
                     <template is='dom-repeat' items="[[row.a]]" as="ans">
-                      <div class="main-data">[[ans]]</div>
+                      <div class="main-data"> 
+                        <span hidden="[[row.is_date]]">[[ans]]</span>
+                        <moment-display hidden="[[!row.is_date]]" display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]"></moment-display>
+                      </div>
                     </template>
                     <div class='note' hidden="[[!row.n]]">Note: [[row.n]]</div>
                   </div>
                   <div class="flex-2">
                     <template is="dom-if" if="[[!index]]">
-                      <moment-display label="Updated" str="[[r.ts]]" time></moment-display>
+                      <div class='last-update-msg'>
+                        <moment-display label="Updated" str="[[r.ts]]" time></moment-display>
+                        <small> by [[rec.m.update.u_id]]</small>
+                      </div>
                     </template>
                   </div>
                 </div>
@@ -130,15 +123,21 @@ Example:
               <template is="dom-repeat" items="[[rec.rows]]" as="row">
                 <div class="horizontal layout section-container">
                   <div class="flex-5">
-                    <label class='lbl'>[[row.q]]</label>
+                    <label class='answer-lbl'>[[row.q]]</label>
                     <template is='dom-repeat' items="[[row.a]]" as="ans">
-                      <div class="main-data">[[ans]]</div>
+                      <div class="main-data"> 
+                        <span hidden="[[row.is_date]]">[[ans]]</span>
+                        <moment-display hidden="[[!row.is_date]]" display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]"></moment-display>
+                      </div>
                     </template>
                     <div class='note' hidden="[[!row.n]]">Note: [[row.n]]</div>
                   </div>
                   <div class="flex-2">
                     <template is="dom-if" if="[[!index]]">
-                      <moment-display label="Updated" str="[[r.ts]]" time></moment-display>
+                      <div class='last-update-msg'>
+                        <moment-display label="Updated" str="[[r.ts]]" time></moment-display>
+                        <small> by [[rec.m.update.u_id]]</small>
+                      </div>
                     </template>
                   </div>
                 </div>
@@ -155,19 +154,26 @@ Example:
 
               <div class$="[[row.klass]] test-klass" >
                 <div>
-                  <label class='lbl'>[[row.q]]</label>
+                  <label class='answer-lbl'>[[row.q]]</label>
                   <template is='dom-repeat' items="[[row.a]]" as="ans" index-as="ans_idx">
-                    <div class="main-data">[[ans]]</div>
+                    <div class="main-data"> 
+                      <span hidden="[[row.is_date]]">[[ans]]</span>
+                      <moment-display hidden="[[!row.is_date]]" display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]"></moment-display>
+                    </div>
                   </template>
                   <div class='note' hidden="[[!row.n]]">Note: [[row.n]]</div>
                 </div>
                 <template is="dom-if" if="[[!index]]">
-                  <moment-display label="Updated" str="[[r.ts]]" time></moment-display><small> by [[rec.m.update.u_id]]</small>
+                  <div class='last-update-msg'>
+                    <moment-display label="Updated" str="[[r.ts]]" display-fmt="withday" time></moment-display>
+                    <small> by [[rec.m.update.u_id]]</small>
+                  </div>
                 </template>
               </div>
-
             </template>
+
           </div>
+
         </template>
       </div>
 
@@ -233,7 +239,7 @@ Example:
     },
 
     loadResponse: function(e,data){
-      console.log(data.records);
+      //console.log(data.records);
       this.set("records",data.records);
     },
 

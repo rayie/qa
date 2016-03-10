@@ -108,6 +108,7 @@ Example:
         </span>
 
         <moment-display
+          id="mdfuture"
           class="future"
           hidden="[[!isPlannedFuture]]"
           label="PLANNED"
@@ -116,6 +117,7 @@ Example:
         </moment-display>
 
         <moment-display
+          id="mdcurrent"
           class="current"
           hidden="[[!isPlannedCurrent]]"
           label="PLANNED"
@@ -239,9 +241,9 @@ Example:
       }
       */
 
-      console.log("reverting");
+      //console.log("reverting");
       this.set( "plannedFor", _.clone(this._lastSaved));
-      console.log("plannedFor.kind set back to:", this.plannedFor);
+      //console.log("plannedFor.kind set back to:", this.plannedFor);
       this._evaluate();
       return;
 
@@ -315,14 +317,16 @@ Example:
       }
 
       if ( this.taskState==="done" || this.taskAssignedTo!=="rie@supercare.com" ) {
-        console.log("not ok", this.taskAssignedTo);
+        //console.log("not ok", this.taskAssignedTo);
         okToStart=false;
       }
       else {
-        console.log("is ok", this.taskAssignedTo);
+        //console.log("is ok", this.taskAssignedTo);
       }
       
       
+      this.$.mdcurrent.refresh();
+      this.$.mdfuture.refresh();
       this.set("okToStart",okToStart);
 
     },

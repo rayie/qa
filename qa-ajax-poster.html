@@ -88,7 +88,7 @@ Example:
 
     send: function(payload,passBack){
       this.$.locstore.reload();
-      console.log("sending to url ", this.$.main.url,payload);
+      //console.log("sending to url ", this.$.main.url,payload);
       if (payload===undefined) payload={};
       this.set("payload",payload);
       this.passBack = passBack;

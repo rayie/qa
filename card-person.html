@@ -140,12 +140,12 @@ Example:
           </paper-card> 
 
           <card-data-display
-            class="flex-10"
-            as-columns
             id="programCard"
+            class="flex-10"
             name="Programs"
             flows='["flows/sc.program.json"]'
             subject-id="[[person._id]]">
+            as-columns
           </card-data-display>
 
           <card-contact 
@@ -154,8 +154,8 @@ Example:
           </card-contact>
 
           <card-data-display
-            class="flex-10"
             id="demographicCard"
+            class="flex-10"
             name="Demographic"
             flows='["flows/global.demographic.json"]'
             subject-id="[[person._id]]">

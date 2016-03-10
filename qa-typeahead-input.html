@@ -494,6 +494,13 @@ If you want to save it in bower.json file, remember to add flag --save
         this._suggestions = [];
         return;
       }
+      if (term.length < 3){
+        this._suggestions = [];
+        return;
+      }
+
+      term = term.replace(/^\*/,"").replace(/\*/g,".*");
+
       var patt =  new RegExp(term.toLowerCase());
       var matched = [];
 

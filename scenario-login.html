@@ -284,7 +284,7 @@ Example:
         return;
       }
 
-      console.log("found scenariouser in locstore, checking if session still valid");
+      //console.log("found scenariouser in locstore, checking if session still valid");
       if (!_.has( this.scenariouser ,'csrfToken' ) ){
         console.log("no csrfToken in locstore") 
         return;
@@ -307,7 +307,7 @@ Example:
       console.log(e);
     },
     test_response: function(e){
-      console.log(e);
+      //console.log(e);
     },
 
     check_error: function(e){
@@ -316,7 +316,7 @@ Example:
     },
 
     check_response: function(e){
-      console.log("setting sessionIsValid to true");
+      //console.log("setting sessionIsValid to true");
       this.set("sessionIsValid", true);
     },
 

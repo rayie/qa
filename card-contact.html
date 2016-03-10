@@ -63,20 +63,6 @@ Example:
       border-bottom: 1px dashed #512DA8;
     } 
 
-    moment-display {
-      --display-size: 12px;
-      --label-size: 12px;
-    }
-
-    label.lbl {
-      display: inline;
-      font-style: italic;
-      font-size: .82em;
-      font-weight: 420;
-      padding: 3px 12px;
-      background-color: #90CAF9;
-    }
-
     .note {
       font-size: .85em;
       font-weight: 350;
@@ -97,15 +83,17 @@ Example:
             <div class="horizontal layout section-container">
 
               <div class="flex-5">
-                <label class='lbl'>[[c.contact_rel]] [[c.contact_name]]</label>
+                <label class='answer-lbl'>[[c.contact_rel]] [[c.contact_name]]</label>
                 <div class="main-data">
                   [[c.method]]: [[c.contact_value]]
                   <div class='note' hidden="[[!c.note]]">Note: [[c.note]]</div>
                 </div>
-              </div>
 
-              <div class="flex-2">
-                <moment-display label="Updated" str="[[c.ts]]" time></moment-display>
+                <div class='last-update-msg'>
+                  <moment-display label="Updated" str="[[c.m.update.ts]]" time></moment-display>
+                  <small> by [[c.m.update.u_id]]</small>
+                </div>
+
               </div>
 
             </div>
@@ -116,7 +104,7 @@ Example:
             <div class="horizontal layout section-container">
               <div class="flex-5">
                 <template is="dom-repeat" items="[[a.lbls]]" as="lbl">
-                  <label class='lbl'>[[lbl]]</label>
+                  <label class='answer-lbl'>[[lbl]]</label>
                 </template>
                 <address class="main-data">
                   [[a.addr1]]
@@ -124,9 +112,12 @@ Example:
                   [[a.city]],[[a.state]] [[a.zip]]
                   <div class='note' hidden="[[!a.note]]">Note: [[a.note]]</div>
                 </address>
-              </div>
-              <div class="flex-2">
-                <moment-display label="Updated" str="[[a.ts]]" time></moment-display>
+
+                <div class='last-update-msg'>
+                  <moment-display label="Updated" str="[[a.m.update.ts]]" time></moment-display>
+                  <small> by [[a.m.update.u_id]]</small>
+                </div>
+
               </div>
             </div>
           </template>
@@ -172,7 +163,7 @@ Example:
     load: function(){
       if (!this.subjectId) return;
       var payload = {
-        qids: ["Q200","Q210"],
+        qids: ["global-address","global-contact"],
         subjectId: this.subjectId
       }
       this.$.ajax_load_contact.send(payload);
@@ -180,37 +171,38 @@ Example:
     },
 
     loadResponse: function(e,data){
-      console.log(data);
+      //console.log(data);
       var addrs = [];
       var contacts = [];
       data.records.forEach(function(r){
 
-        if ( r["Q200"] ){
-          r["Q200"].lbls = r["Q200"].applies_to.map(function(b){
+        if ( r["global-address"] ){
+          r["global-address"].lbls = r["global-address"].applies_to.map(function(b){
             return addr_ref[b];
           });
-          r["Q200"].ts = r.m.update.ts;
-          addrs.push(r["Q200"]);
+
+          r["global-address"].m = r.m;
+          addrs.push(r["global-address"]);
 
           [1,2,3,4,5,6].forEach(function(n){
-            if ( r["Q200-"+n] ){
-              r["Q200-"+n].lbls = r["Q200-"+n].applies_to.map(function(b){
+            if ( r["global-address-"+n] ){
+              r["global-address-"+n].lbls = r["global-address-"+n].applies_to.map(function(b){
                 return addr_ref[b];
               });
-              r["Q200-"+n].ts = r.m.update.ts;
-              addrs.push(r["Q200-"+n]);
+              r["global-address-"+n].m = r.m;
+              addrs.push(r["global-address-"+n]);
             }
           });
         }
         
-        if ( r["Q210"] ){
-          r["Q210"].ts = r.m.update.ts;
-          contacts.push(r["Q210"]);
+        if ( r["global-contact"] ){
+          r["global-contact"].m = r.m;
+          contacts.push(r["global-contact"]);
 
           [1,2,3,4,5,6].forEach(function(n){
-            if ( r["Q210-"+n] ){
-              r["Q210-"+n].ts = r.m.update.ts;
-              contacts.push(r["Q210-"+n]);
+            if ( r["global-contact-"+n] ){
+              r["global-contact-"+n].m = r.m;
+              contacts.push(r["global-contact-"+n]);
             }
           });
         }

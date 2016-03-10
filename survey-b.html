@@ -528,9 +528,9 @@ Example:
       var qn = 0;
       this.taskDefinition.qq.forEach(function(q,idx){
         q.idx_in_survey = idx * 1;
+        q.display_num = q._id.toString();
 
         if ( q.kind==="form"){
-          q.display_num = "Q" + q._id;
           qn++;
           q.seq_num=qn*1;
           var new_frm = self.create("form-"+q.form.toLowerCase(),q);
@@ -543,7 +543,6 @@ Example:
           return;
         }
 
-        q.display_num = "Q" + q._id;
 
         if ( q.kind=="yn" ) q = self._convert_yn_to_mc(q);
         var new_q = self.create("question-"+q.kind.toLowerCase(),q);
