@@ -637,9 +637,8 @@ Example:
           q.answer.forEach(function(ans){
             //a.push( q.opts[ans].txt );
             a.push( ans );
-
-            if ( q.opts[ans].task ){
-              self.taskDefinition.tasksFromAnswers.push( q.opts[ans].task );
+            if ( q.opts[ans].tasks ){
+              self.taskDefinition.tasksFromAnswers = self.taskDefinition.tasksFromAnswers.concat( q.opts[ans].tasks );
               console.log(q.opts[ans]);
             }
 
