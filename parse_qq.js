@@ -29,14 +29,19 @@ var parse = function(data){
     row = row.replace(/\r/g,"");
     var cols = row.split(/\t/g);
     newID+=increment;
+    var tags =  cols[CONST.TAGS].replace(/COPD 30 Day calls.*28/,"COPD 30 Day SemiWeekly Call").split(/,/);
+    if ( tags==!undefined ){ 
+      console.log("MISSING TAGS", cols.join("\t") );
+    }
 
-    var tags =  cols[CONST.TAGS].split(/,/);
+    if ( !cols[CONST.QTXT].trim() ) return console.log("SKIPPING - missing qtxt", cols.join("\t") );
+    if ( !cols[CONST.TAGS].trim() ) return console.log("SKIPPING - missing tags", cols.join("\t") );
+    if ( !cols[CONST.KIND].trim() ) cols[CONST.KIND]="ft";
 
     var entry = {
       _id: newID,
       txt: _.upperFirst(cols[CONST.QTXT]),
       kind: cols[CONST.KIND],
-      tags: tags,
       allow: {
         na: true,
         survey_note: true,
@@ -65,9 +70,18 @@ var parse = function(data){
         });
 
         if ( cols[CONST.MAX_OPTS] ){
-          var max = parseInt( cols[CONST.MAX_OPTS] );
-          if (!isNaN(max)){
-            entry.minmax = [ 1, max ];
+          if ( cols[CONST.MAX_OPTS].toLowerCase()==="all" ){
+              entry.minmax = [ 1, entry.opts.length ];
+          }
+          else{
+            var max = parseInt( cols[CONST.MAX_OPTS] );
+            if (isNaN(max)){
+              console.log("INVALID MAX OPTS", cols.join("\t"));
+              process.exit();
+            }
+            else{
+              entry.minmax = [ 1, max ];
+            }
           }
         }
         break;
@@ -76,21 +90,23 @@ var parse = function(data){
     }
 
     tags.forEach(function(t){
+      t = t.trim().toLowerCase().replace(/ /g,"-");
       if ( t==""){
         console.log(entry);
         process.exit();
       }
       if ( !_.has( tagref, t) ) tagref[ t ] = [];
       tagref[t].push( entry );
+      console.log(t);
     });
 
-    //console.log(entry);
 
   });
+  console.log("DONE WITH QQ", tagref['all-assessments']);
 
-  tagref['all assessments'].forEach(function(e,idx){
+  tagref['all-assessments'].forEach(function(e,idx){
     for(var k in tagref){
-      if ( k=='all assessments' || k=='demographic' || k=='casebuild' ) { }
+      if ( k=='all-assessments' ) { }
       else {
         console.log(k);
         //tagref[k].push(e);
@@ -103,15 +119,14 @@ var parse = function(data){
   var proms = [];
   var taskdef_list = [];
   for(var k in tagref){
-    var outpath = "/var/www/superapi/public/flows/tmp/sc.copd."+k+".json";
-    outpath = "/tmp/flows/sc.copd."+k+".json";
-    if ( k !== "all assessments" ){
+    var outpath = "/tmp/flows/sc."+k+".json";
+    if ( k !== "all-assessments" ){
       var taskDef = {
         type: "data",
-        name: _.upperFirst(k),
+        name: k.toUpperCase(),
         qq: tagref[k],
         upon: { submit: [ ] },
-        url: "flows/sc.copd."+k+".json", 
+        url: "flows/sc."+k+".json", 
       }
       proms.push( 
         fs.writeFileAsync(outpath, JSON.stringify( taskDef, null, "\t" )) 
@@ -127,8 +142,8 @@ var parse = function(data){
   });
 
 }
-
-fs.readFileAsync("/tmp/copd_qq.tsv")
+var path_to_source_file = "/Users/raymondie/Downloads/COPD\ ASSESSMENT\ QUESTIONS.xlsx\ -\ AllQuestions.tsv";
+fs.readFileAsync(path_to_source_file)
 .then(parse)
 .catch(function(err){
   console.log(err);

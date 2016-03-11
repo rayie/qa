@@ -591,23 +591,31 @@ Example:
       console.log('populating answers');
       this.isPopulating=true;
       var addons=0;
-      for(var k in this.dataDoc.qref){
-        if ( k.search(/-/)!==-1 ){
+
+      //this.taskDefinition.qq.forEach(function(q,idx){
+
+
+      for(var qnum in this.dataDoc.a){
+        var suffix_idx = qnum.search(/-[0-9]*$/);
+        if ( suffix_idx !== -1 ){
           //an multi instance question/form entry
-          this.questions[ k.substr(1).split("-")[0] ].$.qpartFooter.addInstance();
+          this.questions[ qnum.substr(0,suffix_idx) ].$.qpartFooter.addInstance();
           addons++;
         }
-      }
+      };
 
       if (addons){
         Polymer.dom.flush();
       }
 
-      for(var k in this.dataDoc.qref){
-        this.questions[ k.substr(1) ].populateAnswer( this.dataDoc[k] );
+      /* 
+        iterate through the answers captured in the data doc so far
+      */
+      for(var k in this.dataDoc.a){
+        this.questions[ k ].populateAnswer( this.dataDoc.a[k] ); //add on instances of questions will have been added to this.question in the above forEach 
 
-        if ( this.dataDoc.nref[k] )
-          this.questions[ k.substr(1) ].populateNote( this.dataDoc.nref[k] );
+        if ( this.dataDoc.n[k] )
+          this.questions[ k ].populateNote( this.dataDoc.n[k] );
       }
 
       this.isPopulating=false;
@@ -641,22 +649,16 @@ Example:
       }
 
       q.sn=_.trim(q.sn);
-      if ( a===undefined ) return {
+      var r = {
         qnum: q.display_num,
         sn: q.sn,
         q: q.txt
       };
 
-      var r = {
-        qnum: q.display_num,
-        sn: q.sn,
-        q: q.txt,
-        a: a
-      };
+      if ( a!==undefined ) r.a = a;
 
-      if ( q.sn ){
-        r.sn = q.sn;
-      }
+      if ( q.sn ) r.sn = q.sn;
+      
       return r;
     },
 
@@ -665,6 +667,7 @@ Example:
     },
 
     summarize: function(){
+      console.log("Summarize called");
       var qstate_counts = [ 0, 0, 0, 0];
       var count_hidden = 0;
       var answers = [];
@@ -734,12 +737,23 @@ Example:
       if ( this.task.state !== "inprog" || undefined === this.task.dataId )
         return this.taskInprog();
 
+      var answers_for_payload = this.answers.map(function(a){
+        var _a = _.clone(a);
+        delete _a.q;
+        return _a;
+      })
+
+      answers_for_payload = answers_for_payload.filter(function(a){
+        return (undefined!==a.a);
+      });
+
       var payload = { 
         dataId: this.task.dataId, 
         taskId: this.task._id, 
         lastTs: this.task.ts, 
-        answers: this.answers
+        answers: answers_for_payload
       }
+      console.log(payload);
       this.$.ajax_save_data.send(payload);
     },
 
@@ -877,6 +891,7 @@ Example:
         a: e.target.answer
       };
       console.log("r",r);
+      console.log("summarize called because qstate changed fired");
       */
       return this.summarize();
     }

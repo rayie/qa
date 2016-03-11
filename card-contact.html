@@ -83,14 +83,14 @@ Example:
             <div class="horizontal layout section-container">
 
               <div class="flex-5">
-                <label class='answer-lbl'>[[c.contact_rel]] [[c.contact_name]]</label>
+                <label class='answer-lbl'>[[c.contact_rel]] - [[c.contact_name]] - [[c.method]]</label>
                 <div class="main-data">
-                  [[c.method]]: [[c.contact_value]]
+                  [[c.contact_value]]
                   <div class='note' hidden="[[!c.note]]">Note: [[c.note]]</div>
                 </div>
 
                 <div class='last-update-msg'>
-                  <moment-display label="Updated" str="[[c.m.update.ts]]" time></moment-display>
+                  <moment-display label="Updated" str="[[c.m.update.ts]]" display-fmt="withday" time></moment-display>
                   <small> by [[c.m.update.u_id]]</small>
                 </div>
 
@@ -114,7 +114,7 @@ Example:
                 </address>
 
                 <div class='last-update-msg'>
-                  <moment-display label="Updated" str="[[a.m.update.ts]]" time></moment-display>
+                  <moment-display label="Updated" str="[[a.m.update.ts]]" display-fmt="withday" time></moment-display>
                   <small> by [[a.m.update.u_id]]</small>
                 </div>
 
@@ -176,35 +176,16 @@ Example:
       var contacts = [];
       data.records.forEach(function(r){
 
-        if ( r["global-address"] ){
-          r["global-address"].lbls = r["global-address"].applies_to.map(function(b){
-            return addr_ref[b];
-          });
-
-          r["global-address"].m = r.m;
-          addrs.push(r["global-address"]);
-
-          [1,2,3,4,5,6].forEach(function(n){
-            if ( r["global-address-"+n] ){
-              r["global-address-"+n].lbls = r["global-address-"+n].applies_to.map(function(b){
-                return addr_ref[b];
-              });
-              r["global-address-"+n].m = r.m;
-              addrs.push(r["global-address-"+n]);
-            }
-          });
-        }
-        
-        if ( r["global-contact"] ){
-          r["global-contact"].m = r.m;
-          contacts.push(r["global-contact"]);
-
-          [1,2,3,4,5,6].forEach(function(n){
-            if ( r["global-contact-"+n] ){
-              r["global-contact-"+n].m = r.m;
-              contacts.push(r["global-contact-"+n]);
-            }
-          });
+        for(var qnum in r.a){
+          if ( qnum.search(/^global-address/)===0 ){
+            r.a[qnum].lbls = r.a["global-address"].applies_to.map(function(b){ return addr_ref[b]; });
+            r.a[qnum].m=r.m;
+            addrs.push(r.a[qnum]);
+          }
+          else if ( qnum.search(/^global-contact/)===0 ){
+            r.a[qnum].m=r.m;
+            contacts.push(r.a[qnum]);
+          }
         }
 
       });

@@ -329,24 +329,25 @@ Example:
 
     gotContactMethodChange: function(newMethod){
       this.set("hideSmsControl",(newMethod !== "Primary Phone" && newMethod !== "Secondary Phone" ));
-      console.log(newMethod,this.hideSmsControl);
+      //console.log(newMethod,this.hideSmsControl);
       this._checkState();
       return;
     },
 
     gotContactRelChange: function(newRel){
       this.set("hideContactName",( newRel === "Self" ) );
-      console.log( newRel, ( newRel === "Self" ) );
+      //console.log( newRel, ( newRel === "Self" ) );
       this._checkState();
       return;
     },
 
     gotInputChange: function(e){
-      console.log("input changed",this.answer.contact_value ,this.answer.contact_name ,this.answer.contact_rel==="Self"  );
+      //console.log("input changed",this.answer.contact_value ,this.answer.contact_name ,this.answer.contact_rel==="Self"  );
       this._checkState();
     },
 
     _checkState: function(){
+      //console.log("in _checkState");
       if (this.answer.contact_value && ( this.answer.contact_name || this.answer.contact_rel==="Self"  ) ){
         this.set("qstate",2);
 
@@ -355,7 +356,7 @@ Example:
         this.set("qstate",0);
       }
     
-      return this.fire("qstate-changed");
+      //return this.fire("qstate-changed");
     },
 
     submit: function(){

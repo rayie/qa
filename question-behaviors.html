@@ -81,7 +81,7 @@
     },
 
     qstateChangedInFooter: function(e){
-      //console.log("qstateChangedInFooter", e.detail.value);
+      console.log("qstateChangedInFooter", e.detail.value);
       this.set("qstate", e.detail.value);
     },
 
@@ -90,8 +90,8 @@
     },
 
     populateAnswer: function(a){
-      if ( a===undefined ){
-        //leave as is
+      if ( a===undefined ){  
+        /* leave as is, because there has not been an answer provied */
         return;
       }
 

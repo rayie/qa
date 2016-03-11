@@ -144,8 +144,9 @@ Example:
             class="flex-10"
             name="Programs"
             flows='["flows/sc.program.json"]'
-            subject-id="[[person._id]]">
+            subject-id="[[person._id]]"
             as-columns
+          >
           </card-data-display>
 
           <card-contact 
@@ -158,6 +159,7 @@ Example:
             class="flex-10"
             name="Demographic"
             flows='["flows/global.demographic.json"]'
+            as-columns
             subject-id="[[person._id]]">
           </card-data-display>
 

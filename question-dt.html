@@ -17,6 +17,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../moment-display/moment-import.html">
 <link rel="import" href="qa-dateinput.html">
 <link rel="import" href="question-behaviors.html">
 <link rel="import" href="question-part-hdr.html">
@@ -136,12 +137,14 @@ Example:
     },
 
     populateNext: function(answer){
-      console.info("answer populating:", answer);
-      if ( this.answer ){
+      console.info("answer populating:", answer, (answer) );
+      if ( answer ){
+        answer = ( new moment(answer) ).format("MM-DD-YYYY");
+        console.info("after moment conversion:", answer);
         this.set("qstate",2);
       }
       else {
-        this.set("qstate",2);
+        this.set("qstate",0);
       }
       this.set("answer",answer);
       this.$.dateinput.validate(this.answer);

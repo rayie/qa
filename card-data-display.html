@@ -100,8 +100,13 @@ Example:
                     <label class='answer-lbl'>[[row.q]]</label>
                     <template is='dom-repeat' items="[[row.a]]" as="ans">
                       <div class="main-data"> 
-                        <span hidden="[[row.is_date]]">[[ans]]</span>
-                        <moment-display hidden="[[!row.is_date]]" display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]"></moment-display>
+                        <template is="dom-if" if="[[!row.is_date]]">
+                          <span hidden="[[row.is_date]]">[[ans]]</span>
+                        </template>
+                        <template is="dom-if" if="[[row.is_date]]">
+                          <moment-display hidden="[[!row.is_date]]" display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]">
+                          </moment-display>
+                        </template>
                       </div>
                     </template>
                     <div class='note' hidden="[[!row.n]]">Note: [[row.n]]</div>
@@ -109,7 +114,7 @@ Example:
                   <div class="flex-2">
                     <template is="dom-if" if="[[!index]]">
                       <div class='last-update-msg'>
-                        <moment-display label="Updated" str="[[r.ts]]" time></moment-display>
+                        <moment-display label="Updated" str="[[r.ts]]" display-fmt="withday" time></moment-display>
                         <small> by [[rec.m.update.u_id]]</small>
                       </div>
                     </template>
@@ -126,8 +131,13 @@ Example:
                     <label class='answer-lbl'>[[row.q]]</label>
                     <template is='dom-repeat' items="[[row.a]]" as="ans">
                       <div class="main-data"> 
-                        <span hidden="[[row.is_date]]">[[ans]]</span>
-                        <moment-display hidden="[[!row.is_date]]" display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]"></moment-display>
+                        <template is="dom-if" if="[[!row.is_date]]">
+                          <span hidden="[[row.is_date]]">[[ans]]</span>
+                        </template>
+                        <template is="dom-if" if="[[row.is_date]]">
+                          <moment-display hidden="[[!row.is_date]]" display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]">
+                          </moment-display>
+                        </template>
                       </div>
                     </template>
                     <div class='note' hidden="[[!row.n]]">Note: [[row.n]]</div>
@@ -135,7 +145,7 @@ Example:
                   <div class="flex-2">
                     <template is="dom-if" if="[[!index]]">
                       <div class='last-update-msg'>
-                        <moment-display label="Updated" str="[[r.ts]]" time></moment-display>
+                        <moment-display label="Updated" str="[[r.ts]]" display-fmt="withday" time></moment-display>
                         <small> by [[rec.m.update.u_id]]</small>
                       </div>
                     </template>
