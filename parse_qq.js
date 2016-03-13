@@ -128,6 +128,19 @@ var parse = function(data){
         upon: { submit: [ ] },
         url: "flows/sc."+k+".json", 
       }
+
+      switch(k){
+        case "copd-initial-homevisit":
+          [3,7,10,14,17,21,25,28].forEach(function(day){
+            taskDef.upon.submit.push({
+              name: "COPD 30 DAY FOLLOWUP CALL - DAY " + day,
+              plannedFor: "in " + day + " days",
+              url: "flows/sc.copd-30-day-followup-call.json" 
+            });
+          })
+          break;
+      }
+
       proms.push( 
         fs.writeFileAsync(outpath, JSON.stringify( taskDef, null, "\t" )) 
       );

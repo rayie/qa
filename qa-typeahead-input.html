@@ -499,9 +499,9 @@ If you want to save it in bower.json file, remember to add flag --save
         return;
       }
 
-      term = term.replace(/^\*/,"").replace(/\*/g,".*");
-
+      //term = term.replace(/^\*/,"").replace(/\*/g,".*");
       var patt =  new RegExp(term.toLowerCase());
+      //console.log("term:", term, " patt:", patt);
       var matched = [];
 
       if (typeof(this.localCandidates) != 'undefined'){
@@ -534,6 +534,10 @@ If you want to save it in bower.json file, remember to add flag --save
           }
         }
       }
+
+
+
+
       // this._suggestions = this._suggestions.concat(matched);
       if (typeof(this.remoteUrl) != 'undefined'){
         var pt_element = this;
