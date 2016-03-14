@@ -1,0 +1,171 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-fab/paper-fab.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-item/paper-item-body.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-styles/typography.html">
+<link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../moment-display/moment-display.html">
+<link rel="import" href="section-behaviors.html">
+<link rel="import" href="qa-ajax-poster.html">
+<link rel="import" href="styles/qa-styles.html">
+
+<!--
+
+Example:
+
+    <card-person></card-person>
+
+@demo
+-->
+<dom-module id="list-persons-by-program">
+
+  <style is="custom-style" include="qa-styles"></style>
+  <style is="custom-style">
+
+    :host {
+      display: block;
+      box-sizing: border-box;
+    }
+   
+    :host > ::content .special {
+    }
+
+    .form-num {
+      @apply(--paper-font-body2)
+      text-align: right;
+    }
+
+    .form-title {
+      @apply(--paper-font-body2)
+    }
+
+    .form-sub-title {
+      @apply(--paper-font-caption)
+    }
+
+    .paper-font-caption {
+      @apply(--paper-font-caption);
+    }
+    paper-button {
+      @apply(--paper-font-button);
+    }
+    .entry { 
+      margin-bottom: 16px;
+    }
+    .name {
+      font-size: 14px;
+      font-weight: 800;
+    }
+    a {
+      text-decoration: none;
+      display:block;
+    }
+
+    .newFab {
+      position: fixed;
+      top: 10%;
+      left: 90%;
+    }
+
+  </style>
+
+  <template>
+    <a class="newFab" title="Create New Patient Record" href$="{{baseUrl}}/directsurvey/sc.addperson">
+      <paper-fab elevation=2" icon="add"></paper-fab>
+    </a>
+    <paper-card class="primary" elevation="4" heading="Filters">
+    </paper-card>
+
+    <paper-card class="primary" elevation="4" heading="Patient Listing">
+      <template is="dom-repeat" items="[[persons]]" as="p">
+        <div class="layout horizontal entry">
+          <div class="flex">
+            <a href$="patient/[[p._id]]">
+              <span class='name'>
+              [[p.displayAs]] ([[p.sex]]) 
+              <moment-display str="[[p.dob]]" ></moment-display>
+              </span>
+            </a>
+          </div>
+          <div class="flex">
+            <small>
+              Last activity: 
+              <moment-display time str="[[p.ts]]" ></moment-display>
+            <small>
+          </div>
+        </div>
+      </template>
+      <qa-ajax-poster
+        id="ajax_load_persons"       
+        no-toast
+        on-response="loadPersonsResponse"
+        on-error="loadPersonsError"
+        loading="{{is_loading}}"
+        endpoint="api/persons:program"
+      ></qa-ajax-poster>
+    </paper-card>
+  </template>
+
+</dom-module>
+
+<script>
+
+
+  Polymer({
+
+    is: 'list-persons-by-program',
+
+    behaviors: [ SectionBehaviors.Basic ],
+
+    properties: {
+      persons: {
+        type: Array,
+        value: []
+      }, 
+      listResultTitle: { 
+        type: String,
+        value: function(){ return "Patient listing by program"; }
+      }
+    },
+
+    loadPersons: function(){
+      console.log("in loadPersons");
+      var payload = {
+        timing: "current",
+        "sc-program-name": "Healthcare at Home COPD Program"
+      }
+      this.$.ajax_load_persons.send(payload);
+    },
+
+    loadPersonsResponse: function(e,data){
+      console.log(e);
+      //e.detail.response.person.dob  = e.detail.response.person.dob.toString().substr(0,10);
+      this.set("persons",data.persons);
+      var listResultTitle = data.persons.length + " Patients Found";
+      this.applyTitle("Patient Listing by Program - "+ listResultTitle);
+    },
+
+    loadPersonsError: function(e){
+      console.log(e);
+
+    }
+
+  });
+
+</script>

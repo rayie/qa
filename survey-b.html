@@ -596,8 +596,6 @@ Example:
       var addons=0;
 
       //this.taskDefinition.qq.forEach(function(q,idx){
-
-
       for(var qnum in this.dataDoc.a){
         var suffix_idx = qnum.search(/-[0-9]*$/);
         if ( suffix_idx !== -1 ){
@@ -616,7 +614,6 @@ Example:
       */
       for(var k in this.dataDoc.a){
         this.questions[ k ].populateAnswer( this.dataDoc.a[k] ); //add on instances of questions will have been added to this.question in the above forEach 
-
         if ( this.dataDoc.n[k] )
           this.questions[ k ].populateNote( this.dataDoc.n[k] );
       }
@@ -644,7 +641,6 @@ Example:
               self.taskDefinition.tasksFromAnswers = self.taskDefinition.tasksFromAnswers.concat( q.opts[ans].tasks );
               console.log(q.opts[ans]);
             }
-
           });
           //a = a.join(",");
           break;
