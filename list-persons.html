@@ -12,7 +12,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-button/paper-button.html">
-<link rel="import" href="../paper-fab/paper-fab.html">
 <link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-item/paper-item.html">
@@ -90,9 +89,6 @@ Example:
       
     </paper-toolbar>
     <paper-card class="primary" elevation="4" heading="Patient Listing">
-      <a class="newFab" title="Create New Patient Record" href$="{{baseUrl}}/directsurvey/sc.addperson">
-        <paper-fab elevation=2" icon="add"></paper-fab>
-      </a>
       <template is="dom-repeat" items="[[persons]]" as="p">
         <div class="layout horizontal entry">
           <div class="flex">

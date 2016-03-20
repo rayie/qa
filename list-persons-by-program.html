@@ -18,6 +18,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-item/paper-item-body.html">
 <link rel="import" href="../paper-input/paper-input.html">
+
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../moment-display/moment-display.html">
@@ -77,6 +81,12 @@ Example:
       display:block;
     }
 
+    paper-dropdown-menu {
+      --paper-dropdown-menu: {
+        width: 42%;
+      }
+    }
+
     .newFab {
       position: fixed;
       top: 10%;
@@ -86,30 +96,66 @@ Example:
   </style>
 
   <template>
-    <a class="newFab" title="Create New Patient Record" href$="{{baseUrl}}/directsurvey/sc.addperson">
-      <paper-fab elevation=2" icon="add"></paper-fab>
-    </a>
-    <paper-card class="primary" elevation="4" heading="Filters">
-    </paper-card>
 
     <paper-card class="primary" elevation="4" heading="Patient Listing">
+      <paper-dropdown-menu
+        no-animations
+        label="Select Program to Filter"
+      > 
+        <paper-listbox
+          class="dropdown-content"
+          selected="{{selectedProgram}}"
+        >
+          <template id="rptr" is="dom-repeat" items="[[programList]]" as="prog">
+            <paper-item>[[prog.txt]]</paper-item>
+          </template>
+        <paper-listbox>
+      </paper-dropdown-menu>
+
+
+      <paper-dropdown-menu
+        no-animations
+        label="Date Filter"
+      > 
+        <paper-listbox
+          class="dropdown-content"
+          selected="{{selectedTiming}}"
+        >
+          <template id="rptr" is="dom-repeat" items="[[timingList]]" as="tm">
+            <paper-item>[[tm.txt]]</paper-item>
+          </template>
+        <paper-listbox>
+      </paper-dropdown-menu>
+      
       <template is="dom-repeat" items="[[persons]]" as="p">
+        <div role="listbox" >
+          <paper-item> 
+            <paper-item-body two-line> 
+              <div>
+                <a href$="patient/[[p._id]]">
+                  <span class='name'>
+                  [[p.revealStr]] 
+                  </span>
+                </a>
+              </div>
+              <div seconday>
+                <moment-display class='emph' label="Program Date Range:" str="[[p.programDates.start]]" ></moment-display>
+                <moment-display class='emph' label="to" str="[[p.programDates.end]]" ></moment-display>
+              </div>
+            </paper-item-body>
+          </paper-item> 
+        </div>
+        <!--
         <div class="layout horizontal entry">
           <div class="flex">
             <a href$="patient/[[p._id]]">
               <span class='name'>
-              [[p.displayAs]] ([[p.sex]]) 
-              <moment-display str="[[p.dob]]" ></moment-display>
+              [[p.revealStr]] 
               </span>
             </a>
           </div>
-          <div class="flex">
-            <small>
-              Last activity: 
-              <moment-display time str="[[p.ts]]" ></moment-display>
-            <small>
-          </div>
         </div>
+        -->
       </template>
       <qa-ajax-poster
         id="ajax_load_persons"       
@@ -141,16 +187,59 @@ Example:
       listResultTitle: { 
         type: String,
         value: function(){ return "Patient listing by program"; }
+      },
+      selectedProgram: { 
+        type: Object, 
+        value: function(){ return null; }, observer: "loadPersons" 
+      },
+      selectedTiming: { 
+        type: Object, 
+        value: function(){ return 0; }, observer: "loadPersons" 
+      },
+      timingList: {
+        type: Array,
+        value: function(){
+          return [
+            { "txt": "Currently in Program" , code:"current", days: 0},
+
+            { "txt": "Currently in Program - Will end in next 15 days" , code:"willend", days: 15},
+            { "txt": "Currently in Program - Will end in next 30 days" , code:"willend", days: 30},
+            { "txt": "Currently in Program - Will end in next 45 days" , code:"willend", days: 45},
+
+
+            { "txt": "Program Ended sometime in the past 15 days ", code:"past" , days: 15 },
+            { "txt": "Program Ended sometime in the past 30 days ", code:"past" , days: 30 },
+            { "txt": "Program Ended sometime in the past 45 days ", code:"past" , days: 45 },
+
+            { "txt": "Program will begin within next 15 days", code:"future", days: 15 },
+            { "txt": "Program will begin within next 30 days", code:"future", days: 30},
+            { "txt": "Program will begin within next 45 days", code:"future", days: 45}
+          ]
+        }
+      },
+      programList: {
+        type: Array,
+        value: function(){
+          return [
+            { "txt": "CarePoint 360 NIV" },
+            { "txt": "CarePoint 360 NIV Follow-Up" },
+            { "txt": "COPD Ongoing" },
+            { "txt": "Healthcare at Home COPD Program" }    
+          ]
+        }
       }
     },
 
     loadPersons: function(){
-      console.log("in loadPersons");
-      var payload = {
-        timing: "current",
-        "sc-program-name": "Healthcare at Home COPD Program"
+      console.log("in loadPersons", this.selectedProgram);
+      if ( this.selectedProgram !== null ){
+        var payload = {
+          timing: this.timingList[ this.selectedTiming ].code,
+          "sc-program-name": this.programList[ this.selectedProgram ].txt,
+          "days": this.timingList[ this.selectedTiming ].days
+        }
+        this.$.ajax_load_persons.send(payload);
       }
-      this.$.ajax_load_persons.send(payload);
     },
 
     loadPersonsResponse: function(e,data){
