@@ -158,33 +158,39 @@ Example:
       </div>
       
       <div hidden="[[!asColumns]]">
-        <template is="dom-repeat" id="slot0Column" items="[[records.0]]" as="rec">
-          <div class="horizontal layout justified record-container">
-            <template is="dom-repeat" items="[[rec.rows]]" as="row" >
 
-              <div class$="[[row.klass]] test-klass" >
-                <div>
-                  <label class='answer-lbl'>[[row.q]]</label>
-                  <template is='dom-repeat' items="[[row.a]]" as="ans" index-as="ans_idx">
-                    <div class="main-data"> 
-                      <span hidden="[[row.is_date]]">[[ans]]</span>
-                      <moment-display hidden="[[!row.is_date]]" display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]"></moment-display>
+
+        <template is="dom-repeat" id="slot0Column" items="[[records]]" as="mergedrecord">
+          <div>
+            <template is="dom-repeat" items="[[mergedrecord]]" as="rec">
+              <div class="horizontal layout justified record-container">
+                <template is="dom-repeat" items="[[rec.rows]]" as="row" >
+
+                  <div class$="[[row.klass]] test-klass" >
+                    <div>
+                      <label class='answer-lbl'>[[row.q]]</label>
+                      <template is='dom-repeat' items="[[row.a]]" as="ans" index-as="ans_idx">
+                        <div class="main-data"> 
+                          <span hidden="[[row.is_date]]">[[ans]]</span>
+                          <moment-display hidden="[[!row.is_date]]" display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]"></moment-display>
+                        </div>
+                      </template>
+                      <div class='note' hidden="[[!row.n]]">Note: [[row.n]]</div>
                     </div>
-                  </template>
-                  <div class='note' hidden="[[!row.n]]">Note: [[row.n]]</div>
-                </div>
-                <template is="dom-if" if="[[!index]]">
-                  <div class='last-update-msg'>
-                    <moment-display label="Updated" str="[[r.ts]]" display-fmt="withday" time></moment-display>
-                    <small> by [[rec.m.update.u_id]]</small>
+                    <template is="dom-if" if="[[!index]]">
+                      <div class='last-update-msg'>
+                        <moment-display label="Updated" str="[[r.ts]]" display-fmt="withday" time></moment-display>
+                        <small> by [[rec.m.update.u_id]]</small>
+                      </div>
+                    </template>
                   </div>
                 </template>
+
               </div>
             </template>
-
           </div>
-
         </template>
+
       </div>
 
       <qa-ajax-poster
