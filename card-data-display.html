@@ -158,8 +158,6 @@ Example:
       </div>
       
       <div hidden="[[!asColumns]]">
-
-
         <template is="dom-repeat" id="slot0Column" items="[[records]]" as="mergedrecord">
           <div>
             <template is="dom-repeat" items="[[mergedrecord]]" as="rec">
@@ -207,12 +205,6 @@ Example:
 </dom-module>
 
 <script>
-  var addr_ref  = {
-    "PR": "Primary Residence",
-    "MA": "Mailing",
-    "BL": "Billing"
-  };
-
 
   Polymer({
 

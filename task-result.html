@@ -11,6 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-card/paper-card.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icons/av-icons.html">
+<link rel="import" href="../iron-icons/image-icons.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-material/paper-material.html">
@@ -27,6 +28,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="section-behaviors.html">
 <link rel="import" href="task-behaviors.html">
 <link rel="import" href="qa-btn.html">
+<link rel="import" href="qa-update-data-tool.html">
 <link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="task-part-timing.html">
 <link rel="import" href="styles/qa-styles.html">
@@ -57,20 +59,6 @@ Example:
       font-size: 12px;
     }
 
-    label {
-      font-size: 12px;
-      font-weight: 420;
-      background-color: #80CBC4;
-      padding: 6px 6px;
-      display: inline;
-    }
-
-    .answer {
-      margin-top: 8px;
-      font-size: 14px;
-      font-weight: 620;
-      padding: 6px 6px;
-    }
 
     .row {
       margin-bottom: 16px;
@@ -84,44 +72,80 @@ Example:
   </style>
 
   <template>
+    <div class="horizontal layout">
+      <div class="flex">
+        <a href$="patient/[[taskDoc.subjectId]]">Back to Patient Card</a>
+      </div>
+    </div>
     <paper-card class="primary" elevation="4">
+      
+      <div class='last-update-msg'>
 
+        <div class='last-update-msg'>
+          <moment-display label="Created" str="[[taskDoc.m.init.ts]]" display-fmt="withday" time></moment-display>
+          <small> by [[taskDoc.m.init.u_id]]</small>
+        </div>
 
-      <div class='meta'>
-        <moment-display class='emph' label="Created" time dt="[[task.m.init.ts]]" ></moment-display>
-        <span> by [[task.m.init.u_id]]</span>
-        <br/>
-        <moment-display class='emph' label="Completed" time dt="[[task.m.done.ts]]" ></moment-display>
-        <span> by [[task.m.done.u_id]]</span>
-        <br/>
-        <span class='duration'>
-          [[compDur(task.m)]] 
-        </span>
+        <div class='last-update-msg'>
+          <moment-display label="Completed" str="[[taskDoc.m.done.ts]]" display-fmt="withday" time></moment-display>
+          <small> by [[taskDoc.m.done.u_id]]</small>
+        </div>
+        <div class='last-update-msg'>
+          <moment-display label="Last change to DataRecord" str="[[dataLastTs]]" display-fmt="withday" time></moment-display>
+        </div>
+
       </div>
 
-      <template is="dom-repeat" items="[[qq]]" as="q" >
-        <div class='row'> 
-          <label>
-            [[q.display_num]] - [[q.txt]]
-          </label>
-          <div class='answer'>[[q.ans]]</div>
-        </div>
-      </template>
+      <div><hr/></div>
+
+      <div class="vertical layout justified record-container">
+        <template is="dom-repeat" items="[[rows]]" as="row" >
+
+          <div class$="[[row.klass]] row" >
+            <div>
+              <label class='answer-lbl'>Q#[[row.num]]: [[row.q]]</label>
+              <template is='dom-repeat' items="[[row.a]]" as="ans" index-as="ans_idx">
+                <div class="main-data">
+                  <span hidden="[[row.is_date]]">[[ans]]</span>
+                  <moment-display hidden="[[!row.is_date]]" display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]"></moment-display>
+                </div>
+              </template>
+
+              <div class='note' hidden="[[!row.n]]">Note: [[row.n]]</div>
+
+              <template is='dom-repeat' items="[[row.corr]]" as="cor" index-as="cor_idx">
+                <div class="strike-data">
+                  <span hidden="[[row.is_date]]">[[cor.pa]]</span>
+                  <moment-display hidden="[[!row.is_date]]" display-fmt="withday" str="[[cor.pa]]" time="[[row.is_datetime]]"></moment-display>
+                  &nbsp;
+                  <moment-display display-fmt="withday" str="[[cor.ts]]" time></moment-display>
+                  <small> by [[cor.u_id]]</small>
+                </div>
+              </template>
+              
+
+              <qa-update-data-tool
+                subject-id="[[taskDoc.subjectId]]" 
+                datadoc-id="[[dataId]]" 
+                datadoc-last-ts="{{dataLastTs}}"
+                on-update-ts="gotUpdatedTs"
+                qa="[[row]]" 
+              ></qa-update-data-tool>
+
+            </div>
+
+          </div>
+        </template>
+      </div>
 
       <qa-ajax-poster
-        id="ajax_load_task"       
+        no-toast
+        id="ajax_get_data_by_task"       
         on-response="loadTaskResponse"
         on-error="loadTaskError"
         loading="{{is_loading}}"
-        endpoint="api/task:get"
+        endpoint="api/data:bytask"
       ></qa-ajax-poster>
-      <iron-ajax
-        id="ajax_load_survey"       
-        handle-as="json",
-        on-response="loadSurveyResponded"
-        on-error="loadSurveyError"
-        loading="{{is_loading}}"
-      ></iron-ajax>
 
     </div>
   </template>
@@ -164,11 +188,10 @@ Example:
     loadTask: function(){ 
       //console.log("in loadTask",this.taskId);
       if ( !this.taskId ) return;
-
       var payload = {
         taskId: this.taskId
       }
-      this.$.ajax_load_task.send(payload);
+      this.$.ajax_get_data_by_task.send(payload);
       return;
     },
 
@@ -178,81 +201,12 @@ Example:
     },
 
     loadTaskResponse: function(e,data){ 
-      this.set("task",data.task);
-      var dataDoc = _.get(data,"dataDoc",false);
-      if (dataDoc){
-        this.set("dataDoc",dataDoc); 
-      }
-      this.set("subjectId",this.task.subjectId);
-      this.applyTitle( this.task.subjectDisplayAs + " - " + this.task.name );
-
-      this._loadSurvey(window.APIBASEURL+this.task.url);
+      this.set("taskDoc",data.taskDoc);
+      this.set("dataId",data.dataId);
+      this.set("dataLastTs",data.dataLastTs);
+      this.set("rows",data.rows);
+      this.applyTitle( this.taskDoc.subjectDisplayAs + " - " + this.taskDoc.name );
       return;
-    },
-
-    _loadSurvey: function(surveyUrl){
-      this.$.ajax_load_survey.url= surveyUrl;
-      this.$.ajax_load_survey.generateRequest();
-    },
-
-    loadSurveyError: function(e){
-      console.log(e);
-      this.set("subjectId",null);
-      return;
-    },
-
-    loadSurveyResponded: function(event){
-      //console.log(event.detail.response);
-      if (!event.detail.response){
-        this.set("subjectId",null);
-        return;
-      }
-
-      var surveyData = event.detail.response;
-      this.set("surveyData",surveyData);
-      this.questions = {};
-      var self = this;
-      /*
-      *  This generates the Polymer questions or forms
-      */
-      var qn = 0;
-      var qq = [];
-      var self = this;
-      this.surveyData.qq.forEach(function(q,idx){
-        q.idx_in_survey = idx * 1;
-
-        if ( q.kind==="form"){
-          return;
-        }
-
-        q.display_num = "Q" + q._id;
-        var answer = _.get(self.dataDoc,q.display_num,undefined);
-        if (answer===undefined){
-          q.ans="Incomplete";
-        }
-        else if (answer===null){
-          q.ans="Marked N/A";
-        }
-        else {
-          switch(q.kind){
-            case "mc":
-              q.ans = [];
-              answer.sort();
-              answer.forEach(function(a){
-                q.ans.push( (a+1) + ") " + q.opts[a].txt );
-              });
-              q.ans = q.ans.join(", ");
-              console.log(q.ans);
-              break;
-            default:
-              q.ans = answer;
-              break;
-          }
-        }
-
-        qq.push(q);
-      })
-      this.set("qq",qq);
     }
 
   });

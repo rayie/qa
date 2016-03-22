@@ -1,0 +1,291 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icons/av-icons.html">
+<link rel="import" href="../iron-icons/image-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="question-mc.html">
+<link rel="import" href="question-ft.html">
+<link rel="import" href="question-ne.html">
+<link rel="import" href="question-dt.html">
+<link rel="import" href="form-address.html">
+<link rel="import" href="form-contact.html">
+<link rel="import" href="form-person.html">
+<link rel="import" href="styles/qa-styles.html">
+
+<!--
+An element providing a solution to no problem in particular.
+
+Example:
+
+    <seed-element></seed-element>
+
+@demo
+-->
+<dom-module id="qa-update-data-tool">
+  <style is="custom-style" include="qa-styles" ></style>
+  <style is="custom-style">
+    .sectionpart {
+      margin-top: 16px;
+      margin-bottom: 16px;
+    }
+    iron-icon {
+      cursor: pointer;
+    }
+  </style>
+
+  <template>
+    <div>
+      <div class='sectionpart' hidden="[[questionReady]]" id="toolsDiv">
+        <iron-icon 
+          title="Apply a correction" hidden="[[!qa.allow.correction]]" icon="create"
+          on-click="lookupQref"
+        ></iron-icon>
+        <iron-icon 
+        title="Expire this answer" hidden="[[!qa.allow.expiration]]" icon="image:timer-off"
+        ></iron-icon>
+      </div>
+
+      <div class='sectionpart' id="qArea">
+      </div>
+
+      <div class='sectionpart' hidden="[[!questionReady]]" id="confirmDiv">
+        <paper-button 
+          class="indigo"
+          id="cancelCorrectionBtn"
+          toggles 
+          on-click="cancelCorrection"
+          raised
+        >
+          Cancel
+        </paper-button>
+
+        <paper-button 
+          class="good"
+          toggle="false"
+          id="submitCorrectionBtn"
+          disabled="[[!qstate]]"
+          toggles 
+          on-click="submitCorrection"
+          raised
+        >
+          Apply Correction [[q.qstate]]
+        </paper-button>
+
+      </div>
+
+      <qa-ajax-poster
+        no-toast
+        id="ajax_get_qref"
+        on-response="gotQrefResponse"
+        on-error="gotQrefError"
+        loading="{{is_loading}}"
+        endpoint="api/qlookup"
+      ></qa-ajax-poster>
+      <qa-ajax-poster
+        no-toast
+        id="ajax_submit_correction"
+        on-response="gotCorrectionResponse"
+        on-error="gotCorrectionError"
+        loading="{{is_loading}}"
+        endpoint="api/data:correct"
+      ></qa-ajax-poster>
+      <qa-ajax-poster
+        no-toast
+        id="ajax_submit_expiration"
+        on-response="gotExpirationResponse"
+        on-error="gotExpirationError"
+        loading="{{is_loading}}"
+        endpoint="api/data:expire"
+      ></qa-ajax-poster>
+    </div>
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'qa-update-data-tool',
+
+    properties: {
+      qstate: {
+        type: Number,
+        value: function(){
+          return 0;
+        }
+      },
+      questionReady: {
+        type: Boolean,
+        value: function(){
+          return false;
+        }
+      },
+      qref: {
+        /* description:  the qref definition, load once, then cache */
+        type: Object,
+        value: function(){
+          return null;
+        }
+      },
+      qa: {
+        /* description:  qa pair, someimtes called 'row' in host elements */
+        type: Object,
+        value: function(){
+          return {};
+        }
+      },
+      subjectId:{
+        type: String 
+      },
+      datadocId:{
+        type: String 
+      },
+      datadocLastTs: {
+        type: String,
+        notify:true
+      }
+
+    },
+
+    cancelCorrection: function(){
+      
+      this.set("questionReady",false);
+      Polymer.dom(this.$.qArea).removeChild(this.q);
+    },
+
+    _convert_yn_to_mc: function(q){
+      q.minmax=[1,1];
+      q.kind="mc";
+      q.opts = [
+        { txt: "NO" },
+        { txt: "YES" }
+      ];
+      if ( q.rule ){
+        if ( q.rule.n ){
+          for(var k in q.rule.n)
+            q.opts[0][k] = q.rule.n[k];
+        }
+        if ( q.rule.y ){
+          for(var k in q.rule.y)
+            q.opts[1][k] = q.rule.y[k];
+        }
+      }
+      return q;
+    },
+
+    attached: function(){
+
+    },
+
+    lookupQref: function(){
+      if ( this.qref!==null) return this.renderQuestion();
+
+      var payload = {
+        qnum: this.qa.num
+      }
+
+      this.$.ajax_get_qref.send(payload);
+    },
+
+    gotQrefResponse: function(e,data){
+      console.log(data);
+      data.q.seq_num = "Question";
+      data.q.idx_in_survey=0;
+      data.q.display_num = data.q._id.toString();
+      this.set("qref",_.clone(data.q));
+      this.renderQuestion();
+    },
+
+    gotQrefError: function(e,data){
+
+    },
+
+    submitCorrection: function(){
+      if (this.qstate===3){
+        var a = ["N/A"];
+      }
+      else {
+        
+        switch(this.q.kind){
+          case "mc":
+            //convert back to an array of opt indexes
+            var a = [];
+            var self = this;
+            if ( _.isArray( this.q.answer ) ){
+              var txt_answers = this.q.answer.map(function(optIdx){ return self.q.opts[optIdx].txt; });
+              var a = [].concat( txt_answers );
+            }
+            else{
+              var a = [ this.q.answer ];
+            }
+            break;
+          case "yn":
+            if ( _.isArray(this.q.answer) ){
+              var a = [ (this.q.answer[0])?"YES":"NO" ];
+            }
+            else{
+              var a = [ (this.q.answer)?"YES":"NO" ];
+            }
+            break;
+          default:
+            var a = [ this.q.answer ];
+            break;
+        }
+      }
+
+      console.info(a,this.qa.a);
+
+      if ( _.difference(a,this.qa.a).length ){
+        var payload = {
+          subjectId: this.subjectId,
+          dataId: this.datadocId,
+          lastTs: this.datadocLastTs,
+          qnum: this.qa.num.toString(),
+          a: this.q.answer,
+          note: ""
+        }
+        console.info("user applied different answer, submit correction",payload);
+        this.$.ajax_submit_correction.send(payload);
+      }
+      else{
+        console.info("user DID NOT apply different answer, submit correction");
+        app.$.toast.text = "Error: You provided the same answer. Correction not applied.";
+        app.$.toast.show();
+      }
+
+    },
+    gotCorrectionResponse: function(e,data){
+      console.log("Correction response",data);
+    },
+
+    renderQuestion: function(){
+      var q = _.clone(this.qref);
+
+      if ( q.kind=="yn" ) q = this._convert_yn_to_mc(q);
+
+      var new_q = this.create("question-" + q.kind.toLowerCase(),q);
+      this.listen(new_q,"qstate-changed","qstateChanged");
+      Polymer.dom(this.$.qArea).appendChild(new_q);
+      this.set("questionReady",true);
+      this.set("q",new_q);
+    },
+
+    qstateChanged: function(e){
+      this.set("qstate", _.get(e,"detail.value"))
+    }
+
+
+  });
+
+</script>
