@@ -87,7 +87,7 @@ Example:
       on-iron-overlay-closed="dialogClosed"
       on-iron-overlay-canceled="dialogCanceled"
     >
-      <h2>End Program</h2>
+      <h2>End Program - [[dataId]]</h2>
       <div>
 
         <div>
@@ -147,7 +147,7 @@ Example:
       on-response="endProgramResponse"
       on-error="endProgramError"
       loading="{{is_loading}}"
-      endpoint="api/antipatter:endprogram"
+      endpoint="api/antipattern:endprogram"
     ></qa-ajax-poster>
   </template>
 
@@ -182,8 +182,9 @@ Example:
       }
     },
 
-    show: function(){
+    show: function(dataId){
       this.$.dialog.open();
+      this.set("dataId",dataId);
     },
 
     /*
@@ -203,7 +204,16 @@ Example:
         reasonCode: this.reasonCode,
         reasonNote: this.reasonNote
       }
+      console.log("sending end program payload",payload);
       this.$.ajax.send(payload);
+    },
+
+    endProgramResponse: function(e,data){
+      this.fire("success");
+    },
+
+    endProgramError: function(e,data){
+      console.log(e,data);
     },
 
     dialogCanceled: function(dialogCloseEvent){

@@ -65,9 +65,13 @@ Example:
     }
 
     .record-container {
-      border-bottom: 1px dashed #512DA8;
+      margin-bottom: 8px;
+      padding-bottom: 16px;
+    } 
+    .record-footer-addon {
       margin-bottom: 16px;
       padding-bottom: 16px;
+      border-bottom: 1px dashed #512DA8;
     } 
 
     .record-container div {
@@ -94,16 +98,16 @@ Example:
     > 
       
       <div >
+        <dialog-endprogram
+          id="endProgramDialog"
+          subject-id="[[subjectId]]"
+          on-success="load"
+        >
+        </dialog-endprogram>
 
-        <template is="dom-repeat" id="slot0Column" items="[[records]]" as="mergedrecord">
+        <template is="dom-repeat" items="[[records]]" as="mergedrecord">
           <div>
             <template is="dom-repeat" items="[[mergedrecord]]" as="rec">
-
-              <dialog-endprogram
-                subject-id="[[subjectId]]"
-                data-id="[[rec._id]]"
-              >
-              </dialog-endprogram>
 
               <div class="horizontal layout justified record-container">
                 <template is="dom-repeat" items="[[rec.rows]]" as="row" >
@@ -123,14 +127,19 @@ Example:
                       </template>
                       <div class='note' hidden="[[!row.n]]">Note: [[row.n]]</div>
                     </div>
-                    <template is="dom-if" if="[[!index]]">
-                      <div class='last-update-msg'>
-                        <moment-display label="Updated" str="[[r.ts]]" display-fmt="withday" time></moment-display>
-                        <small> by [[rec.m.update.u_id]]</small>
-                      </div>
-                    </template>
+
+
                   </div>
                 </template>
+              </div>
+              <div class="horizontal layout justified record-footer-addon">
+                <div class='flex-child last-update-msg'>
+                  <moment-display label="Updated" str="[[rec.m.update.ts]]" display-fmt="withday" time></moment-display>
+                  <small> by [[rec.m.update.u_id]]</small>
+                  <template is="dom-if" if="[[rec.allowEndProgram]]">
+                    <a data-rec="[[rec]]" on-click="showEndProgram">End this Program</a>
+                  </template>
+                </div>
 
               </div>
             </template>
@@ -183,6 +192,16 @@ Example:
       }
     },
 
+    showEndProgram:function(e){
+      console.log(e);
+      var dataId = _.get(e,'target.dataRec._id',false)
+      if ( dataId === false ) return console.error("Could not get program data rec ID");
+      else {
+        console.info("dataId is ", dataId);
+      }
+      this.$.endProgramDialog.show(dataId);
+    },
+
     load: function(){
       if (!this.subjectId) return;
       var payload = {
@@ -195,8 +214,13 @@ Example:
     },
 
     loadResponse: function(e,data){
-      //console.log(data.records);
-      this.set("records",data.records);
+      console.log(data.records);
+      this.set("records", data.records.map(function(r){
+        if ( false===_.get(r[0],"a.sc-program-end-date",false) ){
+          r[0].allowEndProgram=true;
+        }
+        return r;
+      }));
     },
 
     loadError: function(e){
