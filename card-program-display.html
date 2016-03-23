@@ -19,17 +19,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../moment-display/moment-display.html">
 <link rel="import" href="qa-ajax-poster.html">
+<link rel="import" href="qa-ajax-poster.html">
+<link rel="import" href="dialog-endprogram.html">
 <link rel="import" href="styles/qa-styles.html">
 
 <!--
 
 Example:
 
-    <card-data-display></card-data-display>
+    <card-program-display></card-program-display>
 
 @demo
 -->
-<dom-module id="card-data-display">
+<dom-module id="card-program-display">
 
   <style is="custom-style" include="qa-styles">
   <style is="custom-style">
@@ -90,75 +92,19 @@ Example:
       elevation=4
       heading="[[name]]"
     > 
-      <div hidden="[[asColumns]]">
-        <div class="horizontal layout justified">
-          <div class="flex-5">
-            <template is="dom-repeat" id="slot0" items="[[records.0]]" as="rec">
-              <template is="dom-repeat" items="[[rec.rows]]" as="row" >
-                <div class="horizontal layout section-container">
-                  <div class="flex-5">
-                    <label class='answer-lbl'>[[row.q]]</label>
-                    <template is='dom-repeat' items="[[row.a]]" as="ans">
-                      <div class="main-data"> 
-                        <template is="dom-if" if="[[!row.is_date]]">
-                          <span hidden="[[row.is_date]]">[[ans]]</span>
-                        </template>
-                        <template is="dom-if" if="[[row.is_date]]">
-                          <moment-display display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]"></moment-display>
-                        </template>
-                      </div>
-                    </template>
-                    <div class='note' hidden="[[!row.n]]">Note: [[row.n]]</div>
-                  </div>
-                  <div class="flex-2">
-                    <template is="dom-if" if="[[!index]]">
-                      <div class='last-update-msg'>
-                        <moment-display label="Updated" str="[[r.ts]]" display-fmt="withday" time></moment-display>
-                        <small> by [[rec.m.update.u_id]]</small>
-                      </div>
-                    </template>
-                  </div>
-                </div>
-              </template>
-            </template>
-          </div>
-          <div class="flex-5 leftborder">
-            <template is="dom-repeat" id="slot1" items="[[records.1]]" as="rec">
-              <template is="dom-repeat" items="[[rec.rows]]" as="row">
-                <div class="horizontal layout section-container">
-                  <div class="flex-5">
-                    <label class='answer-lbl'>[[row.q]]</label>
-                    <template is='dom-repeat' items="[[row.a]]" as="ans">
-                      <div class="main-data"> 
-                        <template is="dom-if" if="[[!row.is_date]]">
-                          <span hidden="[[row.is_date]]">[[ans]]</span>
-                        </template>
-                        <template is="dom-if" if="[[row.is_date]]">
-                          <moment-display display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]"></moment-display>
-                        </template>
-                      </div>
-                    </template>
-                    <div class='note' hidden="[[!row.n]]">Note: [[row.n]]</div>
-                  </div>
-                  <div class="flex-2">
-                    <template is="dom-if" if="[[!index]]">
-                      <div class='last-update-msg'>
-                        <moment-display label="Updated" str="[[r.ts]]" display-fmt="withday" time></moment-display>
-                        <small> by [[rec.m.update.u_id]]</small>
-                      </div>
-                    </template>
-                  </div>
-                </div>
-              </template>
-            </template>
-          </div>
-        </div>
-      </div>
       
-      <div hidden="[[!asColumns]]">
+      <div >
+
         <template is="dom-repeat" id="slot0Column" items="[[records]]" as="mergedrecord">
           <div>
             <template is="dom-repeat" items="[[mergedrecord]]" as="rec">
+
+              <dialog-endprogram
+                subject-id="[[subjectId]]"
+                data-id="[[rec._id]]"
+              >
+              </dialog-endprogram>
+
               <div class="horizontal layout justified record-container">
                 <template is="dom-repeat" items="[[rec.rows]]" as="row" >
 
@@ -192,7 +138,7 @@ Example:
         </template>
 
       </div>
-
+      
       <qa-ajax-poster
         id="ajax_load"       
         no-toast
@@ -210,13 +156,13 @@ Example:
 
   Polymer({
 
-    is: 'card-data-display',
+    is: 'card-program-display',
 
     properties: {
       flows: {
         type: Array,
         value: function(){
-          return [ [], [] ];
+          return ["flows/sc.program-wizard.json","flows/sc.program.json"]
         }
       },
       subjectId: {
@@ -225,7 +171,7 @@ Example:
       },
       primaryField: {
         type: String,
-        value: "Interaction Notes"
+        value: ""
       },
       name: {
         type: String,

@@ -129,6 +129,16 @@ Example:
         value: function(){ return "" }
       },
 
+      lastAnswer: {
+        type: String,
+        value: function(){ return "" }
+      },
+
+      lastQstate: {
+        type: Number,
+        value: function(){ return 0 }
+      },
+
       precision: {
         type: Number,
         value: 0
@@ -147,20 +157,31 @@ Example:
         this.set("qstate",0);
       }
       this.set("answer",answer);
+      this.set("lastAnswer",answer);
       this.$.dateinput.validate(this.answer);
     },
 
     gotBlur: function(){
       var ask=false;
-      console.log("asnwer upon blur",this.answer);
+      console.log("answer upon blur",this.answer);
+      var _lastAnswer = this.lastAnswer.toString();
+
       if (this.answer){
         this.qstate=2;
+        this.lastAnswer = this.answer.toString();
+        console.log( this.lastAnswer.toString() , _lastAnswer ,this.lastQstate )
+        if ( this.lastAnswer.toString() !== _lastAnswer && this.lastQstate===2 )
+          this.fire('qstate-changed'); 
+        this.set('lastQstate',2);
       }
       else {
         this.qstate=0;
+        this.set('lastQstate',0);
+        this.lastAnswer = "";
       }
 
-      return; 
+
+      return;
       /* TODO:  handlie conditionals */
 
       if ( ask ) 

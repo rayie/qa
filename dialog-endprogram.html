@@ -1,0 +1,219 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../iron-localstorage/iron-localstorage.html">
+<link rel="import" href="qa-ajax-poster.html">
+<link rel="import" href="qa-dateinput.html">
+<!--
+An element providing a solution to no problem in particular.
+
+Example:
+
+    <seed-element></seed-element>
+
+@demo
+-->
+<dom-module id="dialog-endprogram">
+  <style is="custom-style">
+    :host ::content a {
+      cursor: pointer;
+    }
+
+    .justified-container {
+      @apply(--layout-horizontal);
+      @apply(--layout-justified);
+    }
+         
+    #dialog {
+
+      --paper-dialog: {
+        width: 75%;
+        padding-bottom: 16px;
+        color: #fff;
+      };
+
+      --paper-dialog-background-color: #512DA8;
+
+    }
+
+    team-dropdown {
+      --label-color: yellow;
+      --label-floating-color: yellow;
+      --label-focus-color: yellow;
+      --input-color: #fff;
+    }
+
+
+    #reasonNoteInput { 
+      --paper-input-container-label: { color: yellow; };
+      --paper-input-container-label-floating: { color: yellow; };
+      --paper-input-container-label-focus: { color: yellow; };
+      --paper-input-container-input-color: #fff;
+    }
+
+    #reasonCodeMenu {
+      --paper-input-container-label: { color: yellow; };
+      --paper-input-container-label-floating: { color: yellow; };
+      --paper-input-container-label-focus: { color: yellow; };
+      --paper-input-container-input-color: #fff;
+    }
+
+    paper-button {
+      background: #000;
+      color: #fff;
+    }
+
+    paper-button[disabled] {
+      background: #BDBDBD;
+      color: #616161;
+    }
+
+  </style>
+
+  <template>
+    <paper-dialog 
+      id="dialog" 
+      on-iron-overlay-closed="dialogClosed"
+      on-iron-overlay-canceled="dialogCanceled"
+    >
+      <h2>End Program</h2>
+      <div>
+
+        <div>
+          <paper-dropdown-menu 
+            label="Reason for Ending Program"
+            id="reasonCodeMenu"
+          >
+            <paper-listbox
+              class="dropdown-content"
+              selected="{{reasonCode}}"
+              attr-for-selected="rc"
+            > 
+              <paper-item rc='CP'>Change of Insurance Plan</paper-item>
+              <paper-item rc='PD'>Patient Deceased</paper-item>
+              <paper-item rc='PR'>Patient Requested to End Services</paper-item>
+            </paper-listbox>
+          </paper-dropdown-menu>
+        </div>
+
+        <div>
+          <qa-dateinput
+            is="iron-input"
+            on-blur="answerChanged"
+            input
+            required
+            type="text"
+            label="Effective Program End Date"
+            name="End Date"
+            always-float-label
+            value="{{endDate}}"
+          ></qa-dateinput> 
+        <div>
+
+        <div>
+          <paper-input
+            id="reasonNoteInput"
+            label="Enter optional note here"
+            value='{{reasonNote}}'
+          ></paper-input>
+        </div>
+
+      </div>
+      <div class="buttons">
+        <paper-button 
+          raised 
+          dialog-confirm
+          disabled="[[!reasonCode]]"
+        >
+          Confirm Program Termination
+        </paper-button>
+      </div>
+    </paper-dialog>
+    <qa-ajax-poster
+      id="ajax"
+      no-toast
+      handle-as="json",
+      on-response="endProgramResponse"
+      on-error="endProgramError"
+      loading="{{is_loading}}"
+      endpoint="api/antipatter:endprogram"
+    ></qa-ajax-poster>
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'dialog-endprogram',
+
+    properties: {
+      reasonNote: {
+        type: String, 
+        value: function(){ return ""; }
+      },
+      reasonCode: {
+        type: String, 
+        value: function(){ return ""; }
+      },
+      subjectId: {
+        type: String, 
+        value: function(){ return ""; }
+      },
+      dataId: {
+        type: String, 
+        value: function(){ return ""; }
+      },
+      endDate: {
+        type: Object, 
+        value: function(){ return null; }
+      }
+    },
+
+    show: function(){
+      this.$.dialog.open();
+    },
+
+    /*
+    * Workaround - iron-overlay-behavior fires close event whe a drop down menu is cha
+    */
+    dialogClosed: function(dialogCloseEvent){
+      if (!_.get(dialogCloseEvent,'detail.confirmed',false)) {
+        //reset
+        console.log("user didn't click confirm");
+        return;
+      }
+
+      var payload = {
+        subjectId: this.subjectId,
+        dataId: this.dataId,
+        endDate: this.endDate,
+        reasonCode: this.reasonCode,
+        reasonNote: this.reasonNote
+      }
+      this.$.ajax.send(payload);
+    },
+
+    dialogCanceled: function(dialogCloseEvent){
+      console.log("user cancelled");
+      this.set("reasonCode","");
+      this.set("reasonNote","");
+      this.set("selectedUser","");
+      return;
+    }
+
+  });
+
+</script>

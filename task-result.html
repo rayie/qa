@@ -106,8 +106,12 @@ Example:
               <label class='answer-lbl'>Q#[[row.num]]: [[row.q]]</label>
               <template is='dom-repeat' items="[[row.a]]" as="ans" index-as="ans_idx">
                 <div class="main-data">
-                  <span hidden="[[row.is_date]]">[[ans]]</span>
-                  <moment-display hidden="[[!row.is_date]]" display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]"></moment-display>
+                  <template is="dom-if" if="[[!row.is_date]]">
+                    <span>[[ans]]</span>
+                  </template>
+                  <template is="dom-if" if="[[row.is_date]]">
+                    <moment-display display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]"></moment-display>
+                  </template>
                 </div>
               </template>
 

@@ -21,6 +21,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../iron-localstorage/iron-localstorage.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../moment-display/moment-import.html">
 <link rel="import" href="section-behaviors.html">
 <link rel="import" href="question-mc.html">
 <link rel="import" href="question-ft.html">
@@ -33,6 +34,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="list-tasks.html">
 <link rel="import" href="team-dropdown.html">
 <link rel="import" href="dialog-incompletion.html">
+<link rel="import" href="task-part-timing.html">
 <link rel="import" href="styles/qa-styles.html">
 <!--
 An element providing a solution to no problem in particular.
@@ -176,7 +178,7 @@ Example:
         <paper-card 
          class="primary"
          elevation="4"
-         hidden="[[!taskDefinition.tasksToAdd.length]]" 
+         hidden="[[!taskDefinition.answersToAdd.length]]" 
          heading="The following data will be added when you submit this task"
         >
           <template is="dom-repeat" items="[[taskDefinition.answersToAdd]]" as="ata">
@@ -194,13 +196,13 @@ Example:
         <paper-card 
          class="primary"
          elevation="4"
-         hidden="[[!taskDefinition.answersToAdd.length]]" 
+         hidden="[[!taskDefinition.tasksToAdd.length]]" 
          heading="The following tasks will be created when you submit this task"
         >
           <template is="dom-repeat" items="[[taskDefinition.tasksToAdd]]" as="tta">
             <div class="layout justified end horizontal">
               <div class="flex-5 next-task-name">
-                [[tta.name]] - [[tta.plannedFor]]
+                [[tta.name]] - [[tta.timingText]]
               </div>
               <div class="flex-5" >
                 <team-dropdown
@@ -587,6 +589,7 @@ Example:
       this._applyTitle();
       this.set("hideLoadingMsg",true);
       this.set("hideSubmitArea",false);
+      this.summarize();
     },
 
     _updateStateMsg: function(){
@@ -651,14 +654,12 @@ Example:
         case "mc":
           var a =[];
           q.answer.forEach(function(ans){
-            //a.push( q.opts[ans].txt );
             a.push( ans );
             if ( q.opts[ans].tasks ){
               self.taskDefinition.tasksFromAnswers = self.taskDefinition.tasksFromAnswers.concat( q.opts[ans].tasks );
               console.log(q.opts[ans]);
             }
           });
-          //a = a.join(",");
           break;
       }
 
@@ -706,7 +707,8 @@ Example:
       var incomplete = this.answers.length - ( qstate_counts[2] + qstate_counts[3] );
       this.ok_to_submit = ( answers.length === ( qstate_counts[2] + qstate_counts[3] ) );
       //console.log("taskDefinition", this.taskDefinition);
-      this.set("taskDefinition.tasksToAdd", this.taskDefinition.upon.submit.concat( this.taskDefinition.tasksFromAnswers ) );
+
+      this.set("taskDefinition.tasksToAdd", this.taskDefinition.upon.submit.concat( this.taskDefinition.tasksFromAnswers ).map(this._taskTiming));
 
       if ( 
         this.task && 
@@ -791,8 +793,34 @@ Example:
       }
       console.log("tasksToAddFromRules ",tasksToAddFromRules );
       console.log("answersToAddFromRules",answersToAddFromRules);
-      this.set("taskDefinition.tasksToAdd", this.taskDefinition.upon.submit.concat( tasksToAddFromRules) );
+
+
+
+      var ttt = this.taskDefinition.upon.submit.concat( tasksToAddFromRules ).map(this._taskTiming);
+      this.set("taskDefinition.tasksToAdd", ttt );
       this.set("taskDefinition.answersToAdd", answersToAddFromRules  );
+    },
+
+    _taskTiming : function(t){
+      t.timingText=false;
+      if ( typeof t.plannedFor ==='string' ){ 
+        t.timingText = t.plannedFor.toUpperCase();
+      }
+      else {
+        switch(t.plannedFor.kind){
+          case "asap":
+            t.timingText="ASAP";
+            break;
+          case "schedule":
+            console.log(t.start);
+            if(typeof t.plannedFor.start=="string") 
+              t.timingText=moment.utc(t.plannedFor.start.replace(/\.[0-9]{3}Z/,"")).local().format("ddd, MMM DD, YYYY hh:mma");
+            else
+              t.timingText="UNSCHEDULED";
+            break;
+        }
+      }
+      return t;
     },
 
     saveDataError: function(e,data){
@@ -904,7 +932,7 @@ Example:
     },
 
     hideOrRevealSiblings: function(e){
-      //console.log("siblingscheck",e.detail.value);
+      console.log("siblingscheck",e.detail.value);
       var self = this;
       e.detail.value.hide.forEach(function(qnum){
         self.questions[qnum.toString()].hidden=true;
