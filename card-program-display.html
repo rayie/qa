@@ -102,8 +102,7 @@ Example:
           id="endProgramDialog"
           subject-id="[[subjectId]]"
           on-success="load"
-        >
-        </dialog-endprogram>
+        ></dialog-endprogram>
 
         <template is="dom-repeat" items="[[records]]" as="mergedrecord">
           <div>
@@ -195,7 +194,8 @@ Example:
     showEndProgram:function(e){
       console.log(e);
       var dataId = _.get(e,'target.dataRec._id',false)
-      if ( dataId === false ) return console.error("Could not get program data rec ID");
+      if ( dataId === false ) 
+        return console.error("Could not get program data rec ID");
       else {
         console.info("dataId is ", dataId);
       }
@@ -216,8 +216,12 @@ Example:
     loadResponse: function(e,data){
       console.log(data.records);
       this.set("records", data.records.map(function(r){
-        if ( false===_.get(r[0],"a.sc-program-end-date",false) ){
-          r[0].allowEndProgram=true;
+        if ( r.length ){
+          if ( false===_.get(r[0],"a.sc-program-end-date",false) ){
+            r[0].allowEndProgram=true;
+          }
+          else{
+          }
         }
         return r;
       }));

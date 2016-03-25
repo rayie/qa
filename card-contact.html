@@ -19,6 +19,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../moment-display/moment-display.html">
 <link rel="import" href="qa-ajax-poster.html">
+<link rel="import" href="dialog-expire-answer.html">
 <link rel="import" href="styles/qa-styles.html">
 
 <!--
@@ -72,6 +73,11 @@ Example:
   </style>
 
   <template>
+    <dialog-expire-answer
+      id="expireDialog"
+      subject-id="[[subjectId]]"
+      on-success="load"
+    ></dialog-expire-answer>
     <paper-card 
       class="primary"
       elevation=4
@@ -92,6 +98,7 @@ Example:
                 <div class='last-update-msg'>
                   <moment-display label="Updated" str="[[c.m.update.ts]]" display-fmt="withday" time></moment-display>
                   <small> by [[c.m.update.u_id]]</small>
+                  <a on-click="showExpireDialog" data-rec="[[c]]">Expire</a>
                 </div>
 
               </div>
@@ -109,14 +116,22 @@ Example:
                 <address class="main-data">
                   [[a.addr1]]
                   <span class='addr2' hidden="[[!a.addr2]]">[[a.addr2]]</span>
-                  [[a.city]],[[a.state]] [[a.zip]]
+                  , [[a.city]], [[a.state]] [[a.zip]]
                   <div class='note' hidden="[[!a.note]]">Note: [[a.note]]</div>
                 </address>
 
                 <div class='last-update-msg'>
-                  <moment-display label="Updated" str="[[a.m.update.ts]]" display-fmt="withday" time></moment-display>
+                  <moment-display label="Effective" str="[[a.m.update.ts]]" display-fmt="withday" time></moment-display>
                   <small> by [[a.m.update.u_id]]</small>
+                  <a hidden="[[a.expired]]" on-click="showExpireDialog" data-rec="[[a]]">Expire</a>
                 </div>
+
+                <template is="dom-if" if="[[a.expired]]">
+                  <div class='last-update-msg'>
+                    <moment-display class='exp' label="Expiration" str="[[a.expired.expDt]]" display-fmt="withday" ></moment-display>
+                    <small> by [[a.expired.u_id]]</small>
+                  </div>
+                </template>
 
               </div>
             </div>
@@ -170,6 +185,13 @@ Example:
 
     },
 
+    showExpireDialog: function(e){
+      var dataId = _.get(e,'target.dataRec._id',false)
+      var qnum = _.get(e,'target.dataRec.qnum',false)
+      var lastTs = _.get(e,'target.dataRec.ts',false)
+      this.$.expireDialog.show(dataId,qnum,lastTs);
+    },
+
     loadResponse: function(e,data){
       //console.log(data);
       var addrs = [];
@@ -179,13 +201,16 @@ Example:
         for(var qnum in r.a){
           if ( qnum.search(/^global-address/)===0 ){
             r.a[qnum].lbls = r.a["global-address"].applies_to.map(function(b){ return addr_ref[b]; });
-            r.a[qnum].m=r.m;
             addrs.push(r.a[qnum]);
           }
           else if ( qnum.search(/^global-contact/)===0 ){
-            r.a[qnum].m=r.m;
             contacts.push(r.a[qnum]);
           }
+          r.a[qnum].m=r.m;
+          r.a[qnum].qnum=qnum;  //so expire dialog can receive it
+          r.a[qnum]._id = r._id;  //so expire dialog can receive it
+          r.a[qnum].ts = r.ts;  //so expire dialog can receive it
+          r.a[qnum].expired = _.get( r,'expired.'+qnum , false);
         }
 
       });

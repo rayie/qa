@@ -53,6 +53,23 @@ Example:
     paper-textarea {
       margin: 6px;
     }
+
+    .record-container {
+      border-bottom: 1px dashed #512DA8;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+    } 
+
+    .record-container div {
+      @apply(--layout-flex-2)
+    }
+
+    .record-container div.primary {
+      @apply(--layout-flex-8)
+      color: blue;
+    }
+
+
     label.qtxt {
       font-size: 12px;
       font-weight: 420;
@@ -99,6 +116,7 @@ Example:
         <paper-tab link>Notes</paper-tab>
         <paper-tab>Teams</paper-tab>
         <paper-tab>Groups</paper-tab>
+        <paper-tab>Meds</paper-tab>
         <paper-tab>Survey Data</paper-tab>
       </paper-tabs>
     </paper-toolbar>
@@ -111,9 +129,9 @@ Example:
         > 
           <div role="listbox" hidden="[[!asColumns]]">
             <template is="dom-repeat" items="[[hc.notes]]" as="note">
-              <paper-item>
+              <paper-item  class='record-container' >
                 <paper-item-body class='wrap' two-line>
-                  <div >
+                <div >
                     <span>[[note.user]]</span>
                     <moment-display display-fmt="withday" inbound-fmt="MM/DD/YYYY h:ma" str="[[note.dt]]" time></moment-display>
                   </div>
@@ -132,7 +150,7 @@ Example:
         > 
           <div role="listbox" hidden="[[!asColumns]]">
             <template is="dom-repeat" items="[[hc.teams]]" as="team">
-              <paper-item>
+              <paper-item  class='record-container' >
                 <paper-item-body class='wrap' two-line>
                   <div >
                     <span>[[team.teamTitle]] - Role:[[team.Role]]</span>
@@ -154,9 +172,9 @@ Example:
         > 
           <div role="listbox" hidden="[[!asColumns]]">
             <template is="dom-repeat" items="[[hc.groups]]" as="grp">
-              <paper-item>
+              <paper-item  class='record-container' >
                 <paper-item-body class='wrap' >
-                  <div >
+                <div >
                     <span>[[grp.groupTitle]]</span>
                   </div>
                 </paper-item-body two-line>
@@ -165,6 +183,28 @@ Example:
           </div>  
         </paper-card>
       </section>
+
+      <section>
+        <paper-card 
+          class="primary"
+          elevation=4
+          heading="HealthCall Meds"
+        > 
+          <div role="listbox" hidden="[[!asColumns]]">
+            <template is="dom-repeat" items="[[hc.meds]]" as="med">
+              <paper-item  class='record-container' >
+                <paper-item-body class='wrap' >
+                  <div >
+                    <span>[[med.0]] [[med.1]] - [[med.7]]</span></div>
+                  <div secondary><span>[[med.2]] - [[med.3]] - [[med.4]] - [[med.5]] - [[med.6]]</span></div>
+                </paper-item-body two-line>
+              </paper-item>
+            </template>
+          </div>  
+        </paper-card>
+      </section>
+
+
       <section>
         <div hidden="[[!asColumns]]">
           <template is="dom-repeat" items="[[hc.surveys]]" as="sur">
@@ -172,23 +212,24 @@ Example:
               <qa-collapse-block
                 label="[[sur.surveyTitle]]"
               >
-                <div >
+                <div class="vertical layout record-container">
                   <template is="dom-repeat" items="[[sur.attempts]]" as="att" >
                     <div class='record-container'>
 
                       <moment-display 
                       label="Completed" 
+                      inbound-fmt="ddd MMM DD YYYY HH:mm:ss"
                       display-fmt="withday" 
                       str="[[att.dt]]" 
                       time></moment-display>
-                      <b>[[att.dt]]</b>
 
                       <template is="dom-repeat" items="[[att.qq]]" as="entry" >
-                      <div class='qa'>
-                        <!--<strong>[[entry.short_nm]]</strong>-->
-                        <label class='qtxt'>[[entry.qtxt]]</label>
-                        <div class='atxt'>[[entry.atxt]]</div>
-                      </div>
+                        <div>
+                          <label class='answer-lbl'>[[entry.qtxt]]</label>
+                          <div class="main-data"> 
+                            <span>[[entry.atxt]]</span>
+                          </div>
+                        </div>
                       </template>
                     </div>
                   </template>

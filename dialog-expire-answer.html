@@ -24,7 +24,7 @@ Example:
 
 @demo
 -->
-<dom-module id="dialog-endprogram">
+<dom-module id="dialog-expire-answer">
   <style is="custom-style">
     :host ::content a {
       cursor: pointer;
@@ -79,12 +79,12 @@ Example:
       on-iron-overlay-closed="dialogClosed"
       on-iron-overlay-canceled="dialogCanceled"
     >
-      <h2>End Program - [[dataId]]</h2>
+      <h2>Expire Answer - Q:[[qnum]]</h2>
       <div>
 
         <div>
           <paper-dropdown-menu 
-            label="Reason for Ending Program"
+            label="Reason for Expiring this Answer"
             id="reasonCodeMenu"
           >
             <paper-listbox
@@ -92,9 +92,8 @@ Example:
               selected="{{reasonCode}}"
               attr-for-selected="rc"
             > 
-              <paper-item rc='CP'>Change of Insurance Plan</paper-item>
-              <paper-item rc='PD'>Patient Deceased</paper-item>
-              <paper-item rc='PR'>Patient Requested to End Services</paper-item>
+              <paper-item rc='PR'>Patient Requested</paper-item>
+              <paper-item rc='OT'>Other Reason</paper-item>
             </paper-listbox>
           </paper-dropdown-menu>
         </div>
@@ -103,11 +102,10 @@ Example:
           <qa-dateinput
             disabled="[[!reasonCode]]"
             is="iron-input"
-            input
-            required
+            input required
             type="text"
-            label="Effective Program End Date"
-            name="End Date"
+            label="Effective Expiration Date"
+            name="Expiration Date"
             always-float-label
             value="{{endDate}}"
           ></qa-dateinput> 
@@ -128,7 +126,7 @@ Example:
           dialog-confirm
           disabled="[[!endDate]]"
         >
-          Confirm Program Termination
+          Confirm Expire Action
         </paper-button>
       </div>
     </paper-dialog>
@@ -136,10 +134,10 @@ Example:
       id="ajax"
       no-toast
       handle-as="json",
-      on-response="endProgramResponse"
-      on-error="endProgramError"
+      on-response="expireResponse"
+      on-error="expireError"
       loading="{{is_loading}}"
-      endpoint="api/antipattern:endprogram"
+      endpoint="api/data:expire"
     ></qa-ajax-poster>
   </template>
 
@@ -149,7 +147,7 @@ Example:
 
   Polymer({
 
-    is: 'dialog-endprogram',
+    is: 'dialog-expire-answer',
 
     properties: {
       reasonNote: {
@@ -168,19 +166,25 @@ Example:
         type: String, 
         value: function(){ return ""; }
       },
+      qnum: {
+        type: String, 
+        value: function(){ return ""; }
+      },
       endDate: {
+        type: Object, 
+        value: function(){ return null; }
+      },
+      lastTs: {
         type: Object, 
         value: function(){ return null; }
       }
     },
 
-    show: function(dataId){
-      var self = this;
-      ['reasonNote','reasonCode','endDate'].forEach(function(p){
-        self.set(p,this.properties[p].value());
-      });
+    show: function(dataId,qnum,lastTs){
       this.$.dialog.open();
       this.set("dataId",dataId);
+      this.set("qnum",qnum);
+      this.set("lastTs",lastTs);
     },
 
     dialogClosed: function(dialogCloseEvent){
@@ -192,7 +196,9 @@ Example:
 
       var payload = {
         subjectId: this.subjectId,
+        qnum: this.qnum,
         dataId: this.dataId,
+        lastTs: this.lastTs,
         endDate: this.endDate,
         reasonCode: this.reasonCode,
         reasonNote: this.reasonNote
@@ -201,11 +207,11 @@ Example:
       this.$.ajax.send(payload);
     },
 
-    endProgramResponse: function(e,data){
+    expireResponse: function(e,data){
       this.fire("success");
     },
 
-    endProgramError: function(e,data){
+    expireError: function(e,data){
       console.log(e,data);
     },
 

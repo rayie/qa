@@ -136,7 +136,13 @@ Example:
               DOB: [[person.dobStr]]
             </div>
             <div class='main-data'>
-              HDMS Account: [[person.hdms_acct]]
+              HDMS Account: 
+              <span>
+                [[person.hdms_acct]]
+              </span>
+              <span hidden="[[person.hdms_acct]]">
+                <a>Link HDMS Account</a>
+              </span>
             </div>
           </paper-card> 
 
