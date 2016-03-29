@@ -1,0 +1,231 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-item/paper-item-body.html">
+<link rel="import" href="../paper-styles/typography.html">
+<link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../moment-display/moment-display.html">
+<link rel="import" href="../paper-tabs/paper-tabs.html">
+<link rel="import" href="../iron-pages/iron-pages.html">
+<link rel="import" href="section-behaviors.html">
+<link rel="import" href="menu-tasks.html">
+<link rel="import" href="list-tasks.html">
+<link rel="import" href="qa-ajax-poster.html">
+<link rel="import" href="qa-dateinput.html">
+<link rel="import" href="styles/qa-styles.html">
+<!--
+
+Example:
+
+    <card-reports></card-reports>
+
+@demo
+-->
+<dom-module id="card-reports">
+  <style is="custom-style" include="qa-styles"></style>
+  <style is="custom-style">
+
+    :host {
+      display: block;
+      box-sizing: border-box;
+    }
+   
+    :host > ::content .special {
+    }
+   
+    /* form hdr part */
+    .hdr {
+      @apply(--layout-horizontal);
+      @apply(--layout-justified);
+      @apply(--paper-font-body2)
+    }
+
+    .list {
+      @apply(--layout-vertical);
+      padding-top: 12px;
+      background-color: white;
+      width: 240px;
+      height: 228px;
+      margin: 12px;
+      @apply(--shadow-elevation-2dp);
+    }
+
+    .form-num {
+      @apply(--paper-font-body2)
+      text-align: right;
+    }
+
+    .form-title {
+      @apply(--paper-font-body2)
+    }
+
+    .form-sub-title {
+      @apply(--paper-font-caption)
+    }
+
+    .paper-font-caption {
+      @apply(--paper-font-caption);
+    }
+
+    paper-button {
+      @apply(--paper-font-button);
+    }
+
+  </style>
+
+  <template>
+    <div class="container">
+
+      <paper-toolbar>
+        <paper-tabs on-iron-select="tabSelected" id="tabSelector" selected="{{selectedTab}}" elevation='4'>
+          <paper-tab>Open Task Summary</paper-tab>
+          <paper-tab>Program Counts</paper-tab>
+          <paper-tab>Open Task Summary</paper-tab>
+        </paper-tabs>
+        <span class="title"><!--stub--></span>
+      </paper-toolbar>
+
+      <iron-pages selected="{{selectedTab}}">
+
+        <section data-tab='myTasks' >
+          
+        </section>
+
+        <section data-tab='programCounts' >
+          <paper-card elevation='4' class='primary'
+            heading="Program Counts"
+          >
+            <div class='main-data' role='listbox'>
+              <template id="progCnt" is="dom-repeat" items="[[programs]]" >
+                <paper-item class='record-container'>
+                  <paper-item-body class='wrap'>
+                  <div>[[item.nm]] - <strong>[[item.n]]</strong></div>
+                  </paper-item-body>
+                </paper-item>
+              </template>
+              <paper-item class='record-container'>
+                <paper-item-body class='wrap'>
+                <div>Total - <strong>[[programsTotal]]<strong></div>
+                </paper-item-body>
+              </paper-item>
+            </div>
+          </paper-card>
+        </section>
+
+        <section data-tab='openTaskCounts' >
+          <paper-card elevation='4' class='primary'
+            heading="Open Task Counts"
+          >
+            <div class='main-data' role='listbox'>
+              <template id="otCnt" is="dom-repeat" items="[[opentasks]]" >
+                <paper-item class='record-container'>
+                  <paper-item-body class='wrap'>
+                  <div>[[item.nm]] - <strong>[[item.n]]</strong></div>
+                  </paper-item-body>
+                </paper-item>
+              </template>
+              <paper-item class='record-container'>
+                <paper-item-body class='wrap'>
+                <div>Total - <strong>[[opentasksTotal]]<strong></div>
+                </paper-item-body>
+              </paper-item>
+            </div>
+          </paper-card>
+        </section>
+
+
+      </iron-pages>
+      <qa-ajax-poster
+        id="ajax"       
+        no-toast
+        handle-as="json",
+        on-response="loadResponse"
+        on-error="loadError"
+        loading="{{is_loading}}"
+      ></qa-ajax-poster>
+
+    </div>
+  </template>
+
+</dom-module>
+
+<script>
+
+
+  Polymer({
+
+    behaviors: [ SectionBehaviors.Basic ],
+
+    is: 'card-reports',
+
+    properties: {
+      person: {
+        type: Object,
+        value: null
+      },
+      subjectId: {
+        type: String,
+        value: ""
+      },
+      selectedTab: {
+        type: Number,
+        value: 0 
+      }
+    },
+
+		tabSelected: function(e){
+			var idx = this.$.tabSelector.indexOf( e.detail.item );
+			if ( idx > 0 ){
+				console.log("tabSelected",idx);
+				switch(idx){
+					case 1:
+            this.$.ajax.setEndpoint("api/report:programs:count");
+            this.$.ajax.send();
+						break;
+					case 2:
+            this.$.ajax.setEndpoint("api/report:opentasks:count");
+            this.$.ajax.send();
+						break;
+					case 3:
+						break;
+				  case 4:
+						break;
+				  case 5:
+						break;
+				}
+			}
+		},
+
+    load: function(){
+      this.$.ajax.send();
+    },
+
+    loadResponse: function(e,data){
+      this.set(data.bucketname,data[data.bucketname]);
+      this.set(data.bucketname+"Total",data.total);
+    },
+
+    loadError: function(e){
+      console.log(e);
+    },
+
+    submit: function(e){
+      return;
+    }
+  });
+
+</script>

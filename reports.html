@@ -1,0 +1,373 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-item/paper-item-body.html">
+<link rel="import" href="../paper-styles/typography.html">
+<link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../moment-display/moment-display.html">
+<link rel="import" href="../paper-tabs/paper-tabs.html">
+<link rel="import" href="../iron-pages/iron-pages.html">
+<link rel="import" href="section-behaviors.html">
+<link rel="import" href="menu-tasks.html">
+<link rel="import" href="list-tasks.html">
+<link rel="import" href="card-contact.html">
+<link rel="import" href="card-program-display.html">
+<link rel="import" href="card-data-display.html">
+<link rel="import" href="card-hdmsdata-display.html">
+<link rel="import" href="card-hcdata-display.html">
+<link rel="import" href="qa-ajax-poster.html">
+<link rel="import" href="qa-dateinput.html">
+<link rel="import" href="styles/qa-styles.html">
+<!--
+
+Example:
+
+    <card-person></card-person>
+
+@demo
+-->
+<dom-module id="card-person">
+  <style is="custom-style" include="qa-styles"></style>
+  <style is="custom-style">
+
+    :host {
+      display: block;
+      box-sizing: border-box;
+    }
+   
+    :host > ::content .special {
+    }
+   
+    /* form hdr part */
+    .hdr {
+      @apply(--layout-horizontal);
+      @apply(--layout-justified);
+      @apply(--paper-font-body2)
+    }
+
+    .list {
+      @apply(--layout-vertical);
+      padding-top: 12px;
+      background-color: white;
+      width: 240px;
+      height: 228px;
+      margin: 12px;
+      @apply(--shadow-elevation-2dp);
+    }
+
+    .form-num {
+      @apply(--paper-font-body2)
+      text-align: right;
+    }
+
+    .form-title {
+      @apply(--paper-font-body2)
+    }
+
+    .form-sub-title {
+      @apply(--paper-font-caption)
+    }
+
+    .paper-font-caption {
+      @apply(--paper-font-caption);
+    }
+
+    paper-button {
+      @apply(--paper-font-button);
+    }
+
+  </style>
+
+  <template>
+    <div class="container">
+
+      <paper-toolbar>
+        <paper-tabs on-iron-select="tabSelected" id="tabSelector" selected="{{selectedTab}}" elevation='4'>
+          <paper-tab link>Primary Info</paper-tab>
+          <paper-tab>Open Tasks</paper-tab>
+          <paper-tab>Collected Data</paper-tab>
+          <paper-tab>Interactions</paper-tab>
+          <paper-tab>HDMS Data</paper-tab>
+          <paper-tab>HealthCall (Legacy)</paper-tab>
+        </paper-tabs>
+        <span class="title"><!--stub--></span>
+        <menu-tasks 
+          id="menuTask"
+          subject-id="[[person._id]]"
+          subject-last-ts="{{person.ts}}"
+          on-newtask="gotNewTask"
+        ></menu-tasks>
+      </paper-toolbar>
+
+      <iron-pages selected="{{selectedTab}}">
+
+        <section data-tab='primaryInfo' >
+          <paper-card elevation='4' class='primary'
+            heading="Last Name, First Name"
+          >
+            <div class='main-data'>
+              [[person.ln]]
+              <span hidden="[[!person.suf]]"> 
+                [[person.suf]]
+              </span>, 
+              [[person.fn]] [[person.mn]] 
+            </div>
+            <div hidden="[[!person.suf]]" class='main-data'>
+              <span >Suffix: [[person.suf]]</span>
+            </div>
+            <div hidden="[[!person.nick]]" class='main-data'>
+              <span >Nickname: [[person.nick]]</span>
+            </div>
+            <div class='main-data'>
+              DOB: [[person.dobStr]]
+            </div>
+            <div class='main-data'>
+              HDMS Account: 
+              <span>
+                [[person.hdms_acct]]
+              </span>
+              <span hidden="[[person.hdms_acct]]">
+                <a>Link HDMS Account</a>
+              </span>
+            </div>
+          </paper-card> 
+
+          <card-program-display
+            id="programCard"
+            class="flex-10"
+            name="Programs"
+            subject-id="[[person._id]]"
+            as-columns
+          ></card-program-display>
+
+          <card-contact 
+            id="contactCard"
+            subject-id="[[person._id]]">
+          </card-contact>
+
+          <card-data-display
+            id="demographicCard"
+            class="flex-10"
+            name="Demographic"
+            flows='["flows/global.demographic.json"]'
+            as-columns
+            subject-id="[[person._id]]">
+          </card-data-display>
+
+
+        </section>
+
+        <section data-tab='tasks' >
+          <list-tasks
+            hidden="[[!person]]"
+            heading="Not Yet Started"
+            class='card-content' 
+            id="openTasks"
+            subject-id="[[subjectId]]"
+            state='["init"]'
+          ></list-tasks>
+          <list-tasks
+            hidden="[[!person]]"
+            heading="In Progress"
+            class='card-content' 
+            id="inprogTasks"
+            subject-id="[[subjectId]]"
+            state='["inprog"]'
+          ></list-tasks>
+        </section>
+
+        <section data-tab='closedtasks'>
+          <list-tasks
+            hidden="[[!person]]"
+            heading="Assessments Completed"
+            class='card-content'
+            id="completedAssessments"
+            subject-id="[[subjectId]]"
+            task-def-filter='["assessment"]'
+            state='["done"]'
+          ></list-tasks>
+
+          <list-tasks
+            hidden="[[!person]]"
+            heading="Other Tasks Completed"
+            class='card-content'
+            id="completedTasks"
+            subject-id="[[subjectId]]"
+            task-def-filter='["not-assessment"]'
+            state='["done"]'
+          ></list-tasks>
+
+        </section>
+
+        <section data-tab='interactions' >
+          <card-data-display
+            class="flex-10"
+            as-columns
+            id="interactionsCard"
+            name="Interactions"
+            flows='["flows/sc.interaction.json","flows/sc.teamaction.json"]'
+            subject-id="[[person._id]]">
+          </card-data-display>
+        </section>
+
+
+        <section data-tab='hdmsdata' >
+          <card-hdmsdata-display
+            class="flex-10"
+            as-columns
+            id="hdmsCard"
+            name="HDMS Notes"
+            subject-id="[[person._id]]"
+            hdms-acct="[[person.hdms_acct]]">
+          </card-hdmsdata-display>
+        </section>
+
+        <section data-tab='hcdata' >
+          <card-hcdata-display
+            class="flex-10"
+            as-columns
+            id="hcCard"
+            name="HealthCall"
+            subject-id="[[person._id]]">
+          </card-hcdata-display>
+        </section>
+      </iron-pages>
+
+      <qa-ajax-poster
+        id="ajax_load_person"       
+        no-toast
+        handle-as="json",
+        on-response="loadPersonResponse"
+        on-error="loadPersonError"
+        loading="{{is_loading}}"
+        endpoint="api/person:get"
+      ></qa-ajax-poster>
+
+    </div>
+  </template>
+
+</dom-module>
+
+<script>
+
+
+  Polymer({
+
+    behaviors: [ SectionBehaviors.Basic ],
+
+    is: 'card-person',
+
+    properties: {
+      person: {
+        type: Object,
+        value: null
+      },
+      subjectId: {
+        type: String,
+        value: ""
+      },
+      selectedTab: {
+        type: Number,
+        value: 0 
+      }
+    },
+
+		tabSelected: function(e){
+			var idx = this.$.tabSelector.indexOf( e.detail.item );
+			if ( idx > 0 ){
+				console.log("tabSelected",idx);
+				switch(idx){
+					case 1:
+						this.$.openTasks.loadTasks();
+						this.$.inprogTasks.loadTasks();
+						break;
+					case 2:
+						this.$.completedAssessments.loadTasks();
+						this.$.completedTasks.loadTasks();
+						break;
+					case 3:
+						this.$.interactionsCard.load();
+						break;
+				  case 4:
+						if ( this.person.hdms_acct ){
+							this.$.hdmsCard.load();
+						}
+						break;
+				  case 5:
+						this.$.hcCard.load();
+						break;
+				}
+			}
+		},
+
+    loadPerson: function(){
+      if ( !this.subjectId ) return; 
+      this.set("person",null);
+      this.$.ajax_load_person.send({subjectId: this.subjectId});
+    },
+
+    loadPersonResponse: function(e,data){
+      var person = data.person;
+      var now = new Date();
+      var list=[];
+
+      var m = moment(person.dob);
+      var age = _.trimRight( m.fromNow(true), "s" );
+      var S = { M: "Male", F: "Female" };
+      person.sex = S[person.sex];
+      person.dobStr = m.format("MMMM DD, YYYY"); 
+
+      this.set("person",person);
+			this.$.programCard.load();
+			this.$.contactCard.load();
+      this.$.demographicCard.load();
+      if ( person.hdms_acct ){
+        this.applyTitle(person.displayAs + " - " + age + " old " + person.sex + " HDMS# " + person.hdms_acct);
+      }
+      else{ 
+        this.applyTitle(person.displayAs + " - " + age + " old " + person.sex);
+      }
+      /*
+      this.$.openTasks.loadTasks();
+      this.$.completedTasks.loadTasks();
+      this.$.inprogTasks.loadTasks();
+      this.$.completedAssessments.loadTasks();
+      this.$.programCard.load();
+      this.$.contactCard.load();
+      this.$.interactionsCard.load();
+      this.$.hcCard.load();
+      */
+
+    },
+
+    gotNewTask: function(e,data){
+      console.log(data);
+      this.set("person.ts", data.newTs);
+      this.set("selectedTab", 1);
+      this.$.openTasks.loadTasks();
+    },
+
+    loadPersonError: function(e){
+      console.log(e);
+    },
+
+    submit: function(e){
+      return;
+    }
+  });
+
+</script>

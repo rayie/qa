@@ -22,6 +22,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../moment-display/moment-display.html">
 <link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../paper-date-picker/paper-date-picker.html">
+<link rel="import" href="team-dropdown">
 
 <!--
 An element providing a solution to no problem in particular.
@@ -138,6 +139,11 @@ Example:
       </div>
       <div class='assignment'>
         [[taskAssignedTo]]
+        <team-dropdown
+          hidden
+          selected-user="[[taskAssignedTo]]"
+        >
+        </team-dropdown>
       </div>
     </div>
 
@@ -316,7 +322,7 @@ Example:
           break;
       }
 
-      if ( this.taskState==="done" || this.taskAssignedTo!=="rie@supercare.com" ) {
+      if ( this.taskState==="done" || this.taskAssignedTo!==_.get(app,"scenariouser._id") ) {
         //console.log("not ok", this.taskAssignedTo);
         okToStart=false;
       }

@@ -332,6 +332,7 @@ Example:
     logout_response: function(e){
       //console.log(e.detail.response);
       this.set("scenariouser", null);
+        app.set("scenariouser", null);
       this.$.locstore.save();
       this.set("sessionIsValid", false);
     },
@@ -354,6 +355,7 @@ Example:
       //console.log(e.detail.response);
       if( e.detail.response.success===true ){
         this.set("scenariouser", e.detail.response.user);
+        app.set("scenariouser", e.detail.response.user);
         this.$.locstore.save();
         this.set("sessionIsValid", true);
         app.page('/home');
