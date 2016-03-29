@@ -177,7 +177,7 @@ Example:
     show: function(dataId){
       var self = this;
       ['reasonNote','reasonCode','endDate'].forEach(function(p){
-        self.set(p,this.properties[p].value());
+        self.set(p,self.properties[p].value());
       });
       this.$.dialog.open();
       this.set("dataId",dataId);

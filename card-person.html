@@ -96,7 +96,7 @@ Example:
     <div class="container">
 
       <paper-toolbar>
-        <paper-tabs id="tabSelector" selected="{{selectedTab}}" elevation='4'>
+        <paper-tabs on-iron-select="tabSelected" id="tabSelector" selected="{{selectedTab}}" elevation='4'>
           <paper-tab link>Primary Info</paper-tab>
           <paper-tab>Open Tasks</paper-tab>
           <paper-tab>Collected Data</paper-tab>
@@ -286,6 +286,34 @@ Example:
       }
     },
 
+		tabSelected: function(e){
+			var idx = this.$.tabSelector.indexOf( e.detail.item );
+			if ( idx > 0 ){
+				console.log("tabSelected",idx);
+				switch(idx){
+					case 1:
+						this.$.openTasks.loadTasks();
+						this.$.inprogTasks.loadTasks();
+						break;
+					case 2:
+						this.$.completedAssessments.loadTasks();
+						this.$.completedTasks.loadTasks();
+						break;
+					case 3:
+						this.$.interactionsCard.load();
+						break;
+				  case 4:
+						if ( this.person.hdms_acct ){
+							this.$.hdmsCard.load();
+						}
+						break;
+				  case 5:
+						this.$.hcCard.load();
+						break;
+				}
+			}
+		},
+
     loadPerson: function(){
       if ( !this.subjectId ) return; 
       this.set("person",null);
@@ -304,24 +332,25 @@ Example:
       person.dobStr = m.format("MMMM DD, YYYY"); 
 
       this.set("person",person);
+			this.$.programCard.load();
+			this.$.contactCard.load();
+      this.$.demographicCard.load();
       if ( person.hdms_acct ){
         this.applyTitle(person.displayAs + " - " + age + " old " + person.sex + " HDMS# " + person.hdms_acct);
-        this.$.hdmsCard.load();
       }
       else{ 
         this.applyTitle(person.displayAs + " - " + age + " old " + person.sex);
       }
+      /*
       this.$.openTasks.loadTasks();
+      this.$.completedTasks.loadTasks();
       this.$.inprogTasks.loadTasks();
       this.$.completedAssessments.loadTasks();
-      this.$.completedTasks.loadTasks();
       this.$.programCard.load();
       this.$.contactCard.load();
-      this.$.demographicCard.load();
-      /*
       this.$.interactionsCard.load();
-      */
       this.$.hcCard.load();
+      */
 
     },
 
