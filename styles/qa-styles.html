@@ -24,6 +24,21 @@
         }
       }
 
+      .strike-data {
+        font-size: 14px;
+        font-weight: 600;
+        color: #EF6C00;
+        font-style: normal;
+        margin-top: 8px;
+      }
+
+      .strike-data span {
+        text-decoration: line-through;
+      }
+      .strike-data small {
+        font-weight: 200;
+      }
+
       .main-data {
         font-size: 14px;
         font-weight: 600;
@@ -56,6 +71,19 @@
         --label-color: #455A64;
       }
 
+
+      .strike-data moment-display {
+        --display-size: 12px;
+        --label-size: 12px;
+
+        --display-weight: 200;
+        --label-weight: 200;
+
+        --display-color: #EF6C00;
+        --label-color: #EF6C00;
+      }
+
+
       moment-display.emph {
         --display-size: 14px;
         --label-size: 14px;
@@ -67,10 +95,35 @@
         --label-color: #00695C;
       }
 
+      moment-display.exp {
+        --display-size: 14px;
+        --label-size: 14px;
+
+        --display-weight: 850;
+        --label-weight: 850;
+
+        --display-color: #EF6C00;
+        --label-color: #EF6C00;
+      }
+
       .last-update-msg {
         margin-top: 8px;
         font-size: .92em;
         color: #BDBDBD;
+      }
+      .last-update-msg small {
+        margin-top: 8px;
+        font-size: .92em;
+        color: #BDBDBD;
+      }
+
+      .last-update-msg a {
+        margin-top: 8px;
+        margin-left: 8px;
+        font-size: .92em;
+        font-weight: 600;
+        color: #7B1FA2;
+        cursor: pointer;
       }
 
       paper-button {
@@ -85,6 +138,15 @@
       paper-button.bad {
         background: red;
         color: #fff;
+      }
+
+      paper-button.indigo {
+        background-color: var(--paper-indigo-500);
+        color: white;
+        --paper-button-raised-keyboard-focus: {
+          background-color: var(--paper-pink-a200) !important;
+          color: white !important;
+        };
       }
 
       paper-button.good[disabled] ,
