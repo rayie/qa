@@ -99,14 +99,6 @@ Example:
         loading="{{is_loading}}"
         endpoint="api/data:correct"
       ></qa-ajax-poster>
-      <qa-ajax-poster
-        no-toast
-        id="ajax_submit_expiration"
-        on-response="gotExpirationResponse"
-        on-error="gotExpirationError"
-        loading="{{is_loading}}"
-        endpoint="api/data:expire"
-      ></qa-ajax-poster>
     </div>
   </template>
 
@@ -265,8 +257,16 @@ Example:
       }
 
     },
+
     gotCorrectionResponse: function(e,data){
       console.log("Correction response",data);
+      this.set("datadocLastTs", data.newTs);
+      Polymer.dom(this.$.qArea).removeChild(this.q);
+      this.fire("updated");
+    },
+
+    gotCorrectionError: function(e,data){
+      this.fire("error",data);
     },
 
     renderQuestion: function(){

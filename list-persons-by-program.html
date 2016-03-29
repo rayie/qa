@@ -139,8 +139,12 @@ Example:
                 </a>
               </div>
               <div seconday>
-                <moment-display class='emph' label="Program Date Range:" str="[[p.programDates.start]]" ></moment-display>
-                <moment-display class='emph' label="to" str="[[p.programDates.end]]" ></moment-display>
+                <moment-display 
+                 inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                class='emph' label="Program Date Range:" str="[[p.programDates.start]]" ></moment-display>
+                <moment-display 
+                 inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                class='emph' label="to" str="[[p.programDates.end]]" ></moment-display>
               </div>
             </paper-item-body>
           </paper-item> 
@@ -190,11 +194,13 @@ Example:
       },
       selectedProgram: { 
         type: Object, 
-        value: function(){ return null; }, observer: "loadPersons" 
+        value: function(){ return null; }, 
+        observer: "loadPersons" 
       },
       selectedTiming: { 
         type: Object, 
-        value: function(){ return 0; }, observer: "loadPersons" 
+        value: function(){ return 0; }, 
+        observer: "loadPersons" 
       },
       timingList: {
         type: Array,
@@ -222,17 +228,22 @@ Example:
         value: function(){
           return [
             { "txt": "CarePoint 360 NIV" },
-            { "txt": "CarePoint 360 NIV Follow-Up" },
+            { "txt": "COPD 30 Day Re-Admit" },
             { "txt": "COPD Ongoing" },
-            { "txt": "Healthcare at Home COPD Program" }    
+            { "txt": "UNASSIGNED IN HC" }
           ]
         }
       }
     },
 
     loadPersons: function(){
-      console.log("in loadPersons", this.selectedProgram);
-      if ( this.selectedProgram !== null ){
+      if ( 
+        this.selectedProgram !== null 
+        &&
+        this.selectedProgram !== undefined
+      ){
+        this.set("persons",[]);
+        console.log("loading persons by program", this.selectedProgram);
         var payload = {
           timing: this.timingList[ this.selectedTiming ].code,
           "sc-program-name": this.programList[ this.selectedProgram ].txt,

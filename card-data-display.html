@@ -104,7 +104,9 @@ Example:
                           <span hidden="[[row.is_date]]">[[ans]]</span>
                         </template>
                         <template is="dom-if" if="[[row.is_date]]">
-                          <moment-display display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]"></moment-display>
+                        <moment-display 
+                        inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                        display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]"></moment-display>
                         </template>
                       </div>
                     </template>
@@ -113,7 +115,9 @@ Example:
                   <div class="flex-2">
                     <template is="dom-if" if="[[!index]]">
                       <div class='last-update-msg'>
-                        <moment-display label="Updated" str="[[r.ts]]" display-fmt="withday" time></moment-display>
+                        <moment-display 
+                        inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                        label="Updated" str="[[r.ts]]" display-fmt="withday" time></moment-display>
                         <small> by [[rec.m.update.u_id]]</small>
                       </div>
                     </template>
@@ -134,7 +138,9 @@ Example:
                           <span hidden="[[row.is_date]]">[[ans]]</span>
                         </template>
                         <template is="dom-if" if="[[row.is_date]]">
-                          <moment-display display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]"></moment-display>
+                        <moment-display 
+                        inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                        display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]"></moment-display>
                         </template>
                       </div>
                     </template>
@@ -143,7 +149,9 @@ Example:
                   <div class="flex-2">
                     <template is="dom-if" if="[[!index]]">
                       <div class='last-update-msg'>
-                        <moment-display label="Updated" str="[[r.ts]]" display-fmt="withday" time></moment-display>
+                        <moment-display 
+                        inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                        label="Updated" str="[[r.ts]]" display-fmt="withday" time></moment-display>
                         <small> by [[rec.m.update.u_id]]</small>
                       </div>
                     </template>
@@ -171,7 +179,9 @@ Example:
                             <span>[[ans]]</span>
                           </template>
                           <template is="dom-if" if="[[row.is_date]]">
-                            <moment-display display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]"></moment-display>
+                          <moment-display 
+                          inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                          display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]"></moment-display>
                           </template>
                         </div>
                       </template>
@@ -179,7 +189,9 @@ Example:
                     </div>
                     <template is="dom-if" if="[[!index]]">
                       <div class='last-update-msg'>
-                        <moment-display label="Updated" str="[[r.ts]]" display-fmt="withday" time></moment-display>
+                        <moment-display 
+                          inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                        label="Updated" str="[[r.ts]]" display-fmt="withday" time></moment-display>
                         <small> by [[rec.m.update.u_id]]</small>
                       </div>
                     </template>

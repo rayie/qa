@@ -82,16 +82,22 @@ Example:
       <div class='last-update-msg'>
 
         <div class='last-update-msg'>
-          <moment-display label="Created" str="[[taskDoc.m.init.ts]]" display-fmt="withday" time></moment-display>
+          <moment-display 
+          inbound-fmt="YYYY-MM-DDThh:mm:ss"
+          label="Created" str="[[taskDoc.m.init.ts]]" display-fmt="withday" time></moment-display>
           <small> by [[taskDoc.m.init.u_id]]</small>
         </div>
 
         <div class='last-update-msg'>
-          <moment-display label="Completed" str="[[taskDoc.m.done.ts]]" display-fmt="withday" time></moment-display>
+          <moment-display 
+          inbound-fmt="YYYY-MM-DDThh:mm:ss"
+          label="Completed" str="[[taskDoc.m.done.ts]]" display-fmt="withday" time></moment-display>
           <small> by [[taskDoc.m.done.u_id]]</small>
         </div>
         <div class='last-update-msg'>
-          <moment-display label="Last change to DataRecord" str="[[dataLastTs]]" display-fmt="withday" time></moment-display>
+          <moment-display 
+          inbound-fmt="YYYY-MM-DDThh:mm:ss"
+          label="Last change to DataRecord" str="[[dataLastTs]]" display-fmt="withday" time></moment-display>
         </div>
 
       </div>
@@ -110,7 +116,9 @@ Example:
                     <span>[[ans]]</span>
                   </template>
                   <template is="dom-if" if="[[row.is_date]]">
-                    <moment-display display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]"></moment-display>
+                  <moment-display 
+                    inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                    display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]"></moment-display>
                   </template>
                 </div>
               </template>
@@ -120,9 +128,13 @@ Example:
               <template is='dom-repeat' items="[[row.corr]]" as="cor" index-as="cor_idx">
                 <div class="strike-data">
                   <span hidden="[[row.is_date]]">[[cor.pa]]</span>
-                  <moment-display hidden="[[!row.is_date]]" display-fmt="withday" str="[[cor.pa]]" time="[[row.is_datetime]]"></moment-display>
+                  <moment-display 
+                    inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                  hidden="[[!row.is_date]]" display-fmt="withday" str="[[cor.pa]]" time="[[row.is_datetime]]"></moment-display>
                   &nbsp;
-                  <moment-display display-fmt="withday" str="[[cor.ts]]" time></moment-display>
+                  <moment-display 
+                    inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                  display-fmt="withday" str="[[cor.ts]]" time></moment-display>
                   <small> by [[cor.u_id]]</small>
                 </div>
               </template>
@@ -132,7 +144,7 @@ Example:
                 subject-id="[[taskDoc.subjectId]]" 
                 datadoc-id="[[dataId]]" 
                 datadoc-last-ts="{{dataLastTs}}"
-                on-update-ts="gotUpdatedTs"
+                on-updated="gotUpdated"
                 qa="[[row]]" 
               ></qa-update-data-tool>
 
@@ -202,6 +214,11 @@ Example:
     loadTaskError: function(e){ 
       console.log(e);
       return;
+    },
+
+    gotUpdated: function(){
+      console.log("Got updated");
+
     },
 
     loadTaskResponse: function(e,data){ 

@@ -84,10 +84,11 @@ Example:
               </div >
 
               <div class='age'>
-                <moment-display label="Created" age time dt="[[t.m.init.ts]]" ></moment-display>
+                <moment-display label="Created" plus-age display-fmt="withday" time str="[[t.m.init.ts]]" 
+                inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                ></moment-display>
 
                 <span>
-                  [[t.m.init.ts]]
                   [[compDur(t.m)]] 
                 </span>
               </div>
@@ -200,6 +201,10 @@ Example:
         type: Array,
         value: []
       },
+      taskDefFilter: {
+        type: Array,
+        value: []
+      },
       baseUrl: {
         type: String,
         value: ""
@@ -245,6 +250,10 @@ Example:
 
       if (this.subjectId){
         defaultListParams.subjectId = this.subjectId.toString();
+      }
+      
+      if (this.taskDefFilter.length){
+        defaultListParams.taskDefFilter = this.taskDefFilter;
       }
 
       this.$.ajax_load_tasks.send(defaultListParams);

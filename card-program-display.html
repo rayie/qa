@@ -120,7 +120,9 @@ Example:
                             <span>[[ans]]</span>
                           </template>
                           <template is="dom-if" if="[[row.is_date]]">
-                            <moment-display display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]"></moment-display>
+                          <moment-display 
+                          inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                          display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]"></moment-display>
                           </template>
                         </div>
                       </template>
@@ -133,7 +135,9 @@ Example:
               </div>
               <div class="horizontal layout justified record-footer-addon">
                 <div class='flex-child last-update-msg'>
-                  <moment-display label="Updated" str="[[rec.m.update.ts]]" display-fmt="withday" time></moment-display>
+                  <moment-display 
+                  inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                  label="Updated" str="[[rec.m.update.ts]]" display-fmt="withday" time></moment-display>
                   <small> by [[rec.m.update.u_id]]</small>
                   <template is="dom-if" if="[[rec.allowEndProgram]]">
                     <a data-rec="[[rec]]" on-click="showEndProgram">End this Program</a>

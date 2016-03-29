@@ -99,7 +99,7 @@ Example:
         <paper-tabs id="tabSelector" selected="{{selectedTab}}" elevation='4'>
           <paper-tab link>Primary Info</paper-tab>
           <paper-tab>Open Tasks</paper-tab>
-          <paper-tab>Closed Tasks</paper-tab>
+          <paper-tab>Collected Data</paper-tab>
           <paper-tab>Interactions</paper-tab>
           <paper-tab>HDMS Data</paper-tab>
           <paper-tab>HealthCall (Legacy)</paper-tab>
@@ -193,12 +193,24 @@ Example:
         <section data-tab='closedtasks'>
           <list-tasks
             hidden="[[!person]]"
-            heading="Tasks Completed"
+            heading="Assessments Completed"
+            class='card-content'
+            id="completedAssessments"
+            subject-id="[[subjectId]]"
+            task-def-filter='["assessment"]'
+            state='["done"]'
+          ></list-tasks>
+
+          <list-tasks
+            hidden="[[!person]]"
+            heading="Other Tasks Completed"
             class='card-content'
             id="completedTasks"
             subject-id="[[subjectId]]"
+            task-def-filter='["not-assessment"]'
             state='["done"]'
           ></list-tasks>
+
         </section>
 
         <section data-tab='interactions' >
@@ -301,11 +313,14 @@ Example:
       }
       this.$.openTasks.loadTasks();
       this.$.inprogTasks.loadTasks();
+      this.$.completedAssessments.loadTasks();
       this.$.completedTasks.loadTasks();
       this.$.programCard.load();
       this.$.contactCard.load();
       this.$.demographicCard.load();
+      /*
       this.$.interactionsCard.load();
+      */
       this.$.hcCard.load();
 
     },

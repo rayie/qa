@@ -96,7 +96,9 @@ Example:
                 </div>
 
                 <div class='last-update-msg'>
-                  <moment-display label="Updated" str="[[c.m.update.ts]]" display-fmt="withday" time></moment-display>
+                  <moment-display 
+                  inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                  label="Effective" str="[[c.m.update.ts]]" display-fmt="withday" time></moment-display>
                   <small> by [[c.m.update.u_id]]</small>
                   <a on-click="showExpireDialog" data-rec="[[c]]">Expire</a>
                 </div>
@@ -121,14 +123,18 @@ Example:
                 </address>
 
                 <div class='last-update-msg'>
-                  <moment-display label="Effective" str="[[a.m.update.ts]]" display-fmt="withday" time></moment-display>
+                  <moment-display 
+                  inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                  label="Effective" str="[[a.m.update.ts]]" display-fmt="withday" time></moment-display>
                   <small> by [[a.m.update.u_id]]</small>
                   <a hidden="[[a.expired]]" on-click="showExpireDialog" data-rec="[[a]]">Expire</a>
                 </div>
 
                 <template is="dom-if" if="[[a.expired]]">
                   <div class='last-update-msg'>
-                    <moment-display class='exp' label="Expiration" str="[[a.expired.expDt]]" display-fmt="withday" ></moment-display>
+                    <moment-display 
+                    inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                    class='exp' label="Expiration" str="[[a.expired.expDt]]" display-fmt="withday" ></moment-display>
                     <small> by [[a.expired.u_id]]</small>
                   </div>
                 </template>

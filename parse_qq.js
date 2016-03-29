@@ -123,6 +123,7 @@ var parse = function(data){
     if ( k !== "all-assessments" ){
       var taskDef = {
         type: "data",
+        tags: ["assessment"],
         name: k.toUpperCase().replace(/-/g," "),
         qq: tagref[k],
         upon: { submit: [ ] },

@@ -133,7 +133,12 @@ Example:
                 <paper-item-body class='wrap' two-line>
                 <div >
                     <span>[[note.user]]</span>
-                    <moment-display display-fmt="withday" inbound-fmt="MM/DD/YYYY h:ma" str="[[note.dt]]" time></moment-display>
+                    <moment-display 
+                    display-fmt="withday" 
+                    inbound-fmt="MM/DD/YYYY h:ma" 
+                    str="[[note.dt]]" 
+                    time></moment-display>
+                    [[note.dt]]
                   </div>
                   <div secondary>[[note.txt]]</div>
                 </paper-item-body two-line>
@@ -215,7 +220,6 @@ Example:
                 <div class="vertical layout record-container">
                   <template is="dom-repeat" items="[[sur.attempts]]" as="att" >
                     <div class='record-container'>
-
                       <moment-display 
                       label="Completed" 
                       inbound-fmt="ddd MMM DD YYYY HH:mm:ss"

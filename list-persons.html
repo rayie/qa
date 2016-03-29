@@ -95,14 +95,19 @@ Example:
             <a href$="patient/[[p._id]]">
               <span class='name'>
               [[p.displayAs]] ([[p.sex]]) 
-              <moment-display str="[[p.dob]]" ></moment-display>
+              <moment-display 
+                 inbound-fmt="YYYY-MM-DDThh:mm:ss"
+              str="[[p.dob]]" ></moment-display>
               </span>
             </a>
           </div>
           <div class="flex">
             <small>
               Last activity: 
-              <moment-display time str="[[p.ts]]" ></moment-display>
+              <moment-display 
+                display-fmt='withday'
+                 inbound-fmt="YYYY-MM-DDThh:mm:ss"
+              time str="[[p.ts]]" ></moment-display>
             <small>
           </div>
         </div>
