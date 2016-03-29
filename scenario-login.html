@@ -169,8 +169,8 @@ Example:
           <div class='form-body'>     
             <div class='flexchild'>
               <paper-button raised on-click="login">Login</paper-button>
-              <paper-button raised on-click="logout">Logout</paper-button>
-              <paper-button raised on-click="test">Test</paper-button>
+              <!--<paper-button raised on-click="logout">Logout</paper-button>-->
+              <!--<paper-button raised on-click="test">Test</paper-button>-->
               <small>{{ scenariouser._id }}</small>
             </div>
           </div>
@@ -333,6 +333,7 @@ Example:
       //console.log(e.detail.response);
       this.set("scenariouser", null);
       this.$.locstore.save();
+      this.set("sessionIsValid", false);
     },
 
     login: function(e){
@@ -354,6 +355,8 @@ Example:
       if( e.detail.response.success===true ){
         this.set("scenariouser", e.detail.response.user);
         this.$.locstore.save();
+        this.set("sessionIsValid", true);
+        app.page('/home');
       }
     }
   });
