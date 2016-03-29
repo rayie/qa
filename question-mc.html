@@ -106,13 +106,6 @@ Example:
                   item-icon
                   hidden="[[opt.is_active]]"
                 ></iron-icon>
-                <!--
-                <iron-icon 
-                  icon="{{computeIconToUse(opt.is_active)}}" 
-                  item-icon
-                >
-                </iron-icon>
-                -->
                 <div class="opt-txt">{{opt.txt}}</div>
               </paper-icon-item>
             </template>
@@ -219,7 +212,18 @@ Example:
       this._gatherAnswers();
     },
 
-
+    setToPristine: function(){
+      if ( this.get("qstate") !== 0 ){
+        console.log("setting to pristine", this.txt);
+        var self = this;
+        this.opts.forEach(function(opt,optPos){
+          self.set("opts."+optPos+".is_active",false);
+          console.log(optPos,false);
+        });
+        this.$.optRptr.render();
+        this._gatherAnswers();
+      }
+    },
 
     computeIconToUse: function(is_active ){
       //console.log("in computeIconToUse", is_active);
@@ -244,25 +248,41 @@ Example:
     },
 
     _gatherAnswers: function(){
+      //console.log("qstate before _gatherAnswers", this.qstate);
+      var last_qstate = this.get("qstate");
+      var last_answers = this.get("answers");
+
+      if ( last_answers === undefined ) last_answers=[];
+
       var answer = [];
       var prompt_content = [];
       this.opts.forEach(function(el,idx){
         if(el.is_active){ 
           //console.log("idx ", idx, " is active");
           answer.push(idx);
-          if(el.prompt) prompt_content.push(el.prompt.toString());
+          if (el.prompt) prompt_content.push(el.prompt.toString());
         }
       });
 
-      this.answer = answer;
+      var answer_changed = ( _.difference( last_answers, answer ).length  || _.difference( answer, last_answers ).length );
+
+      //console.log('answer changed', answer_changed, last_answers, answer);
+
+      this.set("answer",answer);
+
       if ( answer.length == 0 ){
-        this.qstate=0;
+        this.set("qstate",0);
       }
       else if ( answer.length < this.minmax[0] ){
-        this.qstate=1;  //(this.minmax[0] - answer.length) + " more required";
+        this.set("qstate",1);//(this.minmax[0] - answer.length) + " more required";
       }
       else if ( answer.length >= this.minmax[0] ){
-        this.qstate=2;
+        this.set("qstate",2);
+      }
+
+      if ( this.get("qstate") === last_qstate && answer_changed ){
+        console.log("answer changed, but qstate didn't, manually firing qstate change", this.qstate);
+        this.fire("qstate-changed");
       }
 
       //console.log(answer);

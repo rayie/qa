@@ -270,6 +270,7 @@ Example:
 
     <iron-ajax
       id="ajax_load_survey"       
+      no-toast
       handle-as="json",
       on-response="loadSurveyResponded"
       on-error="loadSurveyError"
@@ -609,7 +610,7 @@ Example:
     },
 
     _populateAnswers: function(){
-      console.log('populating answers');
+      //console.log('populating answers');
       this.isPopulating=true;
       var addons=0;
 
@@ -695,9 +696,11 @@ Example:
           answers.push( this._build_answer_sheet(this.questions[qnum]) );
         }
       }
+
       this.set("summaryTxt",[
         qstate_counts[2], "of", answers.length, " Question Completed,",
-        qstate_counts[3], "NA"
+        qstate_counts[3], "NA",
+        (count_hidden)?count_hidden+" Hidden":""
       ].join(" "));
 
       this._applyTitle();
@@ -752,26 +755,29 @@ Example:
       if ( this.task.state !== "inprog" || undefined === this.task.dataId )
         return this.taskInprog();
 
-      var answers_for_payload = this.answers.map(function(a){
-        var _a = _.clone(a);
-        delete _a.q;
-        return _a;
-      })
+      var self = this;
+      this.debounce("savedata",function(){
+        var answers_for_payload = self.answers.map(function(a){
+          var _a = _.clone(a);
+          delete _a.q;
+          return _a;
+        })
 
-      answers_for_payload = answers_for_payload.filter(function(a){
-        return (undefined!==a.a);
-      });
+        answers_for_payload = answers_for_payload.filter(function(a){
+          return (undefined!==a.a);
+        });
 
-      var payload = {
-        subjectId: this.task.subjectId,
-        dataId: this.task.dataId, 
-        taskId: this.task._id, 
-        lastTs: this.task.ts, 
-        url: this.task.url,   /* required so we can check taskDef specific business rules */
-        answers: answers_for_payload
-      }
-      console.log(payload);
-      this.$.ajax_save_data.send(payload);
+        var payload = {
+          subjectId: self.task.subjectId,
+          dataId: self.task.dataId, 
+          taskId: self.task._id, 
+          lastTs: self.task.ts, 
+          url: self.task.url,   /* required so we can check taskDef specific business rules */
+          answers: answers_for_payload
+        }
+        //console.log(payload);
+        self.$.ajax_save_data.send(payload);
+      },1000);
     },
 
     saveDataResponse: function(e,data){
@@ -935,12 +941,12 @@ Example:
       var self = this;
       e.detail.value.hide.forEach(function(qnum){
         self.questions[qnum.toString()].hidden=true;
+        self.questions[qnum.toString()].setToPristine();
       });
       e.detail.value.reveal.forEach(function(qnum){
         self.questions[qnum.toString()].hidden=false;
       });
     },
-
 
     qstateChanged: function(e){
       //doesn't matter which question changed, just so we know to update the summary

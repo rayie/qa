@@ -128,8 +128,14 @@
         value:{ "reveal":[], "hide": [] }
       }
 
-    }
+    },
 
+    setToPristine: function(){
+      if ( this.get("qstate") !== 0 ){
+        this.set("answer","");
+        this.set("qstate",0);
+      }
+    }
 
   };
 

@@ -296,9 +296,8 @@ Example:
     cancelTaskError: function(){
     },
 
-
-
     gotTaskTimingChange: function(e,timingChange){
+      console.log("got task timign change", e, timingChange);
       this.$.ajax_update_task.send(timingChange, e.target);
     },
 

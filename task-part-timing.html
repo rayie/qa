@@ -22,7 +22,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../moment-display/moment-display.html">
 <link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../paper-date-picker/paper-date-picker.html">
-<link rel="import" href="team-dropdown">
+<link rel="import" href="dialog-assign.html">
 
 <!--
 An element providing a solution to no problem in particular.
@@ -53,6 +53,7 @@ Example:
     }
 
     .assignment {
+      cursor: pointer;
       color: #00796B;
       font-size: .86em;
       font-weight: 400;
@@ -89,9 +90,8 @@ Example:
   <template>
 
     <div class="main"
-      on-click="openDatePicker"
-      >
-      <div class="displaytxt">
+    >
+      <div class="displaytxt" on-click="openDatePicker">
         <span
          title="Task has no schedule date."
          hidden="[[!isAsap]]"
@@ -137,16 +137,16 @@ Example:
         <!--<span>Test: [[selectedStartDate]]</span>-->
         <iron-icon icon="perm-contact-calendar"></iron-icon>
       </div>
-      <div class='assignment'>
+      <div class='assignment' on-click="openAssignDialog">
         [[taskAssignedTo]]
-        <team-dropdown
-          hidden
-          selected-user="[[taskAssignedTo]]"
-        >
-        </team-dropdown>
       </div>
     </div>
 
+    <dialog-assign
+      id="dialogAssign"
+      selected-user="[[taskAssignedTo]]"
+      on-task-re-assign="gotTaskReAssign"
+    ></dialog-assign>
 
     <!--- DATEPICKER MODAL CONTENT -->
     <paper-dialog 
@@ -177,7 +177,6 @@ Example:
   Polymer({
 
     is: 'task-part-timing',
-
     properties: {
       taskId: {
         type: String
@@ -207,6 +206,14 @@ Example:
 
     },
 
+    openAssignDialog: function(){
+      this.$.dialogAssign.show();
+    },
+
+    gotTaskReAssign: function(e){
+      console.log("gotTaskReAssign");
+    },
+
     attached: function(){
 
       //console.log(this.plannedFor.kind, this.selectedStartDate, this.plannedFor.start);
@@ -224,6 +231,7 @@ Example:
     },
 
     gotDismissDialog:function(closeEvent){
+      console.log("gotDismissalDialog",closeEvent);
 
       if ( closeEvent.detail.confirmed !== true ){
         

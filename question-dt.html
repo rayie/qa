@@ -146,6 +146,15 @@ Example:
 
     },
 
+    setToPristine: function(){
+      if ( this.get("qstate") !== 0 ){
+        this.set("answer","");
+        this.set("lastAnswer","");
+        this.set("lastQstate",0);
+        this.set("qstate",0);
+      }
+    },
+
     populateNext: function(answer){
       console.info("answer populating:", answer, (answer) );
       if ( answer ){
