@@ -113,7 +113,8 @@ Example:
           class="future"
           hidden="[[!isPlannedFuture]]"
           label="PLANNED"
-          dt="[[plannedFor.start]]"
+          inbound-fmt="YYYY-MM-DDThh:mm:ss"
+          str="[[plannedFor.start]]"
         >
         </moment-display>
 
@@ -122,17 +123,27 @@ Example:
           class="current"
           hidden="[[!isPlannedCurrent]]"
           label="PLANNED"
-          dt="[[plannedFor.start]]"
+          inbound-fmt="YYYY-MM-DDThh:mm:ss"
+          str="[[plannedFor.start]]"
         >
         </moment-display>
 
         <span
           hidden="[[!mustSchedule]]" 
           title="Task is unscheduled but scheduling is required. Click to schedule"
-         class="unscheduled"
+          class="unscheduled"
         >
           UNSCHEDULED
         </span>
+        <moment-display
+          id="mdtarget"
+          class="unscheduled"
+          hidden="[[!mustScheduleWithTarget]]"
+          label="UNSCHEDULED"
+          inbound-fmt="YYYY-MM-DDThh:mm:ss"
+          str="[[plannedFor.target.start]]"
+        ></moment-display>
+
 
         <!--<span>Test: [[selectedStartDate]]</span>-->
         <iron-icon icon="perm-contact-calendar"></iron-icon>
@@ -144,8 +155,7 @@ Example:
 
     <dialog-assign
       id="dialogAssign"
-      selected-user="[[taskAssignedTo]]"
-      on-task-re-assign="gotTaskReAssign"
+      on-reassigned="gotTaskReAssigned"
     ></dialog-assign>
 
     <!--- DATEPICKER MODAL CONTENT -->
@@ -200,6 +210,7 @@ Example:
       okToStart: { type: Boolean, value: false , notify: true },
       isAsap: { type: Boolean, value: false },
       mustSchedule: { type: Boolean, value: false },
+      mustScheduleWithTarget: { type: Boolean, value: false },
       plannedPast: { type: Boolean, value: false },
       plannedCurrent: { type: Boolean, value: false },
       plannedFuture: { type: Boolean, value: false }
@@ -207,11 +218,8 @@ Example:
     },
 
     openAssignDialog: function(){
-      this.$.dialogAssign.show();
-    },
-
-    gotTaskReAssign: function(e){
-      console.log("gotTaskReAssign");
+      if ( this.taskState=="init" ) 
+        this.$.dialogAssign.show();
     },
 
     attached: function(){
@@ -246,27 +254,32 @@ Example:
     },
 
     revert: function(){
-      /*9
-      if ( this._lastSaved ){
-        this.selectedStartDate = new Date( this._lastSaved );
-      }
-      else{
-        this.selectedStartDate = new Date( );
-      }
-      */
-
-      //console.log("reverting");
       this.set( "plannedFor", _.clone(this._lastSaved));
-      //console.log("plannedFor.kind set back to:", this.plannedFor);
       this._evaluate();
       return;
+    },
 
+    gotTaskReAssigned: function(e,d){
+      console.log("gotTaskReAssign",d);
+      if ( this.taskAssignedTo!==d.reAssignTo ){
+        this.fire('reassign',{
+          taskId: this.taskId,
+          lastTs: this.taskTs,
+          assignTo: d.reAssignTo,
+          lastAssignedTo: this.get("taskAssignedTo")
+        });
+        this.set("tmpReAssignTo", d.reAssignTo);
+      }
+    },
+
+    confirmReAssign: function(newTs){
+      this.set("taskTs", newTs);
+      this.set("taskAssignedTo", this.get("tmpReAssignTo") );
     },
 
     confirm: function(newTs){
       this._lastSaved = _.clone( this.plannedFor );
       this.set("taskTs", newTs);
-      //console.log("taskTs set to ", newTs);
     },
 
     _affectTheChange: function(){
@@ -285,11 +298,12 @@ Example:
       this.set("plannedFor", this.plannedFor);
 
       //console.log("plannedFor:", this.plannedFor);
-      this._evaluate();
+      this._evaluate(true);
     },
 
-    _evaluate: function(){
+    _evaluate: function(skipSelectDateUpdate){
       this.mustSchedule=false; 
+      this.mustScheduleWithTarget=false; 
       this.isPlannedPast = false;
       this.isPlannedCurrent = false;
       this.isPlannedFuture = false;
@@ -317,10 +331,28 @@ Example:
               this.isPlannedCurrent = true;
               okToStart=true;
             }
+            if ( skipSelectDateUpdate !== true ){
+              var st_m = new moment(this.plannedFor.start.substr(0,19));
+              st_m.add(st_m.utcOffset(),"m");
+              this.set("selectedStartDate", st_m.toDate() );
+            }
           }
           else{
             //no start date 
-            this.mustSchedule=true; 
+            console.log('no start date', this.plannedFor);
+            if ( 
+              _.get(this.plannedFor,'target.start',false)
+            ){
+              this.mustScheduleWithTarget=true; 
+              this.mustSchedule=false; 
+              if ( skipSelectDateUpdate !== true ){
+                var st_m = new moment(this.plannedFor.target.start.substr(0,19));
+                st_m.add(st_m.utcOffset(),"m");
+                this.set("selectedStartDate", st_m.toDate() );
+              }
+            }
+            else this.mustSchedule=true; 
+
             okToStart=false;
           }
           break;

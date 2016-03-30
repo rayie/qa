@@ -66,7 +66,7 @@ var parse = function(data){
 
         cols[CONST.OPTS] = _.trimEnd( cols[CONST.OPTS].replace(/,{2,}/g,","),"," );
         entry.opts = cols[CONST.OPTS].split(/\,/g).map(function(str){
-          return { txt: _.upperFirst(str) }; 
+          return { txt: _.upperFirst(str.trim()) }; 
         });
 
         if ( cols[CONST.MAX_OPTS] ){

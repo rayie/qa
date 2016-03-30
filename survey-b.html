@@ -820,8 +820,13 @@ Example:
             console.log(t.start);
             if(typeof t.plannedFor.start=="string") 
               t.timingText=moment.utc(t.plannedFor.start.replace(/\.[0-9]{3}Z/,"")).local().format("ddd, MMM DD, YYYY hh:mma");
-            else
+            else{
               t.timingText="UNSCHEDULED";
+              if ( _.get(t,'plannedFor.target.start',false ) ){
+                
+                t.timingText +=  "- Target: " + moment.utc(t.plannedFor.target.start.replace(/\.[0-9]{3}Z/,"")).local().format("ddd, MMM DD, YYYY hh:mma");
+              }
+            }
             break;
         }
       }

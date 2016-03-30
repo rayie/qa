@@ -83,8 +83,8 @@ An element providing a solution to no problem in particular.
       on-iron-overlay-canceled="dialogCanceled"
     >
       <h2>Re-Assign Task</h2>
-      <div>
-
+      <div> 
+        <!--
         <div>
           <paper-dropdown-menu 
             label="Reason for Re-Assignment"
@@ -100,18 +100,21 @@ An element providing a solution to no problem in particular.
             </paper-listbox>
           </paper-dropdown-menu>
         </div>
+        -->
+
         <div>
           <team-dropdown selected-user="{{selectedUser}}" ></team-dropdown>
         <div>
 
+        <!--
         <div>
           <paper-input
             id="reasonNote"
             label="Enter optional note here"
-            value='{{reasonNote}}'
-          >
-          </paper-input>
+            value="{{reasonNote}}"
+          ></paper-input>
         </div>
+        -->
 
       </div>
       <div class="buttons">
@@ -135,14 +138,10 @@ An element providing a solution to no problem in particular.
     is: 'dialog-assign',
 
     properties: {
-      reasonNote: {
-        type: String, 
-        value: function(){ return ""; }
-      },
-      reasonCode: {
-        type: String, 
-        value: function(){ return ""; }
-      },
+      /*
+      reasonNote: { type: String, value: function(){ return ""; } },
+      reasonCode: { type: String, value: function(){ return ""; } },
+      */
       selectedUser: {
         type: String, 
         value: function(){ return ""; }
@@ -164,17 +163,19 @@ An element providing a solution to no problem in particular.
       }
 
       var pkg = {
-        reason: _.clone({ code: this.reasonCode, note: this.reasonNote }),
+        //reason: _.clone({ code: this.reasonCode, note: this.reasonNote }),
         reAssignTo: this.selectedUser.toString()
       }
       console.log(pkg);
-      this.fire("taskReAssign",pkg);
+      this.fire("reassigned",pkg);
     },
 
     dialogCanceled: function(dialogCloseEvent){
       console.log("user cancelled");
+      /*
       this.set("reasonCode","");
       this.set("reasonNote","");
+      */
       this.set("selectedUser","");
       return;
     }

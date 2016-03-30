@@ -143,6 +143,7 @@ Example:
                 task-state="[[t.state]]"
                 ok-to-start="{{t.okToStart}}"
                 on-change="gotTaskTimingChange"
+                on-reassign="gotTaskReassigned"
               >
               </task-part-timing>  
             </div>
@@ -172,6 +173,13 @@ Example:
         on-error="cancelTaskError"
         loading="{{is_loading}}"
         endpoint="api/task:cancel"
+      ></qa-ajax-poster>
+      <qa-ajax-poster
+        id="ajax_reassign_task"       
+        on-response="reassignTaskResponse"
+        on-error="reassignTaskError"
+        loading="{{is_loading}}"
+        endpoint="api/task:reassign"
       ></qa-ajax-poster>
 
     </paper-card>
@@ -294,6 +302,21 @@ Example:
     },
 
     cancelTaskError: function(){
+    },
+
+    gotTaskReassigned: function(e,payload){
+      this.$.ajax_reassign_task.send(payload, e.target);
+    },
+
+    reassignTaskResponse: function(e,data){
+      data.passBack.confirmReAssign(data.newTs);
+      app.$.toast.text = "Task REASSIGNED"; 
+      if ( data.msg ) app.$.toast.text += data.msg;
+      app.$.toast.show();
+    },
+
+    reassignTaskError: function(e){
+
     },
 
     gotTaskTimingChange: function(e,timingChange){
