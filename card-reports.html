@@ -94,15 +94,86 @@ Example:
         <paper-tabs on-iron-select="tabSelected" id="tabSelector" selected="{{selectedTab}}" elevation='4'>
           <paper-tab>Open Task Summary</paper-tab>
           <paper-tab>Program Counts</paper-tab>
-          <paper-tab>Open Task Summary</paper-tab>
         </paper-tabs>
         <span class="title"><!--stub--></span>
       </paper-toolbar>
 
       <iron-pages selected="{{selectedTab}}">
 
-        <section data-tab='myTasks' >
-          
+        <section data-tab='openTaskCounts' >
+          <paper-material elevation='4' class='primary' heading="All Open Tasks">
+            <div class='layout horizontal'>
+              <div class='flex-3 main-data' role='listbox'>
+                <h3>All Open Tasks</h3>
+                <template is="dom-repeat" items="[[opentasks]]" >
+                  <paper-item class='record-container'>
+                    <paper-item-body class='wrap'>
+                      <div>[[item.nm]] - <strong>[[item.n]]</strong></div>
+                    </paper-item-body>
+                  </paper-item>
+                </template>
+                <paper-item class='record-container'>
+                  <paper-item-body class='wrap'>
+                  <div>Total - <strong>[[opentasksTotal]]<strong></div>
+                  </paper-item-body>
+                </paper-item>
+              </div>
+              <div class='main-data' role='listbox'>
+                <h3>My Open Tasks</h3>
+                <template is="dom-repeat" items="[[myOpentasks]]" >
+                  <paper-item class='record-container'>
+                    <paper-item-body class='wrap'>
+                    <div>[[item.nm]] - <strong>[[item.n]]</strong></div>
+                    </paper-item-body>
+                  </paper-item>
+                </template>
+                <paper-item class='record-container'>
+                  <paper-item-body class='wrap'>
+                  <div>Total - <strong>[[myOpentasksTotal]]<strong></div>
+                  </paper-item-body>
+                </paper-item>
+              </div>
+            </div>
+          </paper-material>
+
+          <paper-material elevation='4' class='primary' heading="All Open Tasks">
+            <div class='layout horizontal'>
+              <div class='flex-3'>
+                <div class='main-data' role='listbox'>
+                  <h3>All Open Tasks Schedule</h3>
+                  <template is="dom-repeat" items="[[opentasksbytiming]]" >
+                    <paper-item class='record-container'>
+                      <paper-item-body class='wrap'>
+                      <div>[[item.nm]] - <strong>[[item.n]]</strong></div>
+                      </paper-item-body>
+                    </paper-item>
+                  </template>
+                  <paper-item class='record-container'>
+                    <paper-item-body class='wrap'>
+                    <div>Total - <strong>[[opentasksbytimingTotal]]<strong></div>
+                    </paper-item-body>
+                  </paper-item>
+                </div>
+              </div>
+              <div class='flex-9'>
+                <div class='main-data' role='listbox'>
+                  <h3>My Open Tasks Schedule</h3>
+                  <template is="dom-repeat" items="[[myOpentasksbytiming]]" >
+                    <paper-item class='record-container'>
+                      <paper-item-body class='wrap'>
+                      <div>[[item.nm]] - <strong>[[item.n]]</strong></div>
+                      </paper-item-body>
+                    </paper-item>
+                  </template>
+                  <paper-item class='record-container'>
+                    <paper-item-body class='wrap'>
+                    <div>Total - <strong>[[myOpentasksbytimingTotal]]<strong></div>
+                    </paper-item-body>
+                  </paper-item>
+                </div>
+              </div>
+            </div>
+          </paper-material>
         </section>
 
         <section data-tab='programCounts' >
@@ -120,27 +191,6 @@ Example:
               <paper-item class='record-container'>
                 <paper-item-body class='wrap'>
                 <div>Total - <strong>[[programsTotal]]<strong></div>
-                </paper-item-body>
-              </paper-item>
-            </div>
-          </paper-card>
-        </section>
-
-        <section data-tab='openTaskCounts' >
-          <paper-card elevation='4' class='primary'
-            heading="Open Task Counts"
-          >
-            <div class='main-data' role='listbox'>
-              <template id="otCnt" is="dom-repeat" items="[[opentasks]]" >
-                <paper-item class='record-container'>
-                  <paper-item-body class='wrap'>
-                  <div>[[item.nm]] - <strong>[[item.n]]</strong></div>
-                  </paper-item-body>
-                </paper-item>
-              </template>
-              <paper-item class='record-container'>
-                <paper-item-body class='wrap'>
-                <div>Total - <strong>[[opentasksTotal]]<strong></div>
                 </paper-item-body>
               </paper-item>
             </div>
@@ -189,25 +239,34 @@ Example:
 
 		tabSelected: function(e){
 			var idx = this.$.tabSelector.indexOf( e.detail.item );
-			if ( idx > 0 ){
-				console.log("tabSelected",idx);
-				switch(idx){
-					case 1:
-            this.$.ajax.setEndpoint("api/report:programs:count");
-            this.$.ajax.send();
-						break;
-					case 2:
-            this.$.ajax.setEndpoint("api/report:opentasks:count");
-            this.$.ajax.send();
-						break;
-					case 3:
-						break;
-				  case 4:
-						break;
-				  case 5:
-						break;
-				}
-			}
+      console.log("tabSelected",idx);
+      switch(idx){
+        case 0:
+          this.$.ajax.setEndpoint("api/report:opentasks:count");
+          this.$.ajax.send();
+
+          this.$.ajax.setEndpoint("api/report:opentasks:count");
+          this.$.ajax.send({ filter:'assignedTo' , assignedTo:'me', bucketname: 'myOpentasks' });
+
+          /* */
+
+          this.$.ajax.setEndpoint("api/report:opentasks:bytiming");
+          this.$.ajax.send();
+          this.$.ajax.setEndpoint("api/report:opentasks:bytiming");
+          this.$.ajax.send({ filter:'assignedTo' , assignedTo:'me', bucketname: 'myOpentasksbytiming'});
+
+          break;
+        case 1:
+          this.$.ajax.setEndpoint("api/report:programs:count");
+          this.$.ajax.send();
+          break;
+        case 3:
+          break;
+        case 4:
+          break;
+        case 5:
+          break;
+      }
 		},
 
     load: function(){
@@ -215,7 +274,7 @@ Example:
     },
 
     loadResponse: function(e,data){
-      this.set(data.bucketname,data[data.bucketname]);
+      this.set(data.bucketname,data.rows);
       this.set(data.bucketname+"Total",data.total);
     },
 

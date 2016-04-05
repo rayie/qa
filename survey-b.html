@@ -303,6 +303,15 @@ Example:
     ></qa-ajax-poster>
 
     <qa-ajax-poster
+      id="ajax_check_rules"       
+      on-response="directSurveyCheckRulesResponse"
+      on-error="directSurveyCheckRulesError"
+      loading="{{loading}}"
+      endpoint="api/task:checkrules"
+    ></qa-ajax-poster>
+
+
+    <qa-ajax-poster
       id="ajax_task_done"       
       on-response="submitResponse"
       on-error="submitError"
@@ -716,9 +725,13 @@ Example:
         this.task && 
         ( qstate_counts[2] || qstate_counts[3] || this.task.dataId) &&
         !this.isPopulating
-      )
+      ){
         return this.saveData();
-      
+      }
+
+      if ( !this.task ){
+        return  this.checkDirectSurveyRules();
+      }
     },
 
     _applyTitle: function(){
@@ -751,6 +764,22 @@ Example:
       app.$.toast.show();
     },
 
+    checkDirectSurveyRules: function(){
+      var payload = {
+        url: "flows/" + this.directSurveyUrl+".json"
+      }
+      this.$.ajax_check_rules.send(payload);
+    },
+
+    directSurveyCheckRulesError: function(){
+
+    },
+
+    directSurveyCheckRulesResponse: function(e,data){
+      console.log(e,data);
+      this.saveDataResponse(e,data);
+    },
+
     saveData: function(){
       if ( this.task.state !== "inprog" || undefined === this.task.dataId )
         return this.taskInprog();
@@ -781,7 +810,8 @@ Example:
     },
 
     saveDataResponse: function(e,data){
-      this.set("task.ts", data.newTs);
+      if ( this.task )
+        this.set("task.ts", data.newTs);
       this._updateStateMsg();
       var ruleResults = _.get(data,"ruleResults",false);
       console.log("ruleResults",ruleResults);
@@ -798,9 +828,6 @@ Example:
       }
       console.log("tasksToAddFromRules ",tasksToAddFromRules );
       console.log("answersToAddFromRules",answersToAddFromRules);
-
-
-
       var ttt = this.taskDefinition.upon.submit.concat( tasksToAddFromRules ).map(this._taskTiming);
       this.set("taskDefinition.tasksToAdd", ttt );
       this.set("taskDefinition.answersToAdd", answersToAddFromRules  );
