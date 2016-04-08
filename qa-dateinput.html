@@ -114,11 +114,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     _onInput: function(){
       this.value = this.$.input.value;
       this.validate();
-      console.log("Value after validate:", this.value, " is invalid: ", this.invalid);
+      //console.log("Value after validate:", this.value, " is invalid: ", this.invalid);
     },
 
     _onBlur: function(){
-      console.log("Got blur in qa-date, value about to be set to trueValue", this.trueValue);
+      //console.log("Got blur in qa-date, value about to be set to trueValue", this.trueValue);
       this.set("value", this.trueValue );
     },
 
@@ -134,7 +134,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     validate: function(){
-       console.log("validating ", this.value);
+      //console.log("validating ", this.value);
       // this regex validates incomplete ssn's (by design)
       if ( !this.value ){
         var msg = "";

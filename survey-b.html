@@ -298,7 +298,7 @@ Example:
       id="ajax_save_data"       
       on-response="saveDataResponse"
       on-error="saveDataError"
-      loading="{{loading}}"
+      loading="{{dataIsSaving}}"
       endpoint="api/data:save"
     ></qa-ajax-poster>
 
@@ -309,7 +309,6 @@ Example:
       loading="{{loading}}"
       endpoint="api/task:checkrules"
     ></qa-ajax-poster>
-
 
     <qa-ajax-poster
       id="ajax_task_done"       
@@ -353,6 +352,10 @@ Example:
     behaviors: [ SectionBehaviors.Basic ],
 
     properties: {
+      dataIsSaving: {
+        type: Boolean,
+        value: function(){ return false; }
+      },
       
       directSurveyUrl: {
         type: String,
@@ -784,6 +787,7 @@ Example:
       if ( this.task.state !== "inprog" || undefined === this.task.dataId )
         return this.taskInprog();
 
+      this.set("hideSubmitArea",true);
       var self = this;
       this.debounce("savedata",function(){
         var answers_for_payload = self.answers.map(function(a){
@@ -802,7 +806,8 @@ Example:
           taskId: self.task._id, 
           lastTs: self.task.ts, 
           url: self.task.url,   /* required so we can check taskDef specific business rules */
-          answers: answers_for_payload
+          answers: answers_for_payload,
+          upon: _.get( self.task, 'upon', {} )
         }
         //console.log(payload);
         self.$.ajax_save_data.send(payload);
@@ -831,6 +836,7 @@ Example:
       var ttt = this.taskDefinition.upon.submit.concat( tasksToAddFromRules ).map(this._taskTiming);
       this.set("taskDefinition.tasksToAdd", ttt );
       this.set("taskDefinition.answersToAdd", answersToAddFromRules  );
+      this.set("hideSubmitArea",false);
     },
 
     _taskTiming : function(t){

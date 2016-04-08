@@ -156,10 +156,10 @@ Example:
     },
 
     populateNext: function(answer){
-      console.info("answer populating:", answer, (answer) );
+      //console.info("answer populating:", answer, (answer) );
       if ( answer ){
         answer = ( new moment(answer) ).format("MM-DD-YYYY");
-        console.info("after moment conversion:", answer);
+        //console.info("after moment conversion:", answer);
         this.set("qstate",2);
       }
       else {
@@ -172,13 +172,13 @@ Example:
 
     gotBlur: function(){
       var ask=false;
-      console.log("answer upon blur",this.answer);
+      //console.log("answer upon blur",this.answer);
       var _lastAnswer = this.lastAnswer.toString();
 
       if (this.answer){
         this.qstate=2;
         this.lastAnswer = this.answer.toString();
-        console.log( this.lastAnswer.toString() , _lastAnswer ,this.lastQstate )
+        //console.log( this.lastAnswer.toString() , _lastAnswer ,this.lastQstate )
         if ( this.lastAnswer.toString() !== _lastAnswer && this.lastQstate===2 )
           this.fire('qstate-changed'); 
         this.set('lastQstate',2);

@@ -100,13 +100,15 @@ Example:
          ASAP
        </span>
 
-        <span
-         hidden="[[!isPlannedPast]]"
-         title="Task is OVERDUE."
-         class="overdue"
+        <moment-display
+          hidden="[[!isPlannedPast]]"
+          id="mdfuture"
+          class="overdue"
+          label="OVERDUE"
+          inbound-fmt="YYYY-MM-DDThh:mm:ss"
+          str="[[plannedFor.start]]"
         >
-          OVERDUE
-        </span>
+        </moment-display>
 
         <moment-display
           id="mdfuture"
@@ -160,10 +162,11 @@ Example:
 
     <!--- DATEPICKER MODAL CONTENT -->
     <paper-dialog 
-      id="dialog" class="paper-date-picker-dialog" modal
+      id="dialog" class="paper-date-picker-dialog" 
+      modal
       on-iron-overlay-closed="gotDismissDialog"
     >
-      <paper-date-picker id="picker" date="{{selectedStartDate}}" >
+      <paper-date-picker id="paperDatePicker"  date="{{selectedStartDate}}">
       </paper-date-picker>
       <div class="buttons">
         <paper-button dialog-dismiss>Cancel</paper-button>
@@ -177,13 +180,6 @@ Example:
 </dom-module>
 
 <script>
-  var QSTATE = [
-    "Pristine",
-    "InProgress",
-    "Complete",
-    "Marked as NA"
-  ];
-
   Polymer({
 
     is: 'task-part-timing',
@@ -218,8 +214,9 @@ Example:
     },
 
     openAssignDialog: function(){
-      if ( this.taskState=="init" ) 
+      if ( this.taskState=="init" ) {
         this.$.dialogAssign.show();
+      }
     },
 
     attached: function(){
@@ -297,7 +294,7 @@ Example:
       this.set("plannedFor.end", e.toDate() );
       this.set("plannedFor", this.plannedFor);
 
-      //console.log("plannedFor:", this.plannedFor);
+      console.log("plannedFor has been set to:", this.plannedFor);
       this._evaluate(true);
     },
 
@@ -334,12 +331,13 @@ Example:
             if ( skipSelectDateUpdate !== true ){
               var st_m = new moment(this.plannedFor.start.substr(0,19));
               st_m.add(st_m.utcOffset(),"m");
+              console.log("selectedStartDate", st_m.toDate() );
               this.set("selectedStartDate", st_m.toDate() );
             }
           }
           else{
             //no start date 
-            console.log('no start date', this.plannedFor);
+            //console.log('no start date', this.plannedFor);
             if ( 
               _.get(this.plannedFor,'target.start',false)
             ){
@@ -348,11 +346,11 @@ Example:
               if ( skipSelectDateUpdate !== true ){
                 var st_m = new moment(this.plannedFor.target.start.substr(0,19));
                 st_m.add(st_m.utcOffset(),"m");
+                console.log("selectedStartDate", st_m.toDate() );
                 this.set("selectedStartDate", st_m.toDate() );
               }
             }
             else this.mustSchedule=true; 
-
             okToStart=false;
           }
           break;

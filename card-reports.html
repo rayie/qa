@@ -238,6 +238,7 @@ Example:
     },
 
 		tabSelected: function(e){
+      if ( app.route!=="home") return;
 			var idx = this.$.tabSelector.indexOf( e.detail.item );
       console.log("tabSelected",idx);
       switch(idx){
@@ -268,10 +269,6 @@ Example:
           break;
       }
 		},
-
-    load: function(){
-      this.$.ajax.send();
-    },
 
     loadResponse: function(e,data){
       this.set(data.bucketname,data.rows);
