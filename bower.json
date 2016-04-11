@@ -40,7 +40,7 @@
     "paper-menu": "PolymerElements/paper-menu#~1.2.2",
     "moment-display": "rayie/moment-display#^0.0.5",
     "bluebird": "bluebird#~3.3.1",
-    "paper-date-picker": "polymer-paper-date-picker#~1.1.2",
+    "paper-date-picker": "matfin/paper-date-picker#master",
     "datejs-parseronly-import": "rayie/Datejs"
   },
   "devDependencies": {
