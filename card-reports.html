@@ -144,7 +144,12 @@ Example:
                   <template is="dom-repeat" items="[[opentasksbytiming]]" >
                     <paper-item class='record-container'>
                       <paper-item-body class='wrap'>
-                      <div>[[item.nm]] - <strong>[[item.n]]</strong></div>
+                        <div>
+                          <a on-click="getListing" class="pointer" data-endpoint="report:opentasks:bytiming" data-listing-filter-name="[[item.nm]]">
+                            [[item.nm]] -
+                            <strong>[[item.n]]</strong>
+                          </a>
+                        </div>
                       </paper-item-body>
                     </paper-item>
                   </template>
@@ -161,7 +166,14 @@ Example:
                   <template is="dom-repeat" items="[[myOpentasksbytiming]]" >
                     <paper-item class='record-container'>
                       <paper-item-body class='wrap'>
-                      <div>[[item.nm]] - <strong>[[item.n]]</strong></div>
+
+                        <div>
+                          <a on-click="getListing" class="pointer" data-endpoint="report:opentasks:bytiming" data-listing-filter-name="[[item.nm]]">
+                            [[item.nm]] -
+                            <strong>[[item.n]]</strong>
+                          </a>
+                        </div>
+
                       </paper-item-body>
                     </paper-item>
                   </template>
@@ -174,6 +186,13 @@ Example:
               </div>
             </div>
           </paper-material>
+
+          <list-tasks
+            heading="[[listingTitle]]"
+            class='card-content' 
+            id="taskListing"
+          ></list-tasks>
+
         </section>
 
         <section data-tab='programCounts' >
@@ -208,6 +227,15 @@ Example:
         loading="{{is_loading}}"
       ></qa-ajax-poster>
 
+      <qa-ajax-poster
+        id="ajaxListing"       
+        no-toast
+        handle-as="json",
+        on-response="loadListingResponse"
+        on-error="loadListingError"
+        loading="{{is_loading}}"
+      ></qa-ajax-poster>
+
     </div>
   </template>
 
@@ -235,6 +263,18 @@ Example:
         type: Number,
         value: 0 
       }
+    },
+
+    getListing: function(a,b){
+      console.log(a);
+      this.$.ajaxListing.setEndpoint("api/" + a.target.dataset.endpoint);
+      var payload = {
+        listingFilterName: a.target.dataListingFilterName,
+        bucketname: "Tasks under " + a.target.dataListingFilterName
+      }
+
+      this.set("listingTitle", "Loading tasks ... ");
+      this.$.ajaxListing.send(payload);
     },
 
 		tabSelected: function(e){
@@ -276,6 +316,15 @@ Example:
     },
 
     loadError: function(e){
+      console.log(e);
+    },
+
+    loadListingResponse: function(e,data){
+      this.$.taskListing.applyTasks(data.tasks);
+      this.set("listingTitle", "Tasks");
+    },
+
+    loadListingError: function(e){
       console.log(e);
     },
 
