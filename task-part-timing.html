@@ -102,7 +102,7 @@ Example:
 
         <moment-display
           hidden="[[!isPlannedPast]]"
-          id="mdfuture"
+          id="mdpast"
           class="overdue"
           label="OVERDUE"
           inbound-fmt="YYYY-MM-DDThh:mm:ss"
@@ -152,6 +152,8 @@ Example:
       </div>
       <div class='assignment' on-click="openAssignDialog">
         [[taskAssignedTo]]
+        <br/>
+        [[plannedFor.start]]
       </div>
     </div>
 
@@ -290,8 +292,8 @@ Example:
       console.log( "end",e.format("dddd, MMMM Do YYYY, h:mm:ss a") );
       */
       this.set("plannedFor.kind", "schedule");
-      this.set("plannedFor.start", s.toDate() );
-      this.set("plannedFor.end", e.toDate() );
+      this.set("plannedFor.start", s.format('YYYY-MM-DDThh:mm:ss') );
+      this.set("plannedFor.end", e.format('YYYY-MM-DDThh:mm:ss') );
       this.set("plannedFor", this.plannedFor);
 
       console.log("plannedFor has been set to:", this.plannedFor);

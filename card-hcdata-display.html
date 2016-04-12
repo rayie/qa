@@ -293,6 +293,10 @@ Example:
       }
     },
 
+    reset: function(){
+      this.set("records",[]);
+    },
+
     load: function(){
       //console.info(this.subjectId + "hcload");
       if (!this.subjectId) return;

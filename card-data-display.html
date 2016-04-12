@@ -249,13 +249,16 @@ Example:
       }
     },
 
+    reset: function(){
+      this.set("records",[]);
+    },
+
     load: function(){
       if (!this.subjectId) return;
       var payload = {
         flows: this.flows,
         subjectId: this.subjectId,
         primaryField: this.primaryField,
-
       }
       this.$.ajax_load.send(payload);
     },

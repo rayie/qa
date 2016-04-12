@@ -201,6 +201,10 @@ Example:
       this.$.ajax_load.send(payload);
     },
 
+    reset: function(){
+      this.set("records",[]);
+    },
+
     loadResponse: function(e,data){
       //console.log(data.records);
       this.set("records",data.records);

@@ -201,7 +201,9 @@ Example:
           <template is="dom-repeat" items="[[taskDefinition.tasksToAdd]]" as="tta">
             <div class="layout justified end horizontal">
               <div class="flex-5 next-task-name">
-                [[tta.name]] - [[tta.timingText]]
+                [[tta.name]] 
+                <br/>
+                <strong><small>[[tta.timingText]]</small></strong>
               </div>
               <div class="flex-5" >
                 <team-dropdown

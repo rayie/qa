@@ -317,6 +317,18 @@ Example:
     loadPerson: function(){
       if ( !this.subjectId ) return; 
       this.set("person",null);
+
+      this.$.demographicCard.reset();
+      this.$.interactionsCard.reset();
+      this.$.hdmsCard.reset();
+      this.$.hcCard.reset();
+
+      this.$.openTasks.resetTasks();
+      this.$.inprogTasks.resetTasks();
+      this.$.completedAssessments.resetTasks();
+      this.$.completedTasks.resetTasks();
+
+
       this.$.ajax_load_person.send({subjectId: this.subjectId});
     },
 
