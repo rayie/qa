@@ -109,32 +109,59 @@ Example:
             <template is="dom-repeat" items="[[mergedrecord]]" as="rec">
 
               <div class="horizontal layout justified record-container">
-                <template is="dom-repeat" items="[[rec.rows]]" as="row" >
 
-                  <div class$="[[row.klass]] test-klass" >
-                    <div>
-                      <label class='answer-lbl'>[[row.q]]</label>
-                      <template is='dom-repeat' items="[[row.a]]" as="ans" index-as="ans_idx">
-                        <div class="main-data"> 
-                          <template is="dom-if" if="[[!row.is_date]]">
-                            <span>[[ans]]</span>
-                          </template>
-                          <template is="dom-if" if="[[row.is_date]]">
-                          <moment-display 
-                          inbound-fmt="YYYY-MM-DDThh:mm:ss"
-                          display-fmt="withday" str="[[ans]]" time="[[row.is_datetime]]"></moment-display>
-                          </template>
-                        </div>
-                      </template>
-                      <div class='note' hidden="[[!row.n]]">Note: [[row.n]]</div>
-                    </div>
-
-
+                <div >
+                  <label class='answer-lbl'>SC Program Name</label>
+                  <div class="main-data"> 
+                    <span>[[rec.a.sc-program-name]]</span>
                   </div>
-                </template>
+                </div>
+
+                <div >
+                  <label class='answer-lbl'>SC Program Start Date</label>
+                  <div class="main-data"> 
+                    <moment-display 
+                      inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                      display-fmt="withday" str="[[rec.a.sc-program-start-date]]" >
+                    </moment-display>
+                  </div>
+                </div>
+
+                <div >
+                  <label class='answer-lbl'>SC Program End Date</label>
+                  <div class="main-data"> 
+                    <moment-display 
+                    inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                    display-fmt="withday" str="[[rec.a.sc-program-end-date]]" >
+                    </moment-display>
+                  </div>
+                </div>
+
+                <div >
+                  <label class='answer-lbl'>Program Diagnosis</label>
+                  <div class="main-data"> 
+                    <span>[[rec.a.sc-program-diagnosis-group]]</span>
+                  </div>
+                </div>
+                <div >
+                  <label class='answer-lbl'>Program Equipment</label>
+                  <div class="main-data"> 
+                    <span>[[rec.a.sc-program-equipment-group]]</span>
+                  </div>
+                </div>
+
               </div>
+
+                
               <div class="horizontal layout justified record-footer-addon">
                 <div class='flex-child last-update-msg'>
+                  <div class='note' hidden="[[!rec.a.sc-review-program-notes]]">
+                    Review Note: [[rec.a.sc-review-program-notes]]
+                  </div>
+                  <div class='note' hidden="[[!rec.n.sc-program-name]]">
+                    Notes: [[rec.n.sc-program-name]]
+                  </div>
+
                   <moment-display 
                   inbound-fmt="YYYY-MM-DDThh:mm:ss"
                   label="Updated" str="[[rec.m.update.ts]]" display-fmt="withday" time></moment-display>
@@ -143,8 +170,8 @@ Example:
                     <a data-rec="[[rec]]" on-click="showEndProgram">End this Program</a>
                   </template>
                 </div>
-
               </div>
+
             </template>
           </div>
         </template>
@@ -174,7 +201,7 @@ Example:
       flows: {
         type: Array,
         value: function(){
-          return ["flows/sc.program-wizard.json","flows/sc.program.json"]
+          return ["flows/sc.program.json","flows/sc.review-program.json","flows/sc.program-wizard.json"]
         }
       },
       subjectId: {
@@ -219,7 +246,7 @@ Example:
 
     loadResponse: function(e,data){
       //console.log(data.records);
-      this.set("records", data.records.map(function(r){
+      var records = data.records.map(function(r){
         if ( r.length ){
           if ( false===_.get(r[0],"a.sc-program-end-date",false) ){
             r[0].allowEndProgram=true;
@@ -228,7 +255,11 @@ Example:
           }
         }
         return r;
-      }));
+      });
+
+
+
+      this.set("records", records);
     },
 
     loadError: function(e){

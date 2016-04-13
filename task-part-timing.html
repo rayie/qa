@@ -152,8 +152,7 @@ Example:
       </div>
       <div class='assignment' on-click="openAssignDialog">
         [[taskAssignedTo]]
-        <br/>
-        [[plannedFor.start]]
+        <!--[[plannedFor.start]]-->
       </div>
     </div>
 
@@ -238,7 +237,7 @@ Example:
     },
 
     gotDismissDialog:function(closeEvent){
-      console.log("gotDismissalDialog",closeEvent);
+      //console.log("gotDismissalDialog",closeEvent);
 
       if ( closeEvent.detail.confirmed !== true ){
         
@@ -259,7 +258,7 @@ Example:
     },
 
     gotTaskReAssigned: function(e,d){
-      console.log("gotTaskReAssign",d);
+      //console.log("gotTaskReAssign",d);
       if ( this.taskAssignedTo!==d.reAssignTo ){
         this.fire('reassign',{
           taskId: this.taskId,
@@ -296,7 +295,7 @@ Example:
       this.set("plannedFor.end", e.format('YYYY-MM-DDThh:mm:ss') );
       this.set("plannedFor", this.plannedFor);
 
-      console.log("plannedFor has been set to:", this.plannedFor);
+      //console.log("plannedFor has been set to:", this.plannedFor);
       this._evaluate(true);
     },
 
@@ -333,7 +332,7 @@ Example:
             if ( skipSelectDateUpdate !== true ){
               var st_m = new moment(this.plannedFor.start.substr(0,19));
               st_m.add(st_m.utcOffset(),"m");
-              console.log("selectedStartDate", st_m.toDate() );
+              //console.log("selectedStartDate", st_m.toDate() );
               this.set("selectedStartDate", st_m.toDate() );
             }
           }
@@ -348,7 +347,7 @@ Example:
               if ( skipSelectDateUpdate !== true ){
                 var st_m = new moment(this.plannedFor.target.start.substr(0,19));
                 st_m.add(st_m.utcOffset(),"m");
-                console.log("selectedStartDate", st_m.toDate() );
+                //console.log("selectedStartDate", st_m.toDate() );
                 this.set("selectedStartDate", st_m.toDate() );
               }
             }

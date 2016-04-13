@@ -12,6 +12,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icons/av-icons.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-list/iron-list.html">
 <link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-item/paper-icon-item.html">
@@ -30,11 +31,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 Example:
 
-    <list-tasks></list-tasks>
+    <iron-list-tasks></iron-list-tasks>
 
 @demo
 -->
-<dom-module id="list-tasks">
+<dom-module id="iron-list-tasks">
 
   <style is="custom-style" include="qa-styles">
   <style is="custom-style">
@@ -70,84 +71,86 @@ Example:
   </style>
 
   <template>
-    <paper-card class="primary" elevation="4" heading="[[heading]]">
+    <paper-card class="primary" elevation="4" >
       <div hidden="[[!tasksLoaded]]" >
-        <template id="taskRptr" is="dom-repeat" items="[[tasks]]" as="t">
-          <div class="row horizontal layout">
+        <iron-list items="[[tasks]]" as="t">
+          <template >
+            <div class="row horizontal layout">
 
-            <div class="flex-5">
+              <div class="flex-5">
 
-              <div>
-                <a class='name' href$="patient/[[t.subjectId]]" title="Patient Detail">[[t.subjectDisplayAs]]</a>
-                <a class='name' hidden="[[!t.m.done]]" href$="taskresult/[[t._id]]" title="Task Data"> - [[t.name]]</a>
-                <span class='name' hidden="[[t.m.done]]"> - [[t.name]]</span>
-              </div >
+                <div>
+                  <a class='name' href$="patient/[[t.subjectId]]" title="Patient Detail">[[t.subjectDisplayAs]]</a>
+                  <a class='name' hidden="[[!t.m.done]]" href$="taskresult/[[t._id]]" title="Task Data"> - [[t.name]]</a>
+                  <span class='name' hidden="[[t.m.done]]"> - [[t.name]]</span>
+                </div >
 
-              <div class='age'>
-                <moment-display label="Created" plus-age display-fmt="withday" time str="[[t.m.init.ts]]" 
-                inbound-fmt="YYYY-MM-DDThh:mm:ss"
-                ></moment-display>
+                <div class='age'>
+                  <moment-display label="Created" plus-age display-fmt="withday" time str="[[t.m.init.ts]]" 
+                  inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                  ></moment-display>
 
-                <span>
-                  [[compDur(t.m)]] 
-                </span>
-              </div>
-
-            </div>
-
-
-            <div class="flex-2">
-              <div hidden="[[!t.hasBeenCancelled]]" >
-                <h3>Cancelled</h3>
-              </div>
-
-              <div hidden="[[t.hasBeenCancelled]]" >
-
-                <div item-icon hidden="[[!t.okToCancel]]" >
-                  <qa-btn
-                    send-back="[[index]]"
-                    on-btnclick="cancelTask"
-                  >
-                    <a>
-                      <iron-icon icon="cancel"></iron-icon> 
-                      <small>Cancel this Task</small>
-                    </a>
-                    </qa-btn>
+                  <span>
+                    [[compDur(t.m)]] 
+                  </span>
                 </div>
-                
-                <a 
-                  hidden="[[!t.okToStart]]"
-                  href$="{{baseUrl}}tasks/{{t._id}}"
-                >
-                  <iron-icon icon="create"></iron-icon> 
-                  <small hidden="[[t.m.inprog]]">
-                    Start 
-                  </small>
-                  <small hidden="[[!t.m.inprog]]">
-                    Resume
-                  </small>
-                </a>
 
               </div>
-            </div>
 
-            <div class='flex-3'>
-              <task-part-timing
-                hidden="[[t.hasBeenCancelled]]"
-                task-assigned-to="[[t.assignedTo]]"
-                task-id="[[t._id]]"
-                task-ts="{{t.ts}}"
-                planned-for="{{t.plannedFor}}"
-                task-state="[[t.state]]"
-                ok-to-start="{{t.okToStart}}"
-                on-change="gotTaskTimingChange"
-                on-reassign="gotTaskReassigned"
-              >
-              </task-part-timing>  
-            </div>
 
-          </div>
-        </template>
+              <div class="flex-2">
+                <div hidden="[[!t.hasBeenCancelled]]" >
+                  <h3>Cancelled</h3>
+                </div>
+
+                <div hidden="[[t.hasBeenCancelled]]" >
+
+                  <div item-icon hidden="[[!t.okToCancel]]" >
+                    <qa-btn
+                      send-back="[[index]]"
+                      on-btnclick="cancelTask"
+                    >
+                      <a>
+                        <iron-icon icon="cancel"></iron-icon> 
+                        <small>Cancel this Task</small>
+                      </a>
+                      </qa-btn>
+                  </div>
+                  
+                  <a 
+                    hidden="[[!t.okToStart]]"
+                    href$="{{baseUrl}}tasks/{{t._id}}"
+                  >
+                    <iron-icon icon="create"></iron-icon> 
+                    <small hidden="[[t.m.inprog]]">
+                      Start 
+                    </small>
+                    <small hidden="[[!t.m.inprog]]">
+                      Resume
+                    </small>
+                  </a>
+
+                </div>
+              </div>
+
+              <div class='flex-3'>
+                <task-part-timing
+                  hidden="[[t.hasBeenCancelled]]"
+                  task-assigned-to="[[t.assignedTo]]"
+                  task-id="[[t._id]]"
+                  task-ts="{{t.ts}}"
+                  planned-for="{{t.plannedFor}}"
+                  task-state="[[t.state]]"
+                  ok-to-start="{{t.okToStart}}"
+                  on-change="gotTaskTimingChange"
+                  on-reassign="gotTaskReassigned"
+                >
+                </task-part-timing>  
+              </div>
+
+            </div>
+          </template>
+        </iron-list>
       </div>
 
       <qa-ajax-poster
@@ -190,7 +193,7 @@ Example:
 
   Polymer({
 
-    is: 'list-tasks',
+    is: 'iron-list-tasks',
 
     behaviors: [ TaskBehaviors.Basic ],
     
@@ -247,7 +250,7 @@ Example:
     resetTasks: function(){
       this.set("tasks",[]);
       this.set("tasksLoaded",false);
-      this.$.taskRptr.render();
+      //this.$.taskRptr.render();
     },
 
     loadTasks: function(){
@@ -276,7 +279,7 @@ Example:
 
     applyTasks: function(tasks){
       this.resetTasks();
-      this.$.taskRptr.render();
+      //this.$.taskRptr.render();
       this.set("tasks",tasks);
       this.set("tasksLoaded",true);
     },
@@ -296,7 +299,7 @@ Example:
       console.log("passBack",data.passBack);
       console.log("tasks." + data.passBack+".hasBeenCancelled",true);
       this.set("tasks." + data.passBack+".hasBeenCancelled",true);
-      this.$.taskRptr.render();
+      //this.$.taskRptr.render();
     },
 
     cancelTaskError: function(){

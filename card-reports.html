@@ -24,6 +24,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="section-behaviors.html">
 <link rel="import" href="menu-tasks.html">
 <link rel="import" href="list-tasks.html">
+<link rel="import" href="iron-list-tasks.html">
 <link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="qa-dateinput.html">
 <link rel="import" href="styles/qa-styles.html">
@@ -48,6 +49,21 @@ Example:
     }
    
     /* form hdr part */
+    #left {
+      float: left;
+      width: 38%;
+      height: 800px;
+      overflow: scroll;
+    }
+
+    #right {
+      float: left;
+      width: 60%;
+      height: 800px;
+      overflow: scroll;
+      margin-left: 16px;
+    }
+
     .hdr {
       @apply(--layout-horizontal);
       @apply(--layout-justified);
@@ -84,157 +100,167 @@ Example:
     paper-button {
       @apply(--paper-font-button);
     }
+    .link { cursor: pointer; }
 
   </style>
 
   <template>
     <div class="container">
+      <div id="left">
+        <paper-toolbar>
+          <paper-tabs on-iron-select="tabSelected" id="tabSelector" selected="{{selectedTab}}" elevation='4'>
+            <paper-tab>All Open Task</paper-tab>
+            <paper-tab>My Open Tasks</paper-tab>
+            <paper-tab>Program Counts</paper-tab>
+          </paper-tabs>
+        </paper-toolbar>
 
-      <paper-toolbar>
-        <paper-tabs on-iron-select="tabSelected" id="tabSelector" selected="{{selectedTab}}" elevation='4'>
-          <paper-tab>Open Task Summary</paper-tab>
-          <paper-tab>Program Counts</paper-tab>
-        </paper-tabs>
-        <span class="title"><!--stub--></span>
-      </paper-toolbar>
+        <iron-pages selected="{{selectedTab}}">
 
-      <iron-pages selected="{{selectedTab}}">
-
-        <section data-tab='openTaskCounts' >
-          <paper-material elevation='4' class='primary' heading="All Open Tasks">
-            <div class='layout horizontal'>
-              <div class='flex-3 main-data' role='listbox'>
-                <h3>All Open Tasks</h3>
-                <template is="dom-repeat" items="[[opentasks]]" >
-                  <paper-item class='record-container'>
-                    <paper-item-body class='wrap'>
-                      <div>[[item.nm]] - <strong>[[item.n]]</strong></div>
-                    </paper-item-body>
+          <section data-tab='openTaskCounts' >
+            <paper-material elevation='4' class='primary' heading="All Open Tasks">
+              <div class='layout vertical'>
+                <div class='vertical-menu' role=''>
+                  <paper-item class='menusectionLbl'>
+                    <label>By Task Type  - Total: [[allOpenTasksByTypeTotal]]</label>
                   </paper-item>
-                </template>
-                <paper-item class='record-container'>
-                  <paper-item-body class='wrap'>
-                  <div>Total - <strong>[[opentasksTotal]]<strong></div>
-                  </paper-item-body>
-                </paper-item>
-              </div>
-              <div class='main-data' role='listbox'>
-                <h3>My Open Tasks</h3>
-                <template is="dom-repeat" items="[[myOpentasks]]" >
-                  <paper-item class='record-container'>
-                    <paper-item-body class='wrap'>
-                    <div>[[item.nm]] - <strong>[[item.n]]</strong></div>
-                    </paper-item-body>
-                  </paper-item>
-                </template>
-                <paper-item class='record-container'>
-                  <paper-item-body class='wrap'>
-                  <div>Total - <strong>[[myOpentasksTotal]]<strong></div>
-                  </paper-item-body>
-                </paper-item>
-              </div>
-            </div>
-          </paper-material>
 
-          <paper-material elevation='4' class='primary' heading="All Open Tasks">
-            <div class='layout horizontal'>
-              <div class='flex-3'>
-                <div class='main-data' role='listbox'>
-                  <h3>All Open Tasks Schedule</h3>
-                  <template is="dom-repeat" items="[[opentasksbytiming]]" >
-                    <paper-item class='record-container'>
-                      <paper-item-body class='wrap'>
-                        <div>
-                          <a on-click="getListing" class="pointer" data-endpoint="report:opentasks:bytiming" data-listing-filter-name="[[item.nm]]">
-                            [[item.nm]] -
-                            <strong>[[item.n]]</strong>
-                          </a>
-                        </div>
-                      </paper-item-body>
+                  <template is="dom-repeat" items="[[allOpenTasksByType]]" >
+                    <paper-item class='link'>
+                      <div on-click="loadListingByType" class="pointer" >
+                        <span>[[item.nm]]<span> <strong>[[item.n]]</strong>
+                      </div>
                     </paper-item>
                   </template>
-                  <paper-item class='record-container'>
-                    <paper-item-body class='wrap'>
-                    <div>Total - <strong>[[opentasksbytimingTotal]]<strong></div>
-                    </paper-item-body>
+
+                  <paper-item class='divider'>
+                    <div>&nbsp;</div>
+                  </paper-item>
+
+                  <paper-item class='menusectionLbl'>
+                    <label>By Schedule - Total: [[allOpenTasksByTimingTotal]]</label>
+                  </paper-item>
+
+                  <template is="dom-repeat" items="[[allOpenTasksByTiming]]" >
+                    <paper-item class='link'>
+                      <div on-click="loadListingByTiming" class="pointer" >
+                        <span>[[item.nm]]<span> <strong>[[item.n]]</strong>
+                      </div>
+                    </paper-item>
+                  </template>
+
+
+                  <paper-item class='divider'>
+                    <div>&nbsp;</div>
+                  </paper-item>
+                  <paper-item class='menusectionLbl'>
+                    <label>By Assigned User - Total: [[allOpenTasksByUserTotal]]</label>
+                  </paper-item>
+
+                  <template is="dom-repeat" items="[[allOpenTasksByUser]]" >
+                    <paper-item class='link'>
+                      <div on-click="loadListingByUser" class="pointer" >
+                        <span>[[item.nm]]<span> <strong>[[item.n]]</strong>
+                      </div>
+                    </paper-item>
+                  </template>
+
+                </div>
+              </div>
+            </paper-material>
+          </section>
+
+          <section data-tab='myOpenTaskCounts' >
+            <paper-material elevation='4' class='primary' heading="My Open Tasks">
+              <div class='layout vertical'>
+                <div class='vertical-menu' role=''>
+                  <paper-item class='menusectionLbl'>
+                    <label>By Task Type - Total: [[myOpenTasksByTypeTotal]]</label>
+                  </paper-item>
+
+                  <template is="dom-repeat" items="[[myOpenTasksByType]]" >
+                    <paper-item class='link'>
+                      <div on-click="loadMyListingByType" class="pointer" >
+                        <span>[[item.nm]]<span> <strong>[[item.n]]</strong>
+                      </div>
+                    </paper-item>
+                  </template>
+
+                  <paper-item class='divider'>
+                    <div>&nbsp;</div>
+                  </paper-item>
+
+                  <paper-item class='menusectionLbl'>
+                    <label>By Schedule - Total: [[myOpenTasksByTimingTotal]]</label>
+                  </paper-item>
+
+                  <template is="dom-repeat" items="[[myOpenTasksByTiming]]" >
+                    <paper-item class='link'>
+                      <div on-click="loadMyListingByTiming" class="pointer" >
+                        <span>[[item.nm]]<span> <strong>[[item.n]]</strong>
+                      </div>
+                    </paper-item>
+                  </template>
+
+                </div>
+              </div>
+            </paper-material>
+          </section>
+
+          <section data-tab='programCounts' >
+            <paper-material elevation='4' class='primary' heading="Programs">
+              <div class='layout vertical'>
+                <div class='vertical-menu' role=''>
+                  <paper-item class='menusectionLbl'>
+                    <label>Patient Counts by Programs</label>
+                  </paper-item>
+                  <template id="progCnt" is="dom-repeat" items="[[programs]]" >
+                    <paper-item class='link'>
+                      <div >
+                        <span>[[item.nm]]<span> <strong>[[item.n]]</strong>
+                      </div>
+                    </paper-item>
+                  </template>
+                  <paper-item class='link'>
+                    <div>Total - <strong>[[programTotal]]<strong></div>
                   </paper-item>
                 </div>
               </div>
-              <div class='flex-9'>
-                <div class='main-data' role='listbox'>
-                  <h3>My Open Tasks Schedule</h3>
-                  <template is="dom-repeat" items="[[myOpentasksbytiming]]" >
-                    <paper-item class='record-container'>
-                      <paper-item-body class='wrap'>
+            </paper-material>
+          </section>
 
-                        <div>
-                          <a on-click="getListing" class="pointer" data-endpoint="report:opentasks:bytiming" data-listing-filter-name="[[item.nm]]">
-                            [[item.nm]] -
-                            <strong>[[item.n]]</strong>
-                          </a>
-                        </div>
+        </iron-pages>
 
-                      </paper-item-body>
-                    </paper-item>
-                  </template>
-                  <paper-item class='record-container'>
-                    <paper-item-body class='wrap'>
-                    <div>Total - <strong>[[myOpentasksbytimingTotal]]<strong></div>
-                    </paper-item-body>
-                  </paper-item>
-                </div>
-              </div>
-            </div>
-          </paper-material>
+        <qa-ajax-poster
+          id="ajax"       
+          no-toast
+          handle-as="json",
+          on-response="loadResponse"
+          on-error="loadError"
+          loading="{{is_loading}}"
+        ></qa-ajax-poster>
 
-          <list-tasks
-            heading="[[listingTitle]]"
-            class='card-content' 
-            id="taskListing"
-          ></list-tasks>
+        <qa-ajax-poster
+          id="ajaxListing"       
+          no-toast
+          handle-as="json",
+          on-response="loadListingResponse"
+          on-error="loadListingError"
+          loading="{{is_loading}}"
+        ></qa-ajax-poster>
+      </div>
 
-        </section>
-
-        <section data-tab='programCounts' >
-          <paper-card elevation='4' class='primary'
-            heading="Program Counts"
-          >
-            <div class='main-data' role='listbox'>
-              <template id="progCnt" is="dom-repeat" items="[[programs]]" >
-                <paper-item class='record-container'>
-                  <paper-item-body class='wrap'>
-                  <div>[[item.nm]] - <strong>[[item.n]]</strong></div>
-                  </paper-item-body>
-                </paper-item>
-              </template>
-              <paper-item class='record-container'>
-                <paper-item-body class='wrap'>
-                <div>Total - <strong>[[programsTotal]]<strong></div>
-                </paper-item-body>
-              </paper-item>
-            </div>
-          </paper-card>
-        </section>
-
-
-      </iron-pages>
-      <qa-ajax-poster
-        id="ajax"       
-        no-toast
-        handle-as="json",
-        on-response="loadResponse"
-        on-error="loadError"
-        loading="{{is_loading}}"
-      ></qa-ajax-poster>
-
-      <qa-ajax-poster
-        id="ajaxListing"       
-        no-toast
-        handle-as="json",
-        on-response="loadListingResponse"
-        on-error="loadListingError"
-        loading="{{is_loading}}"
-      ></qa-ajax-poster>
+      <div id="right">
+        <paper-toolbar>
+          <paper-tabs >
+            <paper-tab>[[listingTitle]]</paper-tab>
+          </paper-tabs>
+        </paper-toolbar>
+        <list-tasks
+          class='card-content' 
+          id="taskListing"
+        ></list-tasks>
+      </div>
 
     </div>
   </template>
@@ -251,6 +277,10 @@ Example:
     is: 'card-reports',
 
     properties: {
+      route: {
+        type: String,
+        value: null
+      },
       person: {
         type: Object,
         value: null
@@ -264,42 +294,36 @@ Example:
         value: 0 
       }
     },
-
-    getListing: function(a,b){
-      console.log(a);
-      this.$.ajaxListing.setEndpoint("api/" + a.target.dataset.endpoint);
-      var payload = {
-        listingFilterName: a.target.dataListingFilterName,
-        bucketname: "Tasks under " + a.target.dataListingFilterName
-      }
-
-      this.set("listingTitle", "Loading tasks ... ");
-      this.$.ajaxListing.send(payload);
+    attached: function(){
+      console.log('attached',this.route);
     },
 
 		tabSelected: function(e){
-      if ( app.route!=="home") return;
 			var idx = this.$.tabSelector.indexOf( e.detail.item );
-      console.log("tabSelected",idx);
+      console.log("tabSelected",idx,this.route);
       switch(idx){
         case 0:
-          this.$.ajax.setEndpoint("api/report:opentasks:count");
-          this.$.ajax.send();
-
-          this.$.ajax.setEndpoint("api/report:opentasks:count");
-          this.$.ajax.send({ filter:'assignedTo' , assignedTo:'me', bucketname: 'myOpentasks' });
-
-          /* */
+          this.$.ajax.setEndpoint("api/report:opentasks:bytype");
+          this.$.ajax.send({bucketname:"allOpenTasksByType"});
 
           this.$.ajax.setEndpoint("api/report:opentasks:bytiming");
-          this.$.ajax.send();
-          this.$.ajax.setEndpoint("api/report:opentasks:bytiming");
-          this.$.ajax.send({ filter:'assignedTo' , assignedTo:'me', bucketname: 'myOpentasksbytiming'});
+          this.$.ajax.send({bucketname:"allOpenTasksByTiming"});
 
+
+          this.$.ajax.setEndpoint("api/report:opentasks:byuser");
+          this.$.ajax.send({bucketname:"allOpenTasksByUser"});
           break;
         case 1:
+          this.$.ajax.setEndpoint("api/report:opentasks:bytype");
+          this.$.ajax.send({ filter:'assignedTo' , assignedTo:'me', bucketname: 'myOpenTasksByType' });
+
+          this.$.ajax.setEndpoint("api/report:opentasks:bytiming");
+          this.$.ajax.send({ filter:'assignedTo' , assignedTo:'me', bucketname: 'myOpenTasksByTiming'});
+
+          break;
+        case 2:
           this.$.ajax.setEndpoint("api/report:programs:count");
-          this.$.ajax.send();
+          this.$.ajax.send({bucketname:"programs"});
           break;
         case 3:
           break;
@@ -319,9 +343,47 @@ Example:
       console.log(e);
     },
 
+    loadListingByType: function(e,b){
+      this.$.ajaxListing.setEndpoint("api/report:opentasks:bytype" );
+      this.loadListing(e);
+    },
+
+    loadListingByTiming: function(e,b){
+      this.$.ajaxListing.setEndpoint("api/report:opentasks:bytiming" );
+      this.loadListing(e);
+    },
+
+    loadListingByUser: function(e,b){
+      this.$.ajaxListing.setEndpoint("api/report:opentasks:byuser" );
+      this.loadListing(e);
+    },
+
+
+    loadMyListingByType: function(e,b){
+      this.$.ajaxListing.setEndpoint("api/report:opentasks:bytype" );
+      this.loadListing(e, {filter:'assignedTo',assignedTo:'me'});
+    },
+
+    loadMyListingByTiming: function(e,b){
+      this.$.ajaxListing.setEndpoint("api/report:opentasks:bytiming" );
+      this.loadListing(e, {filter:'assignedTo',assignedTo:'me'});
+    },
+
+    loadListing: function(e,extraFilters){
+      var model = e.model;
+      this.$.taskListing.resetTasks();
+      var payload = _.merge({
+        listingFilterName: model.item.nm,
+        bucketname: "Tasks " + model.item.nm
+      },extraFilters);
+
+      this.set("listingTitle", "Loading tasks ... ");
+      this.$.ajaxListing.send(payload);
+    },
+
     loadListingResponse: function(e,data){
       this.$.taskListing.applyTasks(data.tasks);
-      this.set("listingTitle", "Tasks");
+      this.set("listingTitle", data.bucketname);
     },
 
     loadListingError: function(e){
