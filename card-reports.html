@@ -109,13 +109,51 @@ Example:
       <div id="left">
         <paper-toolbar>
           <paper-tabs on-iron-select="tabSelected" id="tabSelector" selected="{{selectedTab}}" elevation='4'>
-            <paper-tab>All Open Task</paper-tab>
             <paper-tab>My Open Tasks</paper-tab>
+            <paper-tab>All Open Task</paper-tab>
             <paper-tab>Program Counts</paper-tab>
           </paper-tabs>
         </paper-toolbar>
 
         <iron-pages selected="{{selectedTab}}">
+
+          <section data-tab='myOpenTaskCounts' >
+            <paper-material elevation='4' class='primary' heading="My Open Tasks">
+              <div class='layout vertical'>
+                <div class='vertical-menu' role=''>
+                  <paper-item class='menusectionLbl'>
+                    <label>By Task Type - Total: [[myOpenTasksByTypeTotal]]</label>
+                  </paper-item>
+
+                  <template is="dom-repeat" items="[[myOpenTasksByType]]" >
+                    <paper-item class='link'>
+                      <div on-click="loadMyListingByType" class="pointer" >
+                        <span>[[item.nm]]<span> <strong>[[item.n]]</strong>
+                      </div>
+                    </paper-item>
+                  </template>
+
+                  <paper-item class='divider'>
+                    <div>&nbsp;</div>
+                  </paper-item>
+
+                  <paper-item class='menusectionLbl'>
+                    <label>By Schedule - Total: [[myOpenTasksByTimingTotal]]</label>
+                  </paper-item>
+
+                  <template is="dom-repeat" items="[[myOpenTasksByTiming]]" >
+                    <paper-item class='link'>
+                      <div on-click="loadMyListingByTiming" class="pointer" >
+                        <span>[[item.nm]]<span> <strong>[[item.n]]</strong>
+                      </div>
+                    </paper-item>
+                  </template>
+
+                </div>
+              </div>
+            </paper-material>
+          </section>
+
 
           <section data-tab='openTaskCounts' >
             <paper-material elevation='4' class='primary' heading="All Open Tasks">
@@ -160,43 +198,6 @@ Example:
                   <template is="dom-repeat" items="[[allOpenTasksByUser]]" >
                     <paper-item class='link'>
                       <div on-click="loadListingByUser" class="pointer" >
-                        <span>[[item.nm]]<span> <strong>[[item.n]]</strong>
-                      </div>
-                    </paper-item>
-                  </template>
-
-                </div>
-              </div>
-            </paper-material>
-          </section>
-
-          <section data-tab='myOpenTaskCounts' >
-            <paper-material elevation='4' class='primary' heading="My Open Tasks">
-              <div class='layout vertical'>
-                <div class='vertical-menu' role=''>
-                  <paper-item class='menusectionLbl'>
-                    <label>By Task Type - Total: [[myOpenTasksByTypeTotal]]</label>
-                  </paper-item>
-
-                  <template is="dom-repeat" items="[[myOpenTasksByType]]" >
-                    <paper-item class='link'>
-                      <div on-click="loadMyListingByType" class="pointer" >
-                        <span>[[item.nm]]<span> <strong>[[item.n]]</strong>
-                      </div>
-                    </paper-item>
-                  </template>
-
-                  <paper-item class='divider'>
-                    <div>&nbsp;</div>
-                  </paper-item>
-
-                  <paper-item class='menusectionLbl'>
-                    <label>By Schedule - Total: [[myOpenTasksByTimingTotal]]</label>
-                  </paper-item>
-
-                  <template is="dom-repeat" items="[[myOpenTasksByTiming]]" >
-                    <paper-item class='link'>
-                      <div on-click="loadMyListingByTiming" class="pointer" >
                         <span>[[item.nm]]<span> <strong>[[item.n]]</strong>
                       </div>
                     </paper-item>
@@ -303,6 +304,15 @@ Example:
       console.log("tabSelected",idx,this.route);
       switch(idx){
         case 0:
+
+          this.$.ajax.setEndpoint("api/report:opentasks:bytype");
+          this.$.ajax.send({ filter:'assignedTo' , assignedTo:'me', bucketname: 'myOpenTasksByType' });
+
+          this.$.ajax.setEndpoint("api/report:opentasks:bytiming");
+          this.$.ajax.send({ filter:'assignedTo' , assignedTo:'me', bucketname: 'myOpenTasksByTiming'});
+
+          break;
+        case 1:
           this.$.ajax.setEndpoint("api/report:opentasks:bytype");
           this.$.ajax.send({bucketname:"allOpenTasksByType"});
 
@@ -313,14 +323,7 @@ Example:
           this.$.ajax.setEndpoint("api/report:opentasks:byuser");
           this.$.ajax.send({bucketname:"allOpenTasksByUser"});
           break;
-        case 1:
-          this.$.ajax.setEndpoint("api/report:opentasks:bytype");
-          this.$.ajax.send({ filter:'assignedTo' , assignedTo:'me', bucketname: 'myOpenTasksByType' });
 
-          this.$.ajax.setEndpoint("api/report:opentasks:bytiming");
-          this.$.ajax.send({ filter:'assignedTo' , assignedTo:'me', bucketname: 'myOpenTasksByTiming'});
-
-          break;
         case 2:
           this.$.ajax.setEndpoint("api/report:programs:count");
           this.$.ajax.send({bucketname:"programs"});

@@ -165,6 +165,14 @@ Example:
 
     <div class="padbottom" hidden="[[!subjectId]]">
 
+      <div class=''>
+        <div style="padding-left: 8px;">
+          <a hidden="[[!task]]" href$="{{baseUrl}}/patient/[[subjectId]]">
+            <h4 style="margin-top:0">Go to Patient Page</h4>
+          </a>
+        </div>
+      </div>
+
       <div id="qlistWrap">
         <!--the container for our question components, dynamically inserted-->
         <div id="qlist">
@@ -251,10 +259,6 @@ Example:
           <div>
             <h2 >Submitted Successfully</h2>
           </div>
-          <div>
-            <a hidden="[[!task]]" href$="{{baseUrl}}/patient/[[subjectId]]">Back to Patient</a>
-            <a hidden="[[task]]" href$="{{baseUrl}}/patients">Back to Patient List</a>
-          </div>
         </div>
 
         <div hidden="[[!hasNextTasks]]">
@@ -263,6 +267,14 @@ Example:
             id="nextTasks"
             subject-id="[[subjectId]]"
           ></list-tasks>
+        </div>
+      </div>
+
+      <div class='layout horizontal justified'>
+        <div style="padding-left: 8px;">
+          <a hidden="[[!task]]" href$="{{baseUrl}}/patient/[[subjectId]]">
+            <h4 >Go to Patient Page</h4>
+          </a>
         </div>
       </div>
 

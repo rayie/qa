@@ -1,0 +1,318 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-item/paper-item-body.html">
+<link rel="import" href="../paper-styles/typography.html">
+<link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../moment-display/moment-display.html">
+<link rel="import" href="../paper-tabs/paper-tabs.html">
+<link rel="import" href="../iron-pages/iron-pages.html">
+<link rel="import" href="section-behaviors.html">
+<link rel="import" href="menu-tasks.html">
+<link rel="import" href="list-tasks.html">
+<link rel="import" href="iron-list-tasks.html">
+<link rel="import" href="qa-ajax-poster.html">
+<link rel="import" href="qa-dateinput.html">
+<link rel="import" href="styles/qa-styles.html">
+<!--
+
+Example:
+
+    <question-repo></question-repo>
+
+@demo
+-->
+<dom-module id="question-repo">
+  <style is="custom-style" include="qa-styles"></style>
+  <style is="custom-style">
+
+    :host {
+      display: block;
+      box-sizing: border-box;
+    }
+   
+    :host > ::content .special {
+    }
+   
+    /* form hdr part */
+    #left {
+      float: left;
+      width: 38%;
+      height: 800px;
+      overflow: scroll;
+    }
+
+    #right {
+      float: left;
+      width: 60%;
+      height: 800px;
+      overflow: scroll;
+      margin-left: 16px;
+    }
+
+    .hdr {
+      @apply(--layout-horizontal);
+      @apply(--layout-justified);
+      @apply(--paper-font-body2)
+    }
+
+    .list {
+      @apply(--layout-vertical);
+      padding-top: 12px;
+      background-color: white;
+      width: 240px;
+      height: 228px;
+      margin: 12px;
+      @apply(--shadow-elevation-2dp);
+    }
+
+    .form-num {
+      @apply(--paper-font-body2)
+      text-align: right;
+    }
+
+    .form-title {
+      @apply(--paper-font-body2)
+    }
+
+    .form-sub-title {
+      @apply(--paper-font-caption)
+    }
+
+    .paper-font-caption {
+      @apply(--paper-font-caption);
+    }
+
+    paper-button {
+      @apply(--paper-font-button);
+    }
+    .link { cursor: pointer; }
+
+  </style>
+
+  <template>
+    <div class="container">
+      <div id="left">
+        <paper-toolbar>
+          <paper-tabs on-iron-select="tabSelected" id="tabSelector" selected="{{selectedTab}}" elevation='4'>
+            <paper-tab>Questions</paper-tab>
+            <paper-tab>Assessment</paper-tab>
+          </paper-tabs>
+        </paper-toolbar>
+
+        <iron-pages selected="{{selectedTab}}">
+
+          <section data-tab='qlisting' >
+            <paper-material elevation='4' class='primary' heading="All Questions">
+              <div class='layout vertical'>
+                <div class='vertical-menu' role=''>
+                  <paper-item class='menusectionLbl'>
+                    <label>Total: [[allQuestionsTotal]]</label>
+                  </paper-item>
+
+                  <template is="dom-repeat" items="[[allQuestions]]">
+                    <paper-item class='link tall'>
+                      <div on-click="viewQuestion" class="pointer" >
+                        <strong>[[item._id]]</strong>
+                        <span>[[item.txt]]<span> 
+                      </div>
+                    </paper-item>
+                  </template>
+
+                </div>
+              </div>
+            </paper-material>
+          </section>
+
+        </iron-pages>
+
+        <qa-ajax-poster
+          id="ajax"       
+          no-toast
+          handle-as="json",
+          endpoint="api/questions:listall"
+          on-response="loadResponse"
+          on-error="loadError"
+          loading="{{is_loading}}"
+        ></qa-ajax-poster>
+
+      </div>
+
+      <div id="right">
+        <paper-toolbar>
+          <paper-tabs >
+            <paper-tab>[[mainTitle]]</paper-tab>
+          </paper-tabs>
+        </paper-toolbar>
+        <paper-card class='primary' hidden="[[!ques]]">
+          <div class="vertical layout justified questionrepo-detail">
+
+            <div >
+              <label class='answer-lbl'>Question Text</label>
+              <div class="main-data"> 
+                <span>[[ques.txt]]</span>
+              </div>
+            </div>
+
+
+            <div >
+              <label class='answer-lbl'>Question Type</label>
+              <div class="main-data"> 
+                <span>[[ques.kindTxt]]</span>
+              </div>
+            </div>
+
+            <div hidden="[[!ques.opts]]" >
+              <label class='answer-lbl'>Choices</label>
+              <div class="main-data"> 
+                <ol class='questionrepo-sublist'>
+                <template is="dom-repeat" items="[[ques.opts]]" as="opt" >
+                  <li>[[opt.txt]]</li>
+                </template>
+              </ol>
+              </div>
+            </div>
+
+            <div >
+              <label class='answer-lbl'>Special Restricitons</label>
+              <div class="main-data"> 
+                <span>[[ques.]]</span>
+                <ul class='questionrepo-sublist'>
+                <template is="dom-repeat" items="[[ques.specialRestrictions]]" as="sr" >
+                  <li>[[sr]]</li>
+                </template>
+                </ul>
+              </div>
+            </div>
+
+            <div hidden="[[!ques.in]]" >
+              <label class='answer-lbl'>Appears in:</label>
+              <div class="main-data"> 
+                <ol class='questionrepo-sublist'>
+                <template is="dom-repeat" items="[[ques.in]]" as="taskDefName" >
+                  <li>[[taskDefName]]</li>
+                </template>
+              </ol>
+              </div>
+            </div>
+          </div>
+        </paper-card>
+      </div>
+
+    </div>
+  </template>
+
+</dom-module>
+
+<script>
+  
+  var kindRef = {
+    "mc": "Multiple Choice",
+    "yn": "Yes / No",
+    "ft": "Free Text",
+    "dt": "Single Date Entry",
+    "ne": "Numeric Entry"
+  };
+
+  var allowRef = {
+    concurrency : true,
+    correction : true,
+    expiration : false,
+    multiple : 0,
+    na : true,
+    survey_note : true
+  };
+
+  Polymer({
+
+    behaviors: [ SectionBehaviors.Basic ],
+
+    is: 'question-repo',
+
+    properties: {
+      ques: {
+        type: Object,
+        value: null
+      }
+    },
+
+    attached: function(){
+      console.log('attached',this.route);
+    },
+
+		tabSelected: function(e){
+			var idx = this.$.tabSelector.indexOf( e.detail.item );
+      console.log("tabSelected",idx,this.route);
+      switch(idx){
+        case 0:
+          this.$.ajax.send();
+          break;
+        case 1:
+          break;
+        case 2:
+          break;
+        case 3:
+          break;
+        case 4:
+          break;
+        case 5:
+          break;
+      }
+		},
+
+    loadResponse: function(e,data){
+      console.log(data.bucketname);
+      this.set(data.bucketname,data.rows);
+      this.set(data.bucketname+"Total",data.total);
+    },
+
+    loadError: function(e){
+      console.log(e);
+    },
+
+    viewQuestion: function(e){
+      var q = e.model.item;
+      console.log(q);
+      q.kindTxt = kindRef[q.kind];
+      var sr = [];
+
+      for(var k in q.allow){
+        if ( q.allow[k] !== allowRef[k] ){
+          sr.push( k.toUpperCase() + ( ( q.allow[k] )?" Allowed":" Not Allowed" ) )
+        }
+      }
+
+      if (sr.length) q.specialRestrictions = [].concat(sr);
+
+      this.set("mainTitle", "Q# " + q._id);
+      this.set("ques",q);
+    },
+
+    loadListingResponse: function(e,data){
+      this.$.taskListing.applyTasks(data.tasks);
+    },
+
+    loadListingError: function(e){
+      console.log(e);
+    },
+
+    submit: function(e){
+      return;
+    }
+  });
+
+</script>

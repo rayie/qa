@@ -187,6 +187,7 @@
           margin-bottom: 8px; 
         }
       }
+
       .vertical-menu paper-item.divider div {
         width: 100%;
         border-bottom: 1px solid gray;   
@@ -195,11 +196,26 @@
       paper-item.link {
         --paper-item-min-height: 32px;
       }
+
+      paper-item.link.tall {
+        --paper-item-min-height: 48px;
+        --paper-item: {
+          margin-top: 8px;
+          margin-bottom: 8px;
+        }
+      }
+
       paper-item.link div {
         font-size: .92em;  
       }
+
+      .questionrepo-sublist li {
+        margin-bottom: 8px;
+      }
       
-      
+      .questionrepo-detail div {
+        margin-bottom: 16px;
+      }
 
       paper-menu a > *, paper-menu paper-item > *, paper-menu paper-icon-item > * {
         pointer-events: none;
