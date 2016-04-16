@@ -736,7 +736,11 @@ Example:
       this.ok_to_submit = ( answers.length === ( qstate_counts[2] + qstate_counts[3] ) );
       //console.log("taskDefinition", this.taskDefinition);
 
-      this.set("taskDefinition.tasksToAdd", this.taskDefinition.upon.submit.concat( this.taskDefinition.tasksFromAnswers ).map(this._taskTiming));
+      this.set("taskDefinition.tasksToAdd", 
+        this.taskDefinition.upon.submit.concat( 
+          this.taskDefinition.tasksFromAnswers 
+        ).map(this._taskTiming)
+      );
 
       if ( 
         this.task && 

@@ -203,6 +203,22 @@ Example:
 
     },
 
+    renderQuestion: function(){
+      console.log('rendering question')
+      var q = _.clone(this.qref);
+
+      if ( q.kind=="yn" ) q = this._convert_yn_to_mc(q);
+
+      var new_q = this.create("question-" + q.kind.toLowerCase(),q);
+      new_q.set('hidden',false);
+      console.log(new_q);
+      this.listen(new_q,"qstate-changed","qstateChanged");
+      Polymer.dom(this.$.qArea).appendChild(new_q);
+      this.set("questionReady",true);
+      this.set("q",new_q);
+    },
+
+
     submitCorrection: function(){
       if (this.qstate===3){
         var a = ["N/A"];
@@ -262,23 +278,12 @@ Example:
       console.log("Correction response",data);
       this.set("datadocLastTs", data.newTs);
       Polymer.dom(this.$.qArea).removeChild(this.q);
+      this.set("questionReady",false);
       this.fire("updated");
     },
 
     gotCorrectionError: function(e,data){
       this.fire("error",data);
-    },
-
-    renderQuestion: function(){
-      var q = _.clone(this.qref);
-
-      if ( q.kind=="yn" ) q = this._convert_yn_to_mc(q);
-
-      var new_q = this.create("question-" + q.kind.toLowerCase(),q);
-      this.listen(new_q,"qstate-changed","qstateChanged");
-      Polymer.dom(this.$.qArea).appendChild(new_q);
-      this.set("questionReady",true);
-      this.set("q",new_q);
     },
 
     qstateChanged: function(e){

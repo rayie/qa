@@ -35,6 +35,9 @@ Example:
 
   <style is="custom-style" include="qa-styles">
   <style is="custom-style">
+    a {
+      cursor: pointer;
+    }
 
     :host {
       display: block;
@@ -96,7 +99,6 @@ Example:
       elevation=4
       heading="[[name]]"
     > 
-      
       <div >
         <dialog-endprogram
           id="endProgramDialog"
@@ -104,9 +106,8 @@ Example:
           on-success="load"
         ></dialog-endprogram>
 
-        <template is="dom-repeat" items="[[records]]" as="mergedrecord">
-          <div>
-            <template is="dom-repeat" items="[[mergedrecord]]" as="rec">
+          <template is="dom-repeat" items="[[current]]" as="rec">
+            <div>
 
               <div class="horizontal layout justified record-container">
 
@@ -172,10 +173,92 @@ Example:
                 </div>
               </div>
 
-            </template>
-          </div>
-        </template>
+            </div>
+          </template>
+      </div>
 
+      <div>
+        <div class="horizontal layout justified record-container">
+          <label class='answer-lbl'>
+            <a style="cursor:pointer;" on-click="revealExpired">
+              There are [[expired.length]] Expired Program(s) 
+              - Click to [Show/Hide]
+            </a>
+          </label>
+        </div>
+      </div>
+      
+      <div id="expiredProgramsDiv" hidden="[[hideExpired]]">
+
+          <template is="dom-repeat" items="[[expired]]" as="rec">
+
+            <div>
+
+              <div class="horizontal layout justified record-container">
+
+                <div >
+                  <label class='answer-lbl'>SC Program Name</label>
+                  <div class="main-data"> 
+                    <span>[[rec.a.sc-program-name]]</span>
+                  </div>
+                </div>
+
+                <div >
+                  <label class='answer-lbl'>SC Program Start Date</label>
+                  <div class="main-data"> 
+                    <moment-display 
+                      inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                      display-fmt="withday" str="[[rec.a.sc-program-start-date]]" >
+                    </moment-display>
+                  </div>
+                </div>
+
+                <div >
+                  <label class='answer-lbl'>SC Program End Date</label>
+                  <div class="main-data"> 
+                    <moment-display 
+                    inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                    display-fmt="withday" str="[[rec.a.sc-program-end-date]]" >
+                    </moment-display>
+                  </div>
+                </div>
+
+                <div >
+                  <label class='answer-lbl'>Program Diagnosis</label>
+                  <div class="main-data"> 
+                    <span>[[rec.a.sc-program-diagnosis-group]]</span>
+                  </div>
+                </div>
+                <div >
+                  <label class='answer-lbl'>Program Equipment</label>
+                  <div class="main-data"> 
+                    <span>[[rec.a.sc-program-equipment-group]]</span>
+                  </div>
+                </div>
+
+              </div>
+                
+              <div class="horizontal layout justified record-footer-addon">
+                <div class='flex-child last-update-msg'>
+                  <div class='note' hidden="[[!rec.a.sc-review-program-notes]]">
+                    Review Note: [[rec.a.sc-review-program-notes]]
+                  </div>
+                  <div class='note' hidden="[[!rec.n.sc-program-name]]">
+                    Notes: [[rec.n.sc-program-name]]
+                  </div>
+
+                  <moment-display 
+                  inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                  label="Updated" str="[[rec.m.update.ts]]" display-fmt="withday" time></moment-display>
+                  <small> by [[rec.m.update.u_id]]</small>
+                  <template is="dom-if" if="[[rec.allowEndProgram]]">
+                    <a data-rec="[[rec]]" on-click="showEndProgram">End this Program</a>
+                  </template>
+                </div>
+              </div>
+
+            </div>
+          </template>
       </div>
       
       <qa-ajax-poster
@@ -204,33 +287,47 @@ Example:
           return ["flows/sc.program.json","flows/sc.review-program.json","flows/sc.program-wizard.json"]
         }
       },
+
+      hideExpired: {
+        type: Boolean,
+        value: true
+      },
+
       subjectId: {
         type: String,
         value: ""
       },
+
       primaryField: {
         type: String,
         value: ""
       },
+
       name: {
         type: String,
         value: ""
       },
+
       asColumns: {
         type: Boolean,
         value: false
       }
     },
 
+    revealExpired: function(){
+      
+      this.set("hideExpired",!this.get("hideExpired"));
+    },
+
     showEndProgram:function(e){
-      //console.log(e);
-      var dataId = _.get(e,'target.dataRec._id',false)
+      console.log(e.model.rec);
+      var dataId = _.get(e,'model.rec._id',false)
       if ( dataId === false ) 
         return console.error("Could not get program data rec ID");
       else {
         console.info("dataId is ", dataId);
       }
-      this.$.endProgramDialog.show(dataId);
+      this.$.endProgramDialog.show(dataId, _.get(e,'model.rec.a.sc-program-name','ERROR - PROGRAM NAME NOT FOUND'));
     },
 
     load: function(){
@@ -246,20 +343,31 @@ Example:
 
     loadResponse: function(e,data){
       //console.log(data.records);
-      var records = data.records.map(function(r){
+      var current = data.records.map(function(r){
         if ( r.length ){
-          if ( false===_.get(r[0],"a.sc-program-end-date",false) ){
+          r[0].expired=false;
+          var endDate = _.get(r[0],"a.sc-program-end-date",false);
+          if ( false === endDate ){
             r[0].allowEndProgram=true;
           }
           else{
+            console.log('endDate',endDate);
+            var endM = new moment(endDate.substr(0,19), "YYYY-MM-DDThh:mm:ss");
+            console.log( endM.toDate(), endM.diff(new Date(),'hours') < -24 );
+            if ( endM.diff(new Date(),'hours') < -24 ){
+              r[0].expired=true;
+            }
           }
         }
-        return r;
+        return r[0];  //unmerge it
       });
 
+      var expired = _.remove( current, function(r){
+        return r.expired;
+      });
 
-
-      this.set("records", records);
+      this.set("current", current);
+      this.set("expired", expired);
     },
 
     loadError: function(e){

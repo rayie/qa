@@ -79,7 +79,7 @@ Example:
       on-iron-overlay-closed="dialogClosed"
       on-iron-overlay-canceled="dialogCanceled"
     >
-      <h2>End Program - [[dataId]]</h2>
+      <h2>End Program - [[programName]]</h2>
       <div>
 
         <div>
@@ -156,6 +156,10 @@ Example:
         type: String, 
         value: function(){ return ""; }
       },
+      programName:{
+        type: String,
+        value: function(){ return "..program name.."; }
+      },
       reasonCode: {
         type: String, 
         value: function(){ return ""; }
@@ -174,13 +178,14 @@ Example:
       }
     },
 
-    show: function(dataId){
+    show: function(dataId, programName){
       var self = this;
       ['reasonNote','reasonCode','endDate'].forEach(function(p){
         self.set(p,self.properties[p].value());
       });
-      this.$.dialog.open();
       this.set("dataId",dataId);
+      this.set("programName",programName);
+      this.$.dialog.open();
     },
 
     dialogClosed: function(dialogCloseEvent){

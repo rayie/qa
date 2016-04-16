@@ -71,11 +71,15 @@ Example:
   </style>
 
   <template>
-    <div class="horizontal layout">
-      <div class="flex">
-        <a href$="patient/[[taskDoc.subjectId]]">Back to Patient Card</a>
+
+    <div class=''>
+      <div style="padding-left: 8px; padding-bottom: 8px;">
+        <a hidden="[[!task]]" href$="{{baseUrl}}/patient/[[subjectId]]">
+          <h4 style="margin-top:0">Go to Patient Page</h4>
+        </a>
       </div>
     </div>
+
     <paper-card class="primary" elevation="4">
       
       <div class='last-update-msg'>
