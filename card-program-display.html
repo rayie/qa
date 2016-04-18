@@ -180,8 +180,8 @@ Example:
       <div>
         <div class="horizontal layout justified record-container">
           <label class='answer-lbl'>
-            <a style="cursor:pointer;" on-click="revealExpired">
-              There are [[expired.length]] Expired Program(s) 
+            There are [[expired.length]] Expired Program(s) 
+            <a style="cursor:pointer;" on-click="revealExpired" hidden="[[!expired.length]]">
               - Click to [Show/Hide]
             </a>
           </label>
@@ -287,6 +287,14 @@ Example:
           return ["flows/sc.program.json","flows/sc.review-program.json","flows/sc.program-wizard.json"]
         }
       },
+      current:{
+        type: Array,
+        value: function(){ return [] }
+      },
+      expired:{
+        type: Array,
+        value: function(){ return [] }
+      },
 
       hideExpired: {
         type: Boolean,
@@ -342,27 +350,31 @@ Example:
     },
 
     loadResponse: function(e,data){
-      //console.log(data.records);
+      console.log("data.records",data.records);
+      data.records = data.records.filter(function(r){
+        if ( r.length ) return r;
+      });
       var current = data.records.map(function(r){
-        if ( r.length ){
-          r[0].expired=false;
-          var endDate = _.get(r[0],"a.sc-program-end-date",false);
-          if ( false === endDate ){
-            r[0].allowEndProgram=true;
-          }
-          else{
-            console.log('endDate',endDate);
-            var endM = new moment(endDate.substr(0,19), "YYYY-MM-DDThh:mm:ss");
-            console.log( endM.toDate(), endM.diff(new Date(),'hours') < -24 );
-            if ( endM.diff(new Date(),'hours') < -24 ){
-              r[0].expired=true;
-            }
+        r[0].expired=false;
+        var endDate = _.get(r[0],"a.sc-program-end-date",false);
+        if ( false === endDate ){
+          r[0].allowEndProgram=true;
+        }
+        else{
+          console.log('endDate',endDate);
+          var endM = new moment(endDate.substr(0,19), "YYYY-MM-DDThh:mm:ss");
+          console.log( endM.toDate(), endM.diff(new Date(),'hours') < -24 );
+          if ( endM.diff(new Date(),'hours') < -24 ){
+            r[0].expired=true;
           }
         }
         return r[0];  //unmerge it
       });
 
+      console.log("current", current);
+
       var expired = _.remove( current, function(r){
+        console.log(r);
         return r.expired;
       });
 
