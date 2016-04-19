@@ -25,6 +25,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="qa-btn.html">
 <link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="task-part-timing.html">
+<link rel="import" href="dialog-assign.html">
 <link rel="import" href="styles/qa-styles.html">
 
 <!--
@@ -44,6 +45,13 @@ Example:
       display: block;
       box-sizing: border-box;
     }
+
+    iron-list {
+       --iron-list-items-container: {
+          position: inherit; 
+          margin: 12px 0 12px 0;
+       };
+     }
    
     .name {
       font-size: 14px;
@@ -56,7 +64,7 @@ Example:
 
     .row {
       margin-top: 2px;
-      margin-bottom: 12px;
+      margin-bottom: 2px;
       /* border-bottom: 1px solid var(--paper-pink-a200); */
     }
 
@@ -71,14 +79,14 @@ Example:
   </style>
 
   <template>
-    <paper-card class="primary" elevation="4" >
+    <div id="container">
+    <!--<paper-card class="primary" elevation="4" >-->
       <div hidden="[[!tasksLoaded]]" >
-        <iron-list items="[[tasks]]" as="t">
+        <iron-list id="mainList" items="[[tasks]]" as="t" index-as="idx" style="height: 700px;">
           <template >
-            <div class="row horizontal layout">
-
+            <div class="row horizontal layout" style="height: 64px;">
+          
               <div class="flex-5">
-
                 <div>
                   <a class='name' href$="patient/[[t.subjectId]]" title="Patient Detail">[[t.subjectDisplayAs]]</a>
                   <a class='name' hidden="[[!t.m.done]]" href$="taskresult/[[t._id]]" title="Task Data"> - [[t.name]]</a>
@@ -114,7 +122,7 @@ Example:
                         <iron-icon icon="cancel"></iron-icon> 
                         <small>Cancel this Task</small>
                       </a>
-                      </qa-btn>
+                    </qa-btn>
                   </div>
                   
                   <a 
@@ -139,11 +147,13 @@ Example:
                   task-assigned-to="[[t.assignedTo]]"
                   task-id="[[t._id]]"
                   task-ts="{{t.ts}}"
-                  planned-for="{{t.plannedFor}}"
+                  planned-for="[[t.plannedFor]]"
+                  selected-start-date="{{t.selectedStartDate}}"
                   task-state="[[t.state]]"
                   ok-to-start="{{t.okToStart}}"
                   on-change="gotTaskTimingChange"
-                  on-reassign="gotTaskReassigned"
+                  on-showreassign="gotShowReassign"
+                  on-showdatepicker="gotShowDatePicker"
                 >
                 </task-part-timing>  
               </div>
@@ -183,7 +193,23 @@ Example:
         endpoint="api/task:reassign"
       ></qa-ajax-poster>
 
-    </paper-card>
+      <!--</paper-card>-->
+    </div>
+    <dialog-assign id="dialogAssign" on-attempted-reassign="gotAttemptedReassign">
+    </dialog-assign>
+    <div id="datePickerDialogContainer">
+      <paper-dialog 
+        id="dialogDatePicker" class="paper-date-picker-dialog" 
+        on-iron-overlay-closed="gotDatePickerDismissDialog"
+      >
+        <paper-date-picker id="paperDatePicker"  date="{{tmpSelectedStartDate}}">
+        </paper-date-picker>
+        <div class="buttons">
+          <paper-button dialog-dismiss>Cancel</paper-button>
+          <paper-button dialog-confirm>OK</paper-button>
+        </div>
+      </paper-dialog>
+    </div>
   </template>
 
 </dom-module>
@@ -208,7 +234,7 @@ Example:
       },
       tasks: {
         type: Array,
-        value: []
+        value: function(){ return []; }
       },
       taskDefFilter: {
         type: Array,
@@ -238,6 +264,7 @@ Example:
 
     attached: function(){
       this.isAttached=true;
+      this.resetTasks();
     },
     ready: function(){
       this.isReady=true;
@@ -247,14 +274,22 @@ Example:
       console.log(e);
     },
 
-    resetTasks: function(){
-      this.set("tasks",[]);
-      this.set("tasksLoaded",false);
-      //this.$.taskRptr.render();
-    },
 
-    loadTasks: function(){
-      //console.log("Loading tasks", this.subjectId);
+    /*
+      override must containt: {
+        endpoint:
+        payload
+      }
+    */
+    loadTasks: function(override){
+      this.resetTasks();
+      if ( override ){
+
+        //console.log("Loading tasks with override", override);
+        this.$.ajax_load_tasks.setEndpoint(override.endpoint);
+        return this.$.ajax_load_tasks.send(override.payload);
+      }
+
       var defaultListParams = {state: this.state};
 
       if (this.subjectId){
@@ -268,6 +303,12 @@ Example:
       this.$.ajax_load_tasks.send(defaultListParams);
     },
 
+    resetTasks: function(){
+      this.set("tasks", []);
+      this.set("tasksLoaded",false);
+      this.set("tasksLoaded",true);
+    },
+
     loadTasksResponse: function(e,data){
       this.applyTasks(data.tasks);
     },
@@ -279,9 +320,17 @@ Example:
 
     applyTasks: function(tasks){
       this.resetTasks();
-      //this.$.taskRptr.render();
-      this.set("tasks",tasks);
-      this.set("tasksLoaded",true);
+      this.set("tasks", tasks);
+      this.$.mainList.notifyResize();
+      Polymer.dom.flush();
+      if ( this.tasks.length ){
+        var tmpFixTs = this.get("tasks.0.ts");
+        this.set("tasks.0.ts",0);
+        var self = this;
+        setTimeout( function(){
+          self.set("tasks.0.ts",tmpFixTs);
+        },300);
+      }
     },
 
     cancelTask: function(e, taskIndex){
@@ -305,13 +354,34 @@ Example:
     cancelTaskError: function(){
     },
 
-    gotTaskReassigned: function(e,payload){
-      this.$.ajax_reassign_task.send(payload, e.target);
+
+    gotShowReassign: function(a,b){
+      this.set("tmpModel", a.model);
+      this.$.dialogAssign.show(a.model.t);
+      return;
+    },
+
+    gotAttemptedReassign: function(e,d){
+      console.log("gotAttemptedReassign",d);
+      if ( d.origTaskDoc.assignedTo!==d.reAssignTo ){
+        var payload = { 
+          taskId: d.origTaskDoc._id,
+          lastTs: d.origTaskDoc.ts,
+          assignTo: d.reAssignTo,
+          lastAssignedTo: d.origTaskDoc.assignedTo
+        };
+        this.set("tmpReAssignTo", d.reAssignTo);
+        var model = this.get("tmpModel");
+        model.set("t.assignedTo", d.reAssignTo);
+        this.$.ajax_reassign_task.send(payload, d);
+      }
     },
 
     reassignTaskResponse: function(e,data){
-      data.passBack.confirmReAssign(data.newTs);
-      app.$.toast.text = "Task REASSIGNED"; 
+      var model = this.get("tmpModel");
+      model.set("t.ts", data.newTs);
+
+      app.$.toast.text = "Task REASSIGNED to " + this.get("tmpReAssignTo"); 
       if ( data.msg ) app.$.toast.text += data.msg;
       app.$.toast.show();
     },
@@ -320,14 +390,70 @@ Example:
 
     },
 
+    moreTasks: function(moreTasks){
+      var self = this;
+      moreTasks.forEach(function(t){
+        self.push("tasks", t);
+      });
+    },
+
+
+
+    gotShowDatePicker: function(a,b){
+      console.log("selected start date of chosen model",a.model.t);
+      this.set("tmpModelForDateChange", a.model);
+      this.set("tmpTaskForDateChange", a.model.t);
+      if ( a.model.t.selectedStartDate ){
+        this.set("tmpSelectedStartDate", a.model.t.selectedStartDate);
+      }
+      this.$.dialogDatePicker.open();
+    },
+
+    gotDatePickerDismissDialog:function(closeEvent){
+      //console.log("gotDismissalDialog",closeEvent);
+      if ( closeEvent.detail.confirmed !== true ){
+        
+        return;
+      }
+      var newSelectedStartDate = this.get("tmpSelectedStartDate");
+      console.log("new Date", newSelectedStartDate);
+
+      var s = moment(newSelectedStartDate);
+      var e = moment(newSelectedStartDate);
+      s.hour(5).minute(30).second(0).millisecond(0);
+      e.hour(18).minute(30).second(0).millisecond(0);
+
+      var t = this.get("tmpTaskForDateChange");
+      var model = this.get("tmpModelForDateChange");
+      var pf = { kind: "schedule", start: s.format('YYYY-MM-DDThh:mm:ss'), end:e.format('YYYY-MM-DDThh:mm:ss') };
+      model.set("t.plannedFor.kind", pf.kind);
+      model.set("t.plannedFor.start", pf.start);
+      model.set("t.plannedFor.end", pf.end);
+
+      console.log("model", model);
+      model.set("plannedFor", t.plannedFor);
+      console.log(model.get("t").plannedFor);
+      var payload = {
+        taskId: t._id,
+        lastTs: t.ts,
+        plannedFor: pf
+      };
+      
+      console.log(payload);
+      this.$.ajax_update_task.send(payload);
+      return;
+    },
+
+
     gotTaskTimingChange: function(e,timingChange){
       console.log("got task timign change", e, timingChange);
       this.$.ajax_update_task.send(timingChange, e.target);
     },
 
     updateTaskResponse: function(e,data){
-      //console.log("in tasklist, updateTaskResposne", e, data);
-      data.passBack.confirm(data.newTs);
+      var model = this.get("tmpModelForDateChange");
+      model.set("t.ts", data.newTs);
+
       app.$.toast.text = "Task UPDATED"; 
       if ( data.msg ) app.$.toast.text += data.msg;
       app.$.toast.show();

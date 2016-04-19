@@ -350,7 +350,7 @@ Example:
     },
 
     loadResponse: function(e,data){
-      console.log("data.records",data.records);
+      //console.log("data.records",data.records);
       data.records = data.records.filter(function(r){
         if ( r.length ) return r;
       });
@@ -361,9 +361,9 @@ Example:
           r[0].allowEndProgram=true;
         }
         else{
-          console.log('endDate',endDate);
+          //console.log('endDate',endDate);
           var endM = new moment(endDate.substr(0,19), "YYYY-MM-DDThh:mm:ss");
-          console.log( endM.toDate(), endM.diff(new Date(),'hours') < -24 );
+          //console.log( endM.toDate(), endM.diff(new Date(),'hours') < -24 );
           if ( endM.diff(new Date(),'hours') < -24 ){
             r[0].expired=true;
           }
@@ -371,10 +371,10 @@ Example:
         return r[0];  //unmerge it
       });
 
-      console.log("current", current);
+      //console.log("current", current);
 
       var expired = _.remove( current, function(r){
-        console.log(r);
+        //console.log(r);
         return r.expired;
       });
 

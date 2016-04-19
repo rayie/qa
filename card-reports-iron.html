@@ -32,11 +32,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 Example:
 
-    <card-reports></card-reports>
+    <card-reports-iron></card-reports-iron>
 
 @demo
 -->
-<dom-module id="card-reports">
+<dom-module id="card-reports-iron">
   <style is="custom-style" include="qa-styles"></style>
   <style is="custom-style">
 
@@ -60,7 +60,8 @@ Example:
       float: left;
       width: 60%;
       height: 800px;
-      overflow: scroll;
+      /* overflow: scroll;*/
+      overflow: hidden;
       margin-left: 16px;
     }
 
@@ -259,14 +260,6 @@ Example:
           loading="{{is_loading}}"
         ></qa-ajax-poster>
 
-        <qa-ajax-poster
-          id="ajaxListing"       
-          no-toast
-          handle-as="json",
-          on-response="loadListingResponse"
-          on-error="loadListingError"
-          loading="{{is_loading}}"
-        ></qa-ajax-poster>
       </div>
 
       <div id="right">
@@ -275,10 +268,14 @@ Example:
             <paper-tab>[[listingTitle]]</paper-tab>
           </paper-tabs>
         </paper-toolbar>
-        <list-tasks
+        <div id="listTasksContainer">
+        <!--
+        <iron-list-tasks
           class='card-content' 
           id="taskListing"
-        ></list-tasks>
+        ></iron-list-tasks>
+        -->
+        </div
       </div>
 
     </div>
@@ -293,7 +290,7 @@ Example:
 
     behaviors: [ SectionBehaviors.Basic ],
 
-    is: 'card-reports',
+    is: 'card-reports-iron',
 
     properties: {
       route: {
@@ -314,7 +311,7 @@ Example:
       }
     },
     attached: function(){
-      console.log('attached',this.route);
+      //console.log('attached',this.route);
     },
 
 		tabSelected: function(e){
@@ -369,61 +366,48 @@ Example:
     },
 
     loadListingByType: function(e,b){
-      this.$.ajaxListing.setEndpoint("api/report:opentasks:bytype" );
-      this.loadListing(e);
+      this.loadListing("api/report:opentasks:bytype",e);
     },
 
     loadListingByTiming: function(e,b){
-      this.$.ajaxListing.setEndpoint("api/report:opentasks:bytiming" );
-      this.loadListing(e);
+      this.loadListing("api/report:opentasks:bytiming",e);
     },
 
     loadListingByUser: function(e,b){
-      this.$.ajaxListing.setEndpoint("api/report:opentasks:byuser" );
-      this.loadListing(e);
+      this.loadListing("api/report:opentasks:byuser",e);
     },
 
     loadMyListingByType: function(e,b){
-      this.$.ajaxListing.setEndpoint("api/report:opentasks:bytype" );
-      this.loadListing(e, {assignedTo:'me'});
+      this.loadListing("api/report:opentasks:bytype", e, {assignedTo:'me'});
     },
 
     loadMyListingByTiming: function(e,b){
-      this.$.ajaxListing.setEndpoint("api/report:opentasks:bytiming" );
-      this.loadListing(e, {assignedTo:'me'});
+      this.loadListing("api/report:opentasks:bytiming",e, {assignedTo:'me'});
     },
 
     loadMyInProgListingByType: function(e,b){
-      this.$.ajaxListing.setEndpoint("api/report:opentasks:bytype" );
-      this.loadListing(e, {state:"inprog",assignedTo:'me'});
+      this.loadListing("api/report:opentasks:bytype",e, {state:"inprog",assignedTo:'me'});
     },
 
-    loadListing: function(e,extraFilters){
+    loadListing: function(endpoint,e,extraFilters){
       var model = e.model;
-      this.$.taskListing.resetTasks();
-      /*
-      var payload = _.merge({
-        listingFilterName: model.item.nm,
-        bucketname: "Tasks " + model.item.nm
-      },extraFilters);
-      */
       var payload = _.merge({
         listingFilterName: model.item.nm,
         bucketname: "Tasks " + model.item.nm,
         extraFilters: extraFilters
       });
 
-      this.set("listingTitle", "Loading tasks ... ");
-      this.$.ajaxListing.send(payload);
-    },
+      this.set("listingTitle", payload.bucketname);
+      
+      Polymer.dom(this.$.listTasksContainer).children.forEach(function(el,idx){
+        el.remove();
+      });
+      Polymer.dom.flush();
+      var newListTasks = this.create("iron-list-tasks", {class:'card-content' ,id:"taskListing"});
 
-    loadListingResponse: function(e,data){
-      this.$.taskListing.applyTasks(data.tasks);
-      this.set("listingTitle", data.bucketname);
-    },
-
-    loadListingError: function(e){
-      console.log(e);
+      Polymer.dom(this.$.listTasksContainer).appendChild(newListTasks);
+      newListTasks.loadTasks({ endpoint: endpoint , payload:payload });
+      //return this.$.taskListing.loadTasks({ endpoint: endpoint , payload:payload });
     },
 
     submit: function(e){

@@ -32,11 +32,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 Example:
 
-    <card-reports></card-reports>
+    <card-reports-iron></card-reports-iron>
 
 @demo
 -->
-<dom-module id="card-reports">
+<dom-module id="card-reports-iron">
   <style is="custom-style" include="qa-styles"></style>
   <style is="custom-style">
 
@@ -60,7 +60,8 @@ Example:
       float: left;
       width: 60%;
       height: 800px;
-      overflow: scroll;
+      /* overflow: scroll;*/
+      overflow: hidden;
       margin-left: 16px;
     }
 
@@ -275,10 +276,10 @@ Example:
             <paper-tab>[[listingTitle]]</paper-tab>
           </paper-tabs>
         </paper-toolbar>
-        <list-tasks
+        <iron-list-tasks
           class='card-content' 
           id="taskListing"
-        ></list-tasks>
+        ></iron-list-tasks>
       </div>
 
     </div>
@@ -293,7 +294,7 @@ Example:
 
     behaviors: [ SectionBehaviors.Basic ],
 
-    is: 'card-reports',
+    is: 'card-reports-iron',
 
     properties: {
       route: {

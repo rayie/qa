@@ -82,7 +82,7 @@ An element providing a solution to no problem in particular.
       on-iron-overlay-closed="dialogClosed"
       on-iron-overlay-canceled="dialogCanceled"
     >
-      <h2>Re-Assign Task</h2>
+      <h2>Re-Assign Task [[title]]</h2>
       <div> 
         <!--
         <div>
@@ -145,10 +145,18 @@ An element providing a solution to no problem in particular.
       selectedUser: {
         type: String, 
         value: function(){ return ""; }
+      },
+      title: {
+        type: String, 
+        value: function(){ return "NONE"; }
       }
     },
 
-    show: function(){
+
+    show: function(taskDoc){
+      var title = taskDoc.subjectDisplayAs + " - " + taskDoc.name;
+      this.set("title",title);
+      this.set("taskDoc", taskDoc);
       this.$.dialogReAssign.open();
     },
 
@@ -164,10 +172,11 @@ An element providing a solution to no problem in particular.
 
       var pkg = {
         //reason: _.clone({ code: this.reasonCode, note: this.reasonNote }),
-        reAssignTo: this.selectedUser.toString()
+        reAssignTo: this.selectedUser.toString(),
+        origTaskDoc: this.taskDoc
       }
       console.log(pkg);
-      this.fire("reassigned",pkg);
+      this.fire("attempted-reassign",pkg);
     },
 
     dialogCanceled: function(dialogCloseEvent){

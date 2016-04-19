@@ -150,30 +150,41 @@ Example:
         <!--<span>Test: [[selectedStartDate]]</span>-->
         <iron-icon icon="perm-contact-calendar"></iron-icon>
       </div>
-      <div class='assignment' on-click="openAssignDialog">
+      <div class='assignment' on-click="showReassign">
         [[taskAssignedTo]]
+        <!--
+          <br/>
+          [[evaluated]] - [[okToStart]]
+          <br/>
+          [[taskId]]
+          -->
         <!--[[plannedFor.start]]-->
       </div>
     </div>
 
+    <!--
     <dialog-assign
       id="dialogAssign"
       on-reassigned="gotTaskReAssigned"
     ></dialog-assign>
+    -->
 
     <!--- DATEPICKER MODAL CONTENT -->
-    <paper-dialog 
-      id="dialog" class="paper-date-picker-dialog" 
-      modal
-      on-iron-overlay-closed="gotDismissDialog"
-    >
-      <paper-date-picker id="paperDatePicker"  date="{{selectedStartDate}}">
-      </paper-date-picker>
-      <div class="buttons">
-        <paper-button dialog-dismiss>Cancel</paper-button>
-        <paper-button dialog-confirm>OK</paper-button>
-      </div>
-    </paper-dialog>
+    <!--
+    <div id="datePickerDialogContainer">
+      <paper-dialog 
+        id="dialog" class="paper-date-picker-dialog" 
+        on-iron-overlay-closed="gotDismissDialog"
+      >
+        <paper-date-picker id="paperDatePicker"  date="{{selectedStartDate}}">
+        </paper-date-picker>
+        <div class="buttons">
+          <paper-button dialog-dismiss>Cancel</paper-button>
+          <paper-button dialog-confirm>OK</paper-button>
+        </div>
+      </paper-dialog>
+    </div>
+    -->
 
 
   </template>
@@ -186,23 +197,29 @@ Example:
     is: 'task-part-timing',
     properties: {
       taskId: {
-        type: String
+        type: String,
+        value: function(){ return "" },
+        observer: "reEval",
       },
       taskTs: {
         type: String,
-        notify: true
+        observer: "reEval"
       },
       taskAssignedTo: {
         type: String
       },
       plannedFor: {
         type: Object,
-        value: null,
-        notify: true
+        value: null
       },
       taskState: {
         type: Object,
         value: null
+      },
+      selectedStartDate: {
+        type: Object,
+        notify: true,
+        value: function() { return null }
       },
       okToStart: { type: Boolean, value: false , notify: true },
       isAsap: { type: Boolean, value: false },
@@ -214,17 +231,31 @@ Example:
 
     },
 
-    openAssignDialog: function(){
+    showReassign: function(){
       if ( this.taskState=="init" ) {
-        this.$.dialogAssign.show();
+        console.log("in taskpart timing showReassign, about to fire showReassign");
+        return this.fire("showreassign", {taskID: this.taskId });
+      }
+
+    },
+    evaluate: function(){
+      this._evaluate();
+    },
+
+    reEval: function(a,b){
+      //console.log("got to reEval",a,b);
+      if ( this.taskId ){ 
+        this._evaluate();
+        this._lastSaved = _.clone(this.plannedFor);
       }
     },
 
     attached: function(){
-
-      //console.log(this.plannedFor.kind, this.selectedStartDate, this.plannedFor.start);
-      this._lastSaved = _.clone(this.plannedFor);
-      this._evaluate();
+      //console.log("task part timing attached");
+      if ( this.taskId ){ 
+        this._evaluate();
+        this._lastSaved = _.clone(this.plannedFor);
+      }
     },
 
     openDatePicker: function(){
@@ -233,9 +264,12 @@ Example:
         app.$.toast.show();
         return;
       }
-      this.$.dialog.open();
+      return this.fire("showdatepicker", {taskID:this.taskId});
+
+      //this.$.dialog.open();
     },
 
+    /*
     gotDismissDialog:function(closeEvent){
       //console.log("gotDismissalDialog",closeEvent);
 
@@ -250,6 +284,7 @@ Example:
         plannedFor: this.plannedFor
       });
     },
+    */
 
     revert: function(){
       this.set( "plannedFor", _.clone(this._lastSaved));
@@ -257,6 +292,7 @@ Example:
       return;
     },
 
+    /*
     gotTaskReAssigned: function(e,d){
       //console.log("gotTaskReAssign",d);
       if ( this.taskAssignedTo!==d.reAssignTo ){
@@ -269,27 +305,21 @@ Example:
         this.set("tmpReAssignTo", d.reAssignTo);
       }
     },
-
-    confirmReAssign: function(newTs){
-      this.set("taskTs", newTs);
-      this.set("taskAssignedTo", this.get("tmpReAssignTo") );
-    },
+    */
 
     confirm: function(newTs){
       this._lastSaved = _.clone( this.plannedFor );
       this.set("taskTs", newTs);
     },
 
+
+    /*
     _affectTheChange: function(){
 
       var s = moment(this.selectedStartDate);
       var e = moment(this.selectedStartDate);
       s.hour(5).minute(30).second(0).millisecond(0);
       e.hour(18).minute(30).second(0).millisecond(0);
-      /*
-      console.log( "start",s.format("dddd, MMMM Do YYYY, h:mm:ss a") );
-      console.log( "end",e.format("dddd, MMMM Do YYYY, h:mm:ss a") );
-      */
       this.set("plannedFor.kind", "schedule");
       this.set("plannedFor.start", s.format('YYYY-MM-DDThh:mm:ss') );
       this.set("plannedFor.end", e.format('YYYY-MM-DDThh:mm:ss') );
@@ -298,6 +328,7 @@ Example:
       //console.log("plannedFor has been set to:", this.plannedFor);
       this._evaluate(true);
     },
+    */
 
     _evaluate: function(skipSelectDateUpdate){
       this.mustSchedule=false; 
@@ -311,6 +342,7 @@ Example:
         case "asap":
           this.isAsap=true; 
           okToStart=true;
+          this.set("selectedStartDate", null);
           break;
         case "schedule":
           if ( 
@@ -358,6 +390,7 @@ Example:
         default:
           this.isAsap=true; 
           okToStart=true;
+          this.set("selectedStartDate", null);
           break;
       }
 
@@ -373,7 +406,7 @@ Example:
       this.$.mdcurrent.refresh();
       this.$.mdfuture.refresh();
       this.set("okToStart",okToStart);
-
+      this.set("evaluated",true);
     },
 
   });
