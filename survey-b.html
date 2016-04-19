@@ -31,7 +31,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="form-contact.html">
 <link rel="import" href="form-person.html">
 <link rel="import" href="qa-ajax-poster.html">
-<link rel="import" href="list-tasks.html">
+<link rel="import" href="iron-list-tasks.html">
 <link rel="import" href="team-dropdown.html">
 <link rel="import" href="dialog-incompletion.html">
 <link rel="import" href="styles/qa-styles.html">
@@ -262,11 +262,11 @@ Example:
         </div>
 
         <div hidden="[[!hasNextTasks]]">
-          <list-tasks
-            heading="New Tasks Generated"
+          <iron-list-tasks
+            listing-title="New Tasks Generated"
             id="nextTasks"
             subject-id="[[subjectId]]"
-          ></list-tasks>
+          ></iron-list-tasks>
         </div>
       </div>
 
