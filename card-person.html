@@ -24,6 +24,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="section-behaviors.html">
 <link rel="import" href="menu-tasks.html">
 <link rel="import" href="list-tasks.html">
+<link rel="import" href="iron-list-tasks.html">
 <link rel="import" href="card-contact.html">
 <link rel="import" href="card-program-display.html">
 <link rel="import" href="card-data-display.html">
@@ -172,44 +173,44 @@ Example:
         </section>
 
         <section data-tab='tasks' >
-          <list-tasks
+          <iron-list-tasks
             hidden="[[!person]]"
-            heading="Not Yet Started"
+            listing-title="Not Yet Started"
             class='card-content' 
             id="openTasks"
             subject-id="[[subjectId]]"
             state='["init"]'
-          ></list-tasks>
-          <list-tasks
+          ></iron-list-tasks>
+          <iron-list-tasks
             hidden="[[!person]]"
-            heading="In Progress"
+            listing-title="In Progress"
             class='card-content' 
             id="inprogTasks"
             subject-id="[[subjectId]]"
             state='["inprog"]'
-          ></list-tasks>
+          ></iron-list-tasks>
         </section>
 
         <section data-tab='closedtasks'>
-          <list-tasks
+          <iron-list-tasks
             hidden="[[!person]]"
-            heading="Assessments Completed"
+            listing-title="Assessments Completed"
             class='card-content'
             id="completedAssessments"
             subject-id="[[subjectId]]"
             task-def-filter='["assessment"]'
             state='["done"]'
-          ></list-tasks>
+          ></iron-list-tasks>
 
-          <list-tasks
+          <iron-list-tasks
             hidden="[[!person]]"
-            heading="Other Tasks Completed"
+            listing-title="Other Tasks Completed"
             class='card-content'
             id="completedTasks"
             subject-id="[[subjectId]]"
             task-def-filter='["not-assessment"]'
             state='["done"]'
-          ></list-tasks>
+          ></iron-list-tasks>
 
         </section>
 

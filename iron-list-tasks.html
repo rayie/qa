@@ -80,8 +80,7 @@ Example:
 
   <template>
     <div id="container">
-    <!--<paper-card class="primary" elevation="4" >-->
-      <div hidden="[[!tasksLoaded]]" >
+      <paper-card class='primary' hidden="[[!tasksLoaded]]" elevation="4" heading="[[listingTitle]]">
         <iron-list id="mainList" items="[[tasks]]" as="t" index-as="idx" style="height: 700px;">
           <template >
             <div class="row horizontal layout" style="height: 64px;">
@@ -161,7 +160,7 @@ Example:
             </div>
           </template>
         </iron-list>
-      </div>
+      </paper-card>
 
       <qa-ajax-poster
         id="ajax_load_tasks"       
