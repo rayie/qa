@@ -20,6 +20,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="../moment-display/moment-display.html">
 <link rel="import" href="../paper-tabs/paper-tabs.html">
+<link rel="import" href="../iron-list/iron-list.html">
 <link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="section-behaviors.html">
 <link rel="import" href="menu-tasks.html">
@@ -107,6 +108,7 @@ Example:
   <template>
     <div class="container">
       <div id="left">
+
         <paper-toolbar>
           <paper-tabs on-iron-select="tabSelected" id="tabSelector" selected="{{selectedTab}}" elevation='4'>
             <paper-tab>My Open Tasks</paper-tab>

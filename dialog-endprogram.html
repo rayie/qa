@@ -13,6 +13,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../iron-localstorage/iron-localstorage.html">
+<link rel="import" href="../iron-list/iron-list.html">
+<link rel="import" href="iron-list-tasks.html">
 <link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="qa-dateinput.html">
 <!--
@@ -40,7 +42,6 @@ Example:
       --paper-dialog: {
         width: 75%;
         padding-bottom: 16px;
-        color: #fff;
       };
 
       --paper-dialog-background-color: #512DA8;
@@ -51,14 +52,14 @@ Example:
       --paper-input-container-label: { color: yellow; };
       --paper-input-container-label-floating: { color: yellow; };
       --paper-input-container-label-focus: { color: yellow; };
-      --paper-input-container-input-color: #fff;
+      --paper-input-container-input-color: yellow;
     }
 
     #reasonCodeMenu {
       --paper-input-container-label: { color: yellow; };
       --paper-input-container-label-floating: { color: yellow; };
       --paper-input-container-label-focus: { color: yellow; };
-      --paper-input-container-input-color: #fff;
+      --paper-input-container-input-color: yellow;
     }
 
     paper-button {
@@ -79,7 +80,7 @@ Example:
       on-iron-overlay-closed="dialogClosed"
       on-iron-overlay-canceled="dialogCanceled"
     >
-      <h2>End Program - [[programName]]</h2>
+      <h2 style="color:#fff">End Program - [[programName]]</h2>
       <div>
 
         <div>
@@ -119,6 +120,8 @@ Example:
             label="Enter optional note here"
             value='{{reasonNote}}'
           ></paper-input>
+        </div>
+        <div id="listingContainer">
         </div>
 
       </div>
@@ -186,9 +189,31 @@ Example:
       this.set("dataId",dataId);
       this.set("programName",programName);
       this.$.dialog.open();
+
+      Polymer.dom(this.$.listingContainer).children.forEach(function(el,idx){ el.remove(); });
+      Polymer.dom.flush();
+      var newListTasks = this.create("iron-list-tasks", {
+        listingTitle: "Remaining Tasks",
+        subjectId: this.get("subjectId"),
+        selectionEnabled: true,
+        multiSelection: true
+      });
+      this.listen(newListTasks,"applied","tasksApplied");
+      Polymer.dom(this.$.listingContainer).appendChild(newListTasks);
+      this.set("remainingTasks",newListTasks);
+      newListTasks.loadTasks();
+    },
+    tasksApplied: function(e,a,b){
+      var remTasks = this.get("remainingTasks");
+      remTasks.tasks.forEach(function(t,idx){
+        if (t.parentTaskId){
+          remTasks.$.mainList.selectItem(idx);
+        }
+      });
     },
 
     dialogClosed: function(dialogCloseEvent){
+      var remainingTaskIds = this.get("remainingTasks").getSelectedTasks();
       if (!_.get(dialogCloseEvent,'detail.confirmed',false)) {
         //reset
         console.log("user didn't click confirm");
@@ -200,7 +225,8 @@ Example:
         dataId: this.dataId,
         endDate: this.endDate,
         reasonCode: this.reasonCode,
-        reasonNote: this.reasonNote
+        reasonNote: this.reasonNote,
+        remainingTaskIds: remainingTaskIds 
       }
       //console.log("sending end program payload",payload);
       this.$.ajax.send(payload);

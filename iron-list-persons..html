@@ -1,0 +1,143 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-fab/paper-fab.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-item/paper-item-body.html">
+<link rel="import" href="../paper-input/paper-input.html">
+
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+
+<link rel="import" href="../paper-styles/typography.html">
+<link rel="import" href="../iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../moment-display/moment-display.html">
+<link rel="import" href="section-behaviors.html">
+<link rel="import" href="qa-ajax-poster.html">
+<link rel="import" href="styles/qa-styles.html">
+
+<!--
+
+Example:
+
+    <iron-list-persons></iron-list-persons>
+
+@demo
+-->
+<dom-module id="iron-list-persons">
+  <style is="custom-style" include="qa-styles"></style>
+  <div id="container">
+    <paper-card class='primary' hidden="[[!persons]]" elevation="4" heading="[[listingTitle]]">
+      <iron-list id="mainList" items="[[persons]]" as="p" index-as="idx" style="height: 700px;">
+        <template >
+          <div class="row horizontal layout" style="height: 64px;">
+            <paper-item> 
+              <paper-item-body two-line> 
+                <div>
+                  <a href$="patient/[[p._id]]">
+                    <span class='name'>
+                    [[p.revealStr]] 
+                    </span>
+                  </a>
+                </div>
+                <div seconday>
+                  <moment-display 
+                   inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                  class='emph' label="Program Date Range:" str="[[p.programDates.start]]" ></moment-display>
+                  <moment-display 
+                   inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                  class='emph' label="to" str="[[p.programDates.end]]" ></moment-display>
+                </div>
+              </paper-item-body>
+            </paper-item> 
+          </div>
+        </template>
+      </iron-list>
+    </paper-card>
+  </div>
+  <qa-ajax-poster
+    id="ajax_load_persons"       
+    no-toast
+    on-response="loadPersonsResponse"
+    on-error="loadPersonsError"
+    loading="{{is_loading}}"
+    endpoint="api/persons:program"
+  ></qa-ajax-poster>
+</dom-module>
+<script>
+
+  Polymer({
+
+    is: 'iron-list-persons',
+
+    behaviors: [ SectionBehaviors.Basic ],
+
+    properties: {
+      persons: {
+        type: Array,
+        value: []
+      }, 
+      listTitle: { 
+        type: String,
+        value: function(){ return "missing title"; }
+      }
+    },
+
+    loadPersons: function(overridePayload){
+      this.set("persons",[]);
+      if (overridePayload){
+        console.log("loading persons by program", this.selectedProgram);
+        var payload = {
+          timing: override.timingCode,
+          "sc-program-name": override.
+          "days": this.timingList[ this.selectedTiming ].days
+        }
+        return this.$.ajax_load_persons.send(payload);
+      }
+
+      if ( 
+        this.selectedProgram !== null 
+        &&
+        this.selectedProgram !== undefined
+      ){
+        this.set("persons",[]);
+        console.log("loading persons by program", this.selectedProgram);
+        var payload = {
+          timing: this.timingList[ this.selectedTiming ].code,
+          "sc-program-name": this.programList[ this.selectedProgram ].txt,
+          "days": this.timingList[ this.selectedTiming ].days
+        }
+        return this.$.ajax_load_persons.send(payload);
+      }
+    },
+
+    loadPersonsResponse: function(e,data){
+      console.log(e);
+      //e.detail.response.person.dob  = e.detail.response.person.dob.toString().substr(0,10);
+      this.set("persons",data.persons);
+      var listResultTitle = data.persons.length + " Patients Found";
+      this.applyTitle("Patient Listing by Program - "+ listResultTitle);
+    },
+
+    loadPersonsError: function(e){
+      console.log(e);
+
+    }
+
+  });
+
+</script>
+

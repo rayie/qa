@@ -25,6 +25,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="menu-tasks.html">
 <link rel="import" href="list-tasks.html">
 <link rel="import" href="iron-list-tasks.html">
+<link rel="import" href="iron-list-persons.html">
 <link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="qa-dateinput.html">
 <link rel="import" href="styles/qa-styles.html">
@@ -51,14 +52,14 @@ Example:
     /* form hdr part */
     #left {
       float: left;
-      width: 38%;
+      width: 30%;
       height: 800px;
       overflow: scroll;
     }
 
     #right {
       float: left;
-      width: 60%;
+      width: 68%;
       height: 800px;
       /* overflow: scroll;*/
       overflow: hidden;
@@ -108,6 +109,7 @@ Example:
   <template>
     <div class="container">
       <div id="left">
+
         <paper-toolbar>
           <paper-tabs on-iron-select="tabSelected" id="tabSelector" selected="{{selectedTab}}" elevation='4'>
             <paper-tab>My Tasks</paper-tab>
@@ -308,7 +310,7 @@ Example:
                   </paper-item>
                   <template id="progCnt" is="dom-repeat" items="[[programs]]" >
                     <paper-item class='link'>
-                      <div >
+                      <div on-click="loadPersonListing" class="pointer" >
                         <span>[[item.nm]]<span> <strong>[[item.n]]</strong>
                       </div>
                     </paper-item>
@@ -335,16 +337,8 @@ Example:
       </div>
 
       <div id="right">
-        <div id="listTasksContainer">
-          <!--
-          <iron-list-tasks
-            class='card-content' 
-            id="taskListing"
-          ></iron-list-tasks>
-          -->
-        </div
+        <div id="listingContainer"></div>
       </div>
-
     </div>
   </template>
 
@@ -375,6 +369,14 @@ Example:
       selectedTab: {
         type: Number,
         value: 0 
+      },
+      abc: {
+        type: Array,
+        value:  []
+      },
+      fake: {
+        type: Array,
+        value:  [ {name:"ray"},{name:"jim"} ]
       }
     },
     attached: function(){
@@ -473,11 +475,7 @@ Example:
         extraFilters: extraFilters
       });
 
-      this.set("listingTitle", payload.bucketname);
-      
-      Polymer.dom(this.$.listTasksContainer).children.forEach(function(el,idx){
-        el.remove();
-      });
+      Polymer.dom(this.$.listingContainer).children.forEach(function(el,idx){ el.remove(); });
       Polymer.dom.flush();
       var newListTasks = this.create("iron-list-tasks", {
           listingTitle: payload.bucketname,
@@ -486,10 +484,29 @@ Example:
           }
       });
 
-      Polymer.dom(this.$.listTasksContainer).appendChild(newListTasks);
+      Polymer.dom(this.$.listingContainer).appendChild(newListTasks);
       newListTasks.loadTasks({ endpoint: endpoint , payload:payload });
-      //return this.$.taskListing.loadTasks({ endpoint: endpoint , payload:payload });
     },
+
+    loadPersonListing: function(e){
+
+      var model = e.model;
+      var payload={
+        timing: "current",
+        "sc-program-name": model.item.nm,
+        "days": 0
+      }
+      console.log(payload);
+
+      Polymer.dom(this.$.listingContainer).children.forEach(function(el,idx){ el.remove(); });
+      Polymer.dom.flush();
+      var newListPersons = this.create("iron-list-persons", { listingTitle: "Currently in " + model.item.nm });
+      console.log(newListPersons);
+      Polymer.dom(this.$.listingContainer).appendChild(newListPersons);
+      newListPersons.loadPersons(payload);
+
+    },
+
 
     submit: function(e){
       return;

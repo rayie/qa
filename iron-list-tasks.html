@@ -76,29 +76,42 @@ Example:
       --iron-icon-width: 16px;
     }
 
+    .item.selected {
+      background-color: #FFE082;
+      margin-bottom: 8px;
+      padding:8px;
+    }
+
   </style>
 
   <template>
     <div id="container">
-      <paper-card class='primary' hidden="[[!tasksLoaded]]" elevation="4" heading="[[listingTitle]]">
-        <iron-list id="mainList" items="[[tasks]]" as="t" index-as="idx" style="height: 700px;">
+      <paper-card class='primary' hidden="[[!tasksLoaded]]" elevation="4" heading="[[computedListingTitle]]">
+      <iron-list 
+        selection-enabled="[[selectionEnabled]]"
+        selected-items="{{selectedTasks}}"
+        multi-selection="[[multiSelection]]"
+        id="mainList" 
+        style="height: 200px;" 
+        items="[[tasks]]" 
+        index-as="idx" 
+      >
           <template >
             <div class="row horizontal layout" style="height: 64px;">
           
-              <div class="flex-5">
+              <div class$="[[_computedClass(selected)]]" >
                 <div>
-                  <a class='name' href$="patient/[[t.subjectId]]" title="Patient Detail">[[t.subjectDisplayAs]]</a>
-                  <a class='name' hidden="[[!t.m.done]]" href$="taskresult/[[t._id]]" title="Task Data"> - [[t.name]]</a>
-                  <span class='name' hidden="[[t.m.done]]"> - [[t.name]]</span>
+                  <a class='name' href$="patient/[[item.subjectId]]" title="Patient Detail">[[item.subjectDisplayAs]]</a>
+                  <a class='name' hidden="[[!item.m.done]]" href$="taskresult/[[item._id]]" title="Task Data"> - [[item.name]]</a>
+                  <span class='name' hidden="[[item.m.done]]"> - [[item.name]]</span>
                 </div >
 
                 <div class='age'>
-                  <moment-display label="Created" plus-age display-fmt="withday" time str="[[t.m.init.ts]]" 
+                  <moment-display label="Created" plus-age display-fmt="withday" time str="[[item.m.init.ts]]" 
                   inbound-fmt="YYYY-MM-DDThh:mm:ss"
                   ></moment-display>
-
-                  <span>
-                    [[compDur(t.m)]] 
+                  <span hidden="[[!item.parentTaskId]]">
+                    (automated) 
                   </span>
                 </div>
 
@@ -106,13 +119,13 @@ Example:
 
 
               <div class="flex-2">
-                <div hidden="[[!t.hasBeenCancelled]]" >
+                <div hidden="[[!item.hasBeenCancelled]]" >
                   <h3>Cancelled</h3>
                 </div>
 
-                <div hidden="[[t.hasBeenCancelled]]" >
+                <div hidden="[[item.hasBeenCancelled]]" >
 
-                  <div item-icon hidden="[[!t.okToCancel]]" >
+                  <div item-icon hidden="[[!item.okToCancel]]" >
                     <qa-btn
                       send-back="[[index]]"
                       on-btnclick="cancelTask"
@@ -125,14 +138,14 @@ Example:
                   </div>
                   
                   <a 
-                    hidden="[[!t.okToStart]]"
-                    href$="{{baseUrl}}tasks/{{t._id}}"
+                    hidden="[[!item.okToStart]]"
+                    href$="{{baseUrl}}tasks/{{item._id}}"
                   >
                     <iron-icon icon="create"></iron-icon> 
-                    <small hidden="[[t.m.inprog]]">
+                    <small hidden="[[item.m.inprog]]">
                       Start 
                     </small>
-                    <small hidden="[[!t.m.inprog]]">
+                    <small hidden="[[!item.m.inprog]]">
                       Resume
                     </small>
                   </a>
@@ -142,14 +155,14 @@ Example:
 
               <div class='flex-3'>
                 <task-part-timing
-                  hidden="[[t.hasBeenCancelled]]"
-                  task-assigned-to="[[t.assignedTo]]"
-                  task-id="[[t._id]]"
-                  task-ts="{{t.ts}}"
-                  planned-for="[[t.plannedFor]]"
-                  selected-start-date="{{t.selectedStartDate}}"
-                  task-state="[[t.state]]"
-                  ok-to-start="{{t.okToStart}}"
+                  hidden="[[item.hasBeenCancelled]]"
+                  task-assigned-to="[[item.assignedTo]]"
+                  task-id="[[item._id]]"
+                  task-ts="{{item.ts}}"
+                  planned-for="[[item.plannedFor]]"
+                  selected-start-date="{{item.selectedStartDate}}"
+                  task-state="[[item.state]]"
+                  ok-to-start="{{item.okToStart}}"
                   on-change="gotTaskTimingChange"
                   on-showreassign="gotShowReassign"
                   on-showdatepicker="gotShowDatePicker"
@@ -227,6 +240,19 @@ Example:
         type: Array,
         value: ["init","inprog"]
       },
+      selectionEnabled: {
+        type: Boolean,
+        value:false
+      },
+      multiSelection: {
+        type: Boolean,
+        value: false
+      },
+      selectedTasks: {
+        type: Array,
+        value: function(){ return []; },
+        notify: true
+      },
       tasksLoaded: {
         type: Boolean,
         value: false
@@ -243,9 +269,13 @@ Example:
         type: String,
         value: ""
       },
-      heading: {
+      listingTitle: {
         type: String,
-        value: "Tasks"
+        value: ""
+      },
+      computedListingTitle: {
+        type: String,
+        value: "Tasks loading ..."
       },
       subjectId: {
         type: String,
@@ -272,7 +302,6 @@ Example:
     workTask: function(e){
       console.log(e);
     },
-
 
     /*
       override must containt: {
@@ -316,20 +345,30 @@ Example:
       console.log("loadTasksError",e);
     },
 
+    getSelectedTasks: function(){
+      var tt = this.get("selectedTasks");
+      console.log(tt);
+      return this.get("selectedTasks").map(function(t){ return t._id; });
+    },
 
     applyTasks: function(tasks){
       this.resetTasks();
       this.set("tasks", tasks);
       this.$.mainList.notifyResize();
       Polymer.dom.flush();
+      var title = this.get("listingTitle") + " (" + this.tasks.length + " Tasks)"; 
       if ( this.tasks.length ){
         var tmpFixTs = this.get("tasks.0.ts");
         this.set("tasks.0.ts",0);
         var self = this;
         setTimeout( function(){
           self.set("tasks.0.ts",tmpFixTs);
+          self.set("computedListingTitle",title);
+          self.fire("applied");
         },300);
+
       }
+      else this.set("computedListingTitle",title);
     },
 
     cancelTask: function(e, taskIndex){
@@ -356,7 +395,7 @@ Example:
 
     gotShowReassign: function(a,b){
       this.set("tmpModel", a.model);
-      this.$.dialogAssign.show(a.model.t);
+      this.$.dialogAssign.show(a.model.item);
       return;
     },
 
@@ -399,11 +438,11 @@ Example:
 
 
     gotShowDatePicker: function(a,b){
-      console.log("selected start date of chosen model",a.model.t);
+      console.log("selected start date of chosen model",a.model.item);
       this.set("tmpModelForDateChange", a.model);
-      this.set("tmpTaskForDateChange", a.model.t);
-      if ( a.model.t.selectedStartDate ){
-        this.set("tmpSelectedStartDate", a.model.t.selectedStartDate);
+      this.set("tmpTaskForDateChange", a.model.item);
+      if ( a.model.item.selectedStartDate ){
+        this.set("tmpSelectedStartDate", a.model.item.selectedStartDate);
       }
       this.$.dialogDatePicker.open();
     },
@@ -461,8 +500,15 @@ Example:
     updateTaskError: function(e, data){
       //console.log("in tasklist, updateTaskError", e, data);
       if ( data.passBack ) data.passBack.revert();
+    },
+
+    _computedClass: function(isSelected) {
+      return [
+        'flex-5 item', 
+        (isSelected)?'selected':'',
+        (this.selectionEnabled)?'pointer':''
+      ].join(" ")
     }
-    
 
   });
 
