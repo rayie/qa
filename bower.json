@@ -41,7 +41,6 @@
     "paper-dialog-scrollable": "PolymerElements/paper-dialog-scrollable#~1.1.0",
     "paper-dropdown-menu":"PolymerElements/paper-dropdown-menu#latest",
     "paper-icon-button":"PolymerElements/paper-icon-button#latest",
-    "paper-icon-item":"PolymerElements/paper-icon-item#latest",
     "paper-input":"PolymerElements/paper-input#latest",
     "paper-item":"PolymerElements/paper-item#latest",
     "paper-listbox":"PolymerElements/paper-listbox#latest",
