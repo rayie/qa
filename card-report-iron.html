@@ -324,10 +324,10 @@ Example:
         case 0:
 
           this.$.ajax.setEndpoint("api/report:opentasks:bytype");
-          this.$.ajax.send({ extraFilters:{ assignedTo:'me' }, bucketname: 'myOpenTasksByType' });
+          this.$.ajax.send({ extraFilters:{ state:"init",assignedTo:'me' }, bucketname: 'myOpenTasksByType' });
 
           this.$.ajax.setEndpoint("api/report:opentasks:bytiming");
-          this.$.ajax.send({ extraFilters:{ assignedTo:'me'}, bucketname: 'myOpenTasksByTiming'});
+          this.$.ajax.send({ extraFilters:{ state:"init",assignedTo:'me'}, bucketname: 'myOpenTasksByTiming'});
 
 
           this.$.ajax.setEndpoint("api/report:opentasks:bytype");
@@ -336,14 +336,14 @@ Example:
 
         case 1:
           this.$.ajax.setEndpoint("api/report:opentasks:bytype");
-          this.$.ajax.send({bucketname:"allOpenTasksByType"});
+          this.$.ajax.send({ extraFilters:{state:"init"} , bucketname:"allOpenTasksByType"});
 
           this.$.ajax.setEndpoint("api/report:opentasks:bytiming");
-          this.$.ajax.send({bucketname:"allOpenTasksByTiming"});
+          this.$.ajax.send({ extraFilters:{state:"init"}, bucketname:"allOpenTasksByTiming"});
 
 
           this.$.ajax.setEndpoint("api/report:opentasks:byuser");
-          this.$.ajax.send({bucketname:"allOpenTasksByUser"});
+          this.$.ajax.send({ extraFilters:{state:"init"},bucketname:"allOpenTasksByUser"});
           break;
 
         case 2:
@@ -385,12 +385,12 @@ Example:
 
     loadMyListingByType: function(e,b){
       this.$.ajaxListing.setEndpoint("api/report:opentasks:bytype" );
-      this.loadListing(e, {assignedTo:'me'});
+      this.loadListing(e, { extraFilters:{state:"init"}, assignedTo:'me'});
     },
 
     loadMyListingByTiming: function(e,b){
       this.$.ajaxListing.setEndpoint("api/report:opentasks:bytiming" );
-      this.loadListing(e, {assignedTo:'me'});
+      this.loadListing(e, { state:"init", assignedTo:'me'});
     },
 
     loadMyInProgListingByType: function(e,b){

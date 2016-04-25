@@ -13,11 +13,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-icons/av-icons.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
 <link rel="import" href="../iron-list/iron-list.html">
-<link rel="import" href="../paper-material/paper-material.html">
-<link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-item/paper-icon-item.html">
-<link rel="import" href="../paper-item/paper-item-body.html">
 <link rel="import" href="../paper-styles/typography.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-date-picker/paper-date-picker.html">
 <link rel="import" href="../moment-display/moment-import.html">
 <link rel="import" href="../moment-display/moment-display.html">
 <link rel="import" href="task-behaviors.html">
@@ -58,6 +56,10 @@ Example:
     }
 
     .age {
+      font-size: 12px;
+    }
+
+    .doneInfo {
       font-size: 12px;
     }
 
@@ -148,6 +150,12 @@ Example:
                       Resume
                     </small>
                   </a>
+
+                  <div hidden="[[!item.m.done]]" class='age'>
+                    <moment-display label="Completed" plus-age display-fmt="withday" time str="[[item.m.done.ts]]" 
+                    inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                    ></moment-display>
+                  </div>
 
                 </div>
               </div>
@@ -342,11 +350,11 @@ Example:
 
     loadTasksError: function(e){
       console.log("loadTasksError",e);
+      this.set("subjectId",data.subjectId);
     },
 
     getSelectedTasks: function(){
       var tt = this.get("selectedTasks");
-      console.log(tt);
       return this.get("selectedTasks").map(function(t){ return t._id; });
     },
 
@@ -416,7 +424,7 @@ Example:
 
     reassignTaskResponse: function(e,data){
       var model = this.get("tmpModel");
-      model.set("t.ts", data.newTs);
+      model.set("item.ts", data.newTs);
 
       app.$.toast.text = "Task REASSIGNED to " + this.get("tmpReAssignTo"); 
       if ( data.msg ) app.$.toast.text += data.msg;
@@ -438,6 +446,7 @@ Example:
 
     gotShowDatePicker: function(a,b){
       console.log("selected start date of chosen model",a.model.item);
+      this.set("tmpTaskPartTiming", a.target);
       this.set("tmpModelForDateChange", a.model);
       this.set("tmpTaskForDateChange", a.model.item);
       if ( a.model.item.selectedStartDate ){
@@ -463,24 +472,24 @@ Example:
       var t = this.get("tmpTaskForDateChange");
       var model = this.get("tmpModelForDateChange");
       var pf = { kind: "schedule", start: s.format('YYYY-MM-DDThh:mm:ss'), end:e.format('YYYY-MM-DDThh:mm:ss') };
-      model.set("t.plannedFor.kind", pf.kind);
-      model.set("t.plannedFor.start", pf.start);
-      model.set("t.plannedFor.end", pf.end);
 
-      console.log("model", model);
-      model.set("plannedFor", t.plannedFor);
-      console.log(model.get("t").plannedFor);
+      model.set("item.plannedFor.kind", pf.kind);
+      model.set("item.plannedFor.start", pf.start);
+      model.set("item.plannedFor.end", pf.end);
+
+      this.get("tmpTaskPartTiming").evaluate();
+      //console.log("model.item", model.item);
+      //model.set("plannedFor", t.plannedFor);
       var payload = {
         taskId: t._id,
         lastTs: t.ts,
         plannedFor: pf
       };
       
-      console.log(payload);
+      //console.log(payload);
       this.$.ajax_update_task.send(payload);
       return;
     },
-
 
     gotTaskTimingChange: function(e,timingChange){
       console.log("got task timign change", e, timingChange);
@@ -489,7 +498,7 @@ Example:
 
     updateTaskResponse: function(e,data){
       var model = this.get("tmpModelForDateChange");
-      model.set("t.ts", data.newTs);
+      model.set("item.ts", data.newTs);
 
       app.$.toast.text = "Task UPDATED"; 
       if ( data.msg ) app.$.toast.text += data.msg;

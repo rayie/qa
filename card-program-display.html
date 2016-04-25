@@ -239,6 +239,13 @@ Example:
                 
               <div class="horizontal layout justified record-footer-addon">
                 <div class='flex-child last-update-msg'>
+
+                  <div class='note' hidden="[[!rec.a.sc-program-end-rctxt]]">
+                    Program Ended: [[rec.a.sc-program-end-rctxt]] - 
+                    [[rec.a.sc-program-end-note]]
+                  </div>
+
+
                   <div class='note' hidden="[[!rec.a.sc-review-program-notes]]">
                     Review Note: [[rec.a.sc-review-program-notes]]
                   </div>
@@ -349,25 +356,38 @@ Example:
     },
 
     loadResponse: function(e,data){
-      //console.log("data.records",data.records);
       data.records = data.records.filter(function(r){
         if ( r.length ) return r;
       });
-      var current = data.records.map(function(r){
-        r[0].expired=false;
-        var endDate = _.get(r[0],"a.sc-program-end-date",false);
+
+      var records = [];
+      data.records.forEach(function(rA){
+        rA.forEach(function(rB){ records.push(rB); });
+      });
+
+      console.log("data.records",records);
+      var rcRef = {
+        "CP": "Change of Insurance Plan",
+        "PD": "Patient Deceased",
+        "PR": "Patient Requested to End Program"
+      };
+      var current = records.map(function(r){
+        r.expired=false;
+        var endDate = _.get(r,"a.sc-program-end-date",false);
+        console.log("endDate",endDate);
         if ( false === endDate ){
-          r[0].allowEndProgram=true;
+          r.allowEndProgram=true;
         }
         else{
           //console.log('endDate',endDate);
           var endM = new moment(endDate.substr(0,19), "YYYY-MM-DDThh:mm:ss");
-          //console.log( endM.toDate(), endM.diff(new Date(),'hours') < -24 );
-          if ( endM.diff(new Date(),'hours') < -24 ){
-            r[0].expired=true;
+          console.log( endM.toDate(), endM.diff(new Date(),'hours') < 0 );
+          if ( endM.diff(new Date(),'hours') < 0 ){
+            r.expired=true;
+            r.a['sc-program-end-rctxt'] = rcRef[ r.a['sc-program-end-rc'] ];
           }
         }
-        return r[0];  //unmerge it
+        return r;  //unmerge it
       });
 
       //console.log("current", current);

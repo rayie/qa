@@ -466,6 +466,10 @@ Example:
       this.loadListing("api/report:opentasks:bytype",e, {state:"inprog",assignedTo:'me'});
     },
 
+    loadMyDoneListingByType: function(e,b){
+      this.loadListing("api/report:opentasks:bytype",e, {state:"done",assignedTo:'me'});
+    },
+
     loadListing: function(endpoint,e,extraFilters){
       var model = e.model;
       var payload = _.merge({

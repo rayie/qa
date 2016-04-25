@@ -95,7 +95,7 @@ Example:
             > 
               <paper-item rc='CP'>Change of Insurance Plan</paper-item>
               <paper-item rc='PD'>Patient Deceased</paper-item>
-              <paper-item rc='PR'>Patient Requested to End Services</paper-item>
+              <paper-item rc='PR'>Patient Requested to End Program</paper-item>
             </paper-listbox>
           </paper-dropdown-menu>
         </div>
@@ -121,6 +121,7 @@ Example:
             value='{{reasonNote}}'
           ></paper-input>
         </div>
+        
         <div id="listingContainer">
         </div>
 
@@ -193,7 +194,7 @@ Example:
       Polymer.dom(this.$.listingContainer).children.forEach(function(el,idx){ el.remove(); });
       Polymer.dom.flush();
       var newListTasks = this.create("iron-list-tasks", {
-        listingTitle: "Remaining Tasks",
+        listingTitle: "Remaining Tasks - Highligted Tasks will be cancelled upon confirming",
         subjectId: this.get("subjectId"),
         selectionEnabled: true,
         multiSelection: true
@@ -228,8 +229,8 @@ Example:
         reasonNote: this.reasonNote,
         remainingTaskIds: remainingTaskIds 
       }
-      //console.log("sending end program payload",payload);
-      this.$.ajax.send(payload);
+      console.log("sending end program payload",payload);
+      return this.$.ajax.send(payload);
     },
 
     endProgramResponse: function(e,data){

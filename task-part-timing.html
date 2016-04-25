@@ -20,8 +20,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-styles/color.html">
 <link rel="import" href="../moment-display/moment-import.html">
 <link rel="import" href="../moment-display/moment-display.html">
-<link rel="import" href="../paper-dialog/paper-dialog.html">
-<link rel="import" href="../paper-date-picker/paper-date-picker.html">
 <link rel="import" href="dialog-assign.html">
 
 <!--
@@ -147,9 +145,11 @@ Example:
         ></moment-display>
 
 
+
         <!--<span>Test: [[selectedStartDate]]</span>-->
         <iron-icon icon="perm-contact-calendar"></iron-icon>
       </div>
+
       <div class='assignment' on-click="showReassign">
         [[taskAssignedTo]]
         <!--
@@ -157,7 +157,7 @@ Example:
           [[evaluated]] - [[okToStart]]
           <br/>
           [[taskId]]
-          -->
+        -->
         <!--[[plannedFor.start]]-->
       </div>
     </div>
@@ -192,10 +192,25 @@ Example:
 </dom-module>
 
 <script>
+
+
   Polymer({
 
     is: 'task-part-timing',
+
     properties: {
+      displayState : {
+        type: Array,
+        value: [
+          "mustSchedule", 
+          "mustScheduleWithTarget",
+          "isPlannedPast",
+          "isPlannedCurrent",
+          "isPlannedFuture",
+          "isAsap",
+          "isDone"
+        ]
+      },
       taskId: {
         type: String,
         value: function(){ return "" },
@@ -240,6 +255,7 @@ Example:
     },
     evaluate: function(){
       this._evaluate();
+      console.log("evaluated");
     },
 
     reEval: function(a,b){
@@ -329,14 +345,21 @@ Example:
       this._evaluate(true);
     },
     */
+    _resetDisplayStates: function(){
+      var self = this;
+      this.displayState.forEach(function(ds){ self[ds]=false });
+    },
 
     _evaluate: function(skipSelectDateUpdate){
+      /*
       this.mustSchedule=false; 
       this.mustScheduleWithTarget=false; 
       this.isPlannedPast = false;
       this.isPlannedCurrent = false;
       this.isPlannedFuture = false;
       this.isAsap=false; 
+      */
+      this._resetDisplayStates();
       var okToStart=false;
       switch(this.plannedFor.kind){
         case "asap":
@@ -364,13 +387,12 @@ Example:
             if ( skipSelectDateUpdate !== true ){
               var st_m = new moment(this.plannedFor.start.substr(0,19));
               st_m.add(st_m.utcOffset(),"m");
-              //console.log("selectedStartDate", st_m.toDate() );
               this.set("selectedStartDate", st_m.toDate() );
             }
           }
           else{
             //no start date 
-            //console.log('no start date', this.plannedFor);
+
             if ( 
               _.get(this.plannedFor,'target.start',false)
             ){
@@ -400,6 +422,11 @@ Example:
       }
       else {
         //console.log("is ok", this.taskAssignedTo);
+      }
+
+      if ( this.taskState==="done" ){
+        this._resetDisplayStates();
+        this.isDone=true;
       }
       
       
