@@ -305,7 +305,7 @@ Example:
               <div class='layout vertical'>
                 <div class='vertical-menu' role=''>
                   <paper-item class='menusectionLbl'>
-                    <label>Patient Counts by Programs</label>
+                    <label>Patients in Programs - Total [[programsTotal]]</label>
                   </paper-item>
                   <template id="progCnt" is="dom-repeat" items="[[programs]]" >
                     <paper-item class='link'>
@@ -314,9 +314,6 @@ Example:
                       </div>
                     </paper-item>
                   </template>
-                  <paper-item class='link'>
-                    <div>Total - <strong>[[programTotal]]<strong></div>
-                  </paper-item>
                 </div>
               </div>
             </paper-material>
@@ -480,11 +477,13 @@ Example:
 
       Polymer.dom(this.$.listingContainer).children.forEach(function(el,idx){ el.remove(); });
       Polymer.dom.flush();
+      var h = Math.floor( .85 * window.innerHeight );
       var newListTasks = this.create("iron-list-tasks", {
-          listingTitle: payload.bucketname,
-          hostAttributes: {
-            id:"taskListing"
-          }
+        listingTitle: payload.bucketname,
+        listingHeight: h,
+        hostAttributes: {
+          id:"taskListing"
+        }
       });
 
       Polymer.dom(this.$.listingContainer).appendChild(newListTasks);

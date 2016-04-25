@@ -87,13 +87,13 @@ Example:
 
   <template>
     <div id="container">
-      <paper-card class='primary' hidden="[[!tasksLoaded]]" elevation="4" heading="[[computedListingTitle]]">
+      <paper-card class='primary layout vertical' hidden="[[!tasksLoaded]]" elevation="4" heading="[[computedListingTitle]]">
       <iron-list 
         selection-enabled="[[selectionEnabled]]"
         selected-items="{{selectedTasks}}"
         multi-selection="[[multiSelection]]"
         id="mainList" 
-        style="height: 200px;" 
+        style="height: [[listingHeight]]px;" 
         items="[[tasks]]" 
         index-as="idx" 
       >
@@ -243,6 +243,17 @@ Example:
     behaviors: [ TaskBehaviors.Basic ],
     
     properties: {
+
+      listingHeight: {
+        type: Number,
+        value: function(){ return 250; }
+      },
+
+      listingHeightPercentageOfWindow: {
+        type: Number,
+        value: function(){ return 80; }
+      },
+
       state: {
         type: Array,
         value: ["init","inprog"]
@@ -372,10 +383,18 @@ Example:
           self.set("tasks.0.ts",tmpFixTs);
           self.set("computedListingTitle",title);
           self.fire("applied");
+
+
         },300);
 
       }
       else this.set("computedListingTitle",title);
+    },
+
+    computeHeight: function(){
+      var h = Math.floor( this.listingHeightPercentageOfWindow * window.innerHeight )
+      this.set("listingHeight", h);
+      //Polymer.dom.flush();
     },
 
     cancelTask: function(e, taskIndex){
