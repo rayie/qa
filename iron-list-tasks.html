@@ -371,20 +371,23 @@ Example:
         "start": 0,
         "end": 0
       });
+
       var te = [
         " - Displaying Tasks "+(pg.start+1)+ "-" + pg.end + " of " + pg.totalRecords + " Total",
         "Page "+(pg.currentPageNum+1)+ " of " + pg.totalPagesAvailable
       ].join(" - ");
 
       var title = this.get("listingTitle") + te;
-      this.set("computedListingTitle",title);
-
       if ( pg.totalPagesAvailable > 1 ){
         this.set("pagebtns",_.range(1,pg.totalPagesAvailable+1));
+      }
+      else if (pg.totalRecords === 0 ){
+        te =  " - No tasks found in this bucket "; 
       }
       else {
         this.set("pagebtns",[]);
       }
+      this.set("computedListingTitle",this.get("listingTitle") + te);
     },
 
     pageSelected: function(a){
@@ -430,14 +433,14 @@ Example:
     },
 
     cancelTask: function(e, taskIndex){
-      var task = this.tasks[taskIndex];
-      console.log(task.name, task._id, task.ts);
+      var task = e.model.item;
+      console.log(e.model.idx,task.name, task._id, task.ts);
       var payload = {
         taskId: task._id,
         lastTs: task.ts
       }
       console.log(payload);
-      return this.$.ajax_cancel_task.send(payload,taskIndex);
+      return this.$.ajax_cancel_task.send(payload,e.model.idx);
     },
 
     cancelTaskResponse: function(e,data){
