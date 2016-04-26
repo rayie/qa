@@ -17,7 +17,8 @@ var CONST = {
   CONCURRENCY_NOT_ALLOWED: 3,
   TAGS: 6,
   MAX_OPTS: 7,
-  OPTS: 8
+  OPTS: 8,
+  LOGIC: 10
 }
 
 var parse = function(data){
@@ -43,7 +44,6 @@ var parse = function(data){
     if ( !cols[CONST.QTXT].trim() ) return console.log("SKIPPING - missing qtxt", cols.join("\t") );
     if ( !cols[CONST.TAGS].trim() ) return console.log("SKIPPING - missing tags", cols.join("\t") );
     if ( !cols[CONST.KIND].trim() ) cols[CONST.KIND]="ft";
-
     var entry = {
       _id: newID,
       txt: _.upperFirst(cols[CONST.QTXT]),
@@ -94,6 +94,68 @@ var parse = function(data){
       default: 
         break;
     }
+
+    if ( cols[CONST.LOGIC].trim() ){ 
+      var logic_parts = cols[CONST.LOGIC].trim().split(/;/g);
+      /* examples
+       * Poor:1
+       * hidden 
+       * Yes:1,17  -> show next 1 to 17
+       * hidden;No:2 -> hide, but if shown and answered as No, show th question 2 steps after this one
+       *
+       */
+
+      logic_parts.forEach(function(lp){
+        lp = lp.trim().toLowerCase();
+        if ( lp==="hidden"){
+            entry.hidden=true;
+            return;
+        }
+        else{
+
+          var pt = lp.split(/:/);
+          var askArray = [];
+          if (pt.length === 2){
+            if ( pt[1].search(/,/)!==-1 ){
+              // there's a range of questions to show for each of opts the matching values
+              var ptt = pt[1].split(/,/);
+              var start = parseInt( ptt[0], 10 );
+              var end = parseInt( ptt[1], 10 );
+              for(var i = start; i<=end; i++){
+                askArray.push( (newID+i).toString() );
+              }
+            }
+          }else if (pt.length === 1){
+              var start = end = parseInt( ptt[0], 10 );
+          }
+          else{
+            console.log("Invalid logic", entry, logic_parts);
+            process.exit();
+          }
+
+
+          if ( cols[CONST.KIND] === "mc" ){
+
+            var val = pt[0].toLowerCase(); //  is the value meeting the rule
+            entry.opts.forEach(function(opt){
+              if ( opt.txt.toLowerCase() === val ){
+                opt.ask = [].concat(askArray);
+              }
+            });
+
+          }
+          else if ( cols[CONST.KIND] === "yn" ){
+            var val = pt[0].toLowerCase().substr(0,1); //  yes or no
+            
+            entry.rule = {}; 
+            entry.rule[val] =  { ask: askArray };
+          }
+
+        }
+      })
+
+    }
+
 
     tags.forEach(function(t){
       t = t.trim().toLowerCase().replace(/ /g,"-");
