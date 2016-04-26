@@ -116,20 +116,28 @@ var parse = function(data){
           var pt = lp.split(/:/);
           var askArray = [];
           if (pt.length === 2){
-            if ( pt[1].search(/,/)!==-1 ){
+            var ptt = pt[1].split(/,/);
+            if ( ptt.length===2 ){
               // there's a range of questions to show for each of opts the matching values
-              var ptt = pt[1].split(/,/);
               var start = parseInt( ptt[0], 10 );
               var end = parseInt( ptt[1], 10 );
-              for(var i = start; i<=end; i++){
-                askArray.push( (newID+i).toString() );
-              }
             }
-          }else if (pt.length === 1){
+            else if ( ptt.length===1 ){
               var start = end = parseInt( ptt[0], 10 );
+            }
+            else{
+              console.log("100 - Invalid logic", entry, logic_parts);
+              process.exit();
+            }
+
+            //fill the askArray with stringified references to the questions ahead
+            console.log(newID,start,end);
+            for(var i = start; i<=end; i++){
+              askArray.push( (newID+(i*increment)).toString() );
+            }
           }
           else{
-            console.log("Invalid logic", entry, logic_parts);
+            console.log("200 - Invalid logic", entry, logic_parts);
             process.exit();
           }
 
@@ -160,12 +168,12 @@ var parse = function(data){
     tags.forEach(function(t){
       t = t.trim().toLowerCase().replace(/ /g,"-");
       if ( t==""){
-        console.log(entry);
+        //console.log(entry);
         process.exit();
       }
       if ( !_.has( tagref, t) ) tagref[ t ] = [];
       tagref[t].push( entry );
-      console.log(t);
+      //console.log(t);
     });
 
 
@@ -176,7 +184,7 @@ var parse = function(data){
     for(var k in tagref){
       if ( k=='all-assessments' ) { }
       else {
-        console.log(k);
+        //console.log(k);
         //tagref[k].push(e);
         tagref[k].insertAt(idx,e);
       }
