@@ -707,7 +707,7 @@ Example:
     },
 
     summarize: function(){
-      console.log("Summarize called");
+      //console.log("Summarize called");
       var qstate_counts = [ 0, 0, 0, 0];
       var count_hidden = 0;
       var answers = [];
@@ -723,10 +723,10 @@ Example:
       }
 
       this.set("summaryTxt",[
-        qstate_counts[2], "of", answers.length, " Question Completed,",
-        qstate_counts[3], "NA",
-        (count_hidden)?count_hidden+" Hidden":""
-      ].join(" "));
+        qstate_counts[2]+ "/" +answers.length+ " Required Questions Completed" ,
+        qstate_counts[3] + " NA",
+        count_hidden+" Hidden"
+      ].join(" - "));
 
       this._applyTitle();
 
@@ -992,7 +992,8 @@ Example:
     },
 
     hideOrRevealSiblings: function(e){
-      console.log("siblingscheck",e.detail.value);
+      //console.log("siblingscheck",e.detail.value);
+
       var self = this;
       e.detail.value.hide.forEach(function(qnum){
         self.questions[qnum.toString()].hidden=true;
@@ -1001,6 +1002,7 @@ Example:
       e.detail.value.reveal.forEach(function(qnum){
         self.questions[qnum.toString()].hidden=false;
       });
+      this.summarize();
     },
 
     qstateChanged: function(e){
