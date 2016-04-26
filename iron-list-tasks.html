@@ -9,6 +9,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icons/av-icons.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
@@ -87,7 +88,12 @@ Example:
 
   <template>
     <div id="container">
-      <paper-card class='primary layout vertical' hidden="[[!tasksLoaded]]" elevation="4" heading="[[computedListingTitle]]">
+      <paper-card class='primary layout vertical pagination' hidden="[[!tasksLoaded]]" elevation="4" heading="[[computedListingTitle]]">
+      <div class="card-actions">
+        <template id="progCnt" is="dom-repeat" items="[[pagebtns]]" as="pb" >
+          <paper-button raised elevation=2 class="pg" on-click="pageSelected">[[pb]]</paper-button>
+        </template>
+      </div>
       <iron-list 
         selection-enabled="[[selectionEnabled]]"
         selected-items="{{selectedTasks}}"
@@ -357,6 +363,36 @@ Example:
 
     loadTasksResponse: function(e,data){
       this.applyTasks(data.tasks);
+      var pg = _.get(data,"pagination",{
+        "totalRecords": 0,
+        "totalPagesAvailable": 1,
+        "recordCountLastPage": 0,
+        "currentPageNum": 0,
+        "start": 0,
+        "end": 0
+      });
+      var te = [
+        " - Displaying Tasks "+(pg.start+1)+ "-" + pg.end + " of " + pg.totalRecords + " Total",
+        "Page "+(pg.currentPageNum+1)+ " of " + pg.totalPagesAvailable
+      ].join(" - ");
+
+      var title = this.get("listingTitle") + te;
+      this.set("computedListingTitle",title);
+
+      if ( pg.totalPagesAvailable > 1 ){
+        this.set("pagebtns",_.range(1,pg.totalPagesAvailable+1));
+      }
+      else {
+        this.set("pagebtns",[]);
+      }
+    },
+
+    pageSelected: function(a){
+      var pageNum = a.model.pb-1;
+      var payload = this.$.ajax_load_tasks.get("payload");
+      payload = _.merge(payload,{requestedPageNum: pageNum});
+      //console.log(pageNum,payload);
+      return this.$.ajax_load_tasks.send(payload);
     },
 
     loadTasksError: function(e){
@@ -381,14 +417,10 @@ Example:
         var self = this;
         setTimeout( function(){
           self.set("tasks.0.ts",tmpFixTs);
-          self.set("computedListingTitle",title);
           self.fire("applied");
-
-
         },300);
 
       }
-      else this.set("computedListingTitle",title);
     },
 
     computeHeight: function(){

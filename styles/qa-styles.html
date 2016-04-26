@@ -156,10 +156,6 @@
       paper-button.indigo {
         background-color: var(--paper-indigo-500);
         color: white;
-        --paper-button-raised-keyboard-focus: {
-          background-color: var(--paper-pink-a200) !important;
-          color: white !important;
-        };
       }
 
       paper-button.good[disabled] ,
@@ -167,6 +163,23 @@
         background: #eaeaea;
         color: ##a8a8a8;
       }
+
+      paper-card.pagination  {
+        --paper-card-actions: {
+          padding-left: 0;
+        };
+      }
+
+      paper-button.pg {
+        margin:0;
+        min-width: 3.14em;
+        line-height: 12px;
+        font-size: .92em;
+        background-color: var(--paper-indigo-500);
+        color: white;
+      }
+
+
 
       /* vertical menu list items */
       .vertical-menu {
