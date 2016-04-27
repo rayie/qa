@@ -1,0 +1,58 @@
+<script src="../lodash/lodash.min.js"></script>
+<script>
+  window.QADataBehaviors = window.QADataBehaviors || {};
+  QADataBehaviors.Basic = {
+    properties: {
+      flows: {
+        type: Array,
+        value: function(){
+          return [ [], [] ];
+        }
+      },
+      subjectId: {
+        type: String,
+        value: ""
+      },
+      primaryField: {
+        type: String,
+        value: "Interaction Notes"
+      },
+      name: {
+        type: String,
+        value: ""
+      },
+      asColumns: {
+        type: Boolean,
+        value: false
+      }
+    },
+
+    reset: function(){
+      this.set("records",[]);
+    },
+
+    load: function(){
+      if (!this.subjectId) return;
+      var payload = {
+        flows: this.flows,
+        subjectId: this.subjectId,
+        primaryField: this.primaryField,
+      }
+      this.$.ajax_load.send(payload);
+    },
+
+    loadResponse: function(e,data){
+      //console.log(data.records);
+      this.set("records",data.records);
+    },
+
+    loadError: function(e){
+      console.log(e);
+    },
+
+    submit: function(e){
+      return;
+    }
+
+  };
+</script>

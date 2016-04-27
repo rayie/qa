@@ -25,13 +25,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 Example:
 
-    <card-data-display></card-data-display>
+    <card-data-columns></card-data-columns>
 
 @demo
 -->
-<dom-module id="card-data-display">
+<dom-module id="card-data-columns">
 
   <style is="custom-style" include="qa-styles">
+  <style is="custom-style">
 
     :host {
       display: block;
@@ -92,9 +93,9 @@ Example:
       <template is="dom-repeat" id="slot0Column" items="[[records]]" as="mergedrecord">
         <div>
           <template is="dom-repeat" items="[[mergedrecord]]" as="rec">
-            <div class="vertical layout record-container">
+            <div class="horizontal layout justified record-container">
               <template is="dom-repeat" items="[[rec.rows]]" as="row" >
-                <div style="margin-bottom:8px;" >
+                <div class$="[[row.klass]] test-klass" >
                   <div>
                     <label class='answer-lbl'>[[row.q]]</label>
                     <template is='dom-repeat' items="[[row.a]]" as="ans" index-as="ans_idx">
@@ -111,15 +112,17 @@ Example:
                     </template>
                     <div class='note' hidden="[[!row.n]]">Note: [[row.n]]</div>
                   </div>
+                  <template is="dom-if" if="[[!index]]">
+                    <div class='last-update-msg'>
+                      <moment-display 
+                        inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                      label="Updated" str="[[r.ts]]" display-fmt="withday" time></moment-display>
+                      <small> by [[rec.m.update.u_id]]</small>
+                    </div>
+                  </template>
                 </div>
               </template>
 
-              <div class='last-update-msg'>
-                <moment-display 
-                  inbound-fmt="YYYY-MM-DDThh:mm:ss"
-                label="Updated" str="[[rec.ts]]" inbound-fmt="YYYY-MM-DDThh:mm:ss" display-fmt="withday" time></moment-display>
-                <small> by [[rec.m.update.u_id]]</small>
-              </div>
             </div>
           </template>
         </div>
@@ -143,7 +146,7 @@ Example:
 
   Polymer({
 
-    is: 'card-data-display',
+    is: 'card-data-columns',
 
     behaviors: [ QADataBehaviors.Basic ]
 

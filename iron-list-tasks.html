@@ -281,6 +281,10 @@ Example:
         type: Boolean,
         value: false
       },
+      pagebtns: {
+        type: Array,
+        value: function(){ return []; }
+      },
       tasks: {
         type: Array,
         value: function(){ return []; }
@@ -359,6 +363,7 @@ Example:
       this.set("tasks", []);
       this.set("tasksLoaded",false);
       this.set("tasksLoaded",true);
+      this.set("pagebtns",[]);
     },
 
     loadTasksResponse: function(e,data){
@@ -379,10 +384,12 @@ Example:
 
       var title = this.get("listingTitle") + te;
       if ( pg.totalPagesAvailable > 1 ){
+        console.info("settin gpagebtns",pg);
         this.set("pagebtns",_.range(1,pg.totalPagesAvailable+1));
       }
       else if (pg.totalRecords === 0 ){
         te =  " - No tasks found in this bucket "; 
+        this.set("pagebtns",[]);
       }
       else {
         this.set("pagebtns",[]);

@@ -82,7 +82,7 @@ Example:
       elevation=4
       heading="Address & Contact Info"
     > 
-      <div class="vertical layout">
+      <div class="horizontal layout justified">
         <div class="flex-5">
           <template is="dom-repeat" id="contactRptr" items="[[contacts]]" as="c">
             <div class="horizontal layout section-container">
@@ -94,26 +94,20 @@ Example:
                   <div class='note' hidden="[[!c.note]]">Note: [[c.note]]</div>
                 </div>
 
-                <div class='pointer last-update-msg' on-click="showExpireDialog" data-rec="[[c]]">
+                <div class='last-update-msg'>
                   <moment-display 
                   inbound-fmt="YYYY-MM-DDThh:mm:ss"
                   label="Effective" str="[[c.m.update.ts]]" display-fmt="withday" time></moment-display>
                   <small> by [[c.m.update.u_id]]</small>
+                  <a on-click="showExpireDialog" data-rec="[[c]]">Expire</a>
                 </div>
 
-                <template is="dom-if" if="[[c.expired]]">
-                  <div class='last-update-msg'>
-                    <moment-display 
-                    inbound-fmt="YYYY-MM-DDThh:mm:ss"
-                    class='exp' label="Ended" str="[[c.expired.expDt]]" display-fmt="withday" ></moment-display>
-                    <small> by [[c.expired.u_id]]</small>
-                  </div>
-                </template>
-
               </div>
+
             </div>
           </template>
-
+        </div>
+        <div class="flex-5 leftborder">
           <template is="dom-repeat" id="addrRptr" items="[[addrs]]" as="a">
             <div class="horizontal layout section-container">
               <div class="flex-5">
@@ -121,28 +115,29 @@ Example:
                   <label class='answer-lbl'>[[lbl]]</label>
                 </template>
                 <address class="main-data">
-                  <div>[[a.addr1]]</div>
-                  <div class='addr2' hidden="[[!a.addr2]]">[[a.addr2]]</div>
-                  <div>[[a.city]], [[a.state]] [[a.zip]]</div>
+                  [[a.addr1]]
+                  <span class='addr2' hidden="[[!a.addr2]]">[[a.addr2]]</span>
+                  , [[a.city]], [[a.state]] [[a.zip]]
                   <div class='note' hidden="[[!a.note]]">Note: [[a.note]]</div>
                 </address>
 
-                <div class='pointer last-update-msg' hidden="[[a.expired]]" on-click="showExpireDialog" data-rec="[[a]]" >
+                <div class='last-update-msg'>
                   <moment-display 
                   inbound-fmt="YYYY-MM-DDThh:mm:ss"
-                  label="Effective" str="[[a.m.update.ts]]" display-fmt="withday" time>
-                  </moment-display>
+                  label="Effective" str="[[a.m.update.ts]]" display-fmt="withday" time></moment-display>
                   <small> by [[a.m.update.u_id]]</small>
+                  <a hidden="[[a.expired]]" on-click="showExpireDialog" data-rec="[[a]]">Expire</a>
                 </div>
 
                 <template is="dom-if" if="[[a.expired]]">
                   <div class='last-update-msg'>
                     <moment-display 
                     inbound-fmt="YYYY-MM-DDThh:mm:ss"
-                    class='exp' label="Ended" str="[[a.expired.expDt]]" display-fmt="withday" ></moment-display>
+                    class='exp' label="Expiration" str="[[a.expired.expDt]]" display-fmt="withday" ></moment-display>
                     <small> by [[a.expired.u_id]]</small>
                   </div>
                 </template>
+
               </div>
             </div>
           </template>

@@ -344,6 +344,12 @@ Example:
       this.$.endProgramDialog.show(dataId, _.get(e,'model.rec.a.sc-program-name','ERROR - PROGRAM NAME NOT FOUND'));
     },
 
+    reset: function(){
+      this.set("hideExpired",true);
+      this.set("current",[]);
+      this.set("expired",[]);
+    },
+
     load: function(){
       if (!this.subjectId) return;
       var payload = {

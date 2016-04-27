@@ -19,12 +19,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../moment-display/moment-display.html">
 <link rel="import" href="../paper-tabs/paper-tabs.html">
-<link rel="import" href="../iron-list/iron-list.html">
 <link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="section-behaviors.html">
 <link rel="import" href="menu-tasks.html">
 <link rel="import" href="list-tasks.html">
 <link rel="import" href="iron-list-tasks.html">
+<link rel="import" href="iron-list-persons.html">
 <link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="qa-dateinput.html">
 <link rel="import" href="styles/qa-styles.html">
@@ -51,16 +51,17 @@ Example:
     /* form hdr part */
     #left {
       float: left;
-      width: 38%;
+      width: 30%;
       height: 800px;
       overflow: scroll;
     }
 
     #right {
       float: left;
-      width: 60%;
+      width: 68%;
       height: 800px;
-      overflow: scroll;
+      /* overflow: scroll;*/
+      overflow: hidden;
       margin-left: 16px;
     }
 
@@ -110,8 +111,9 @@ Example:
 
         <paper-toolbar>
           <paper-tabs on-iron-select="tabSelected" id="tabSelector" selected="{{selectedTab}}" elevation='4'>
-            <paper-tab>My Open Tasks</paper-tab>
-            <paper-tab>All Open Task</paper-tab>
+            <paper-tab>My Tasks</paper-tab>
+            <paper-tab>All Open</paper-tab>
+            <paper-tab>All Done</paper-tab>
             <paper-tab>Program Counts</paper-tab>
           </paper-tabs>
         </paper-toolbar>
@@ -123,7 +125,7 @@ Example:
               <div class='layout vertical'>
                 <div class='vertical-menu' role=''>
                   <paper-item class='menusectionLbl'>
-                    <label>By Task Type - Total: [[myOpenTasksByTypeTotal]]</label>
+                    <label>Open by Type - Total: [[myOpenTasksByTypeTotal]]</label>
                   </paper-item>
 
                   <template is="dom-repeat" items="[[myOpenTasksByType]]" >
@@ -139,7 +141,7 @@ Example:
                   </paper-item>
 
                   <paper-item class='menusectionLbl'>
-                    <label>By Schedule - Total: [[myOpenTasksByTimingTotal]]</label>
+                    <label>Open by Schedule - Total: [[myOpenTasksByTimingTotal]]</label>
                   </paper-item>
 
                   <template is="dom-repeat" items="[[myOpenTasksByTiming]]" >
@@ -156,7 +158,7 @@ Example:
                   </paper-item>
 
                   <paper-item class='menusectionLbl'>
-                    <label>In Progress - Total: [[myInProgTasksByTypeTotal]]</label>
+                    <label>InProgress by Type - Total: [[myInProgTasksByTypeTotal]]</label>
                   </paper-item>
 
                   <template is="dom-repeat" items="[[myInProgTasksByType]]" >
@@ -168,6 +170,21 @@ Example:
                   </template>
 
 
+                  <paper-item class='divider'>
+                    <div>&nbsp;</div>
+                  </paper-item>
+
+                  <paper-item class='menusectionLbl'>
+                    <label>Done by Type - Total: [[myDoneTasksByTypeTotal]]</label>
+                  </paper-item>
+
+                  <template is="dom-repeat" items="[[myDoneTasksByType]]" >
+                    <paper-item class='link'>
+                      <div on-click="loadMyDoneListingByType" class="pointer" >
+                        <span>[[item.nm]]<span> <strong>[[item.n]]</strong>
+                      </div>
+                    </paper-item>
+                  </template>
                 </div>
               </div>
             </paper-material>
@@ -227,23 +244,76 @@ Example:
             </paper-material>
           </section>
 
+
+          <section data-tab='doneTaskCounts' >
+            <paper-material elevation='4' class='primary' heading="All Done Tasks">
+              <div class='layout vertical'>
+                <div class='vertical-menu' role=''>
+                  <paper-item class='menusectionLbl'>
+                    <label>By Task Type  - Total: [[allDoneTasksByTypeTotal]]</label>
+                  </paper-item>
+
+                  <template is="dom-repeat" items="[[allDoneTasksByType]]" >
+                    <paper-item class='link'>
+                      <div on-click="loadDoneListingByType" class="pointer" >
+                        <span>[[item.nm]]<span> <strong>[[item.n]]</strong>
+                      </div>
+                    </paper-item>
+                  </template>
+
+                  <paper-item class='divider'>
+                    <div>&nbsp;</div>
+                  </paper-item>
+
+                  <paper-item class='menusectionLbl'>
+                    <label>By Schedule - Total: [[allDoneTasksByTimingTotal]]</label>
+                  </paper-item>
+
+                  <template is="dom-repeat" items="[[allDoneTasksByTiming]]" >
+                    <paper-item class='link'>
+                      <div on-click="loadDoneListingByTiming" class="pointer" >
+                        <span>[[item.nm]]<span> <strong>[[item.n]]</strong>
+                      </div>
+                    </paper-item>
+                  </template>
+
+
+                  <paper-item class='divider'>
+                    <div>&nbsp;</div>
+                  </paper-item>
+                  <paper-item class='menusectionLbl'>
+                    <label>By Assigned User - Total: [[allDoneTasksByUserTotal]]</label>
+                  </paper-item>
+
+                  <template is="dom-repeat" items="[[allDoneTasksByUser]]" >
+                    <paper-item class='link'>
+                      <div on-click="loadDoneListingByUser" class="pointer" >
+                        <span>[[item.nm]]<span> <strong>[[item.n]]</strong>
+                      </div>
+                    </paper-item>
+                  </template>
+
+                </div>
+              </div>
+            </paper-material>
+          </section>
+
+
+
           <section data-tab='programCounts' >
             <paper-material elevation='4' class='primary' heading="Programs">
               <div class='layout vertical'>
                 <div class='vertical-menu' role=''>
                   <paper-item class='menusectionLbl'>
-                    <label>Patient Counts by Programs</label>
+                    <label>Patients in Programs - Total [[programsTotal]]</label>
                   </paper-item>
                   <template id="progCnt" is="dom-repeat" items="[[programs]]" >
                     <paper-item class='link'>
-                      <div >
+                      <div on-click="loadPersonListing" class="pointer" >
                         <span>[[item.nm]]<span> <strong>[[item.n]]</strong>
                       </div>
                     </paper-item>
                   </template>
-                  <paper-item class='link'>
-                    <div>Total - <strong>[[programTotal]]<strong></div>
-                  </paper-item>
                 </div>
               </div>
             </paper-material>
@@ -260,28 +330,11 @@ Example:
           loading="{{is_loading}}"
         ></qa-ajax-poster>
 
-        <qa-ajax-poster
-          id="ajaxListing"       
-          no-toast
-          handle-as="json",
-          on-response="loadListingResponse"
-          on-error="loadListingError"
-          loading="{{is_loading}}"
-        ></qa-ajax-poster>
       </div>
 
       <div id="right">
-        <paper-toolbar>
-          <paper-tabs >
-            <paper-tab>[[listingTitle]]</paper-tab>
-          </paper-tabs>
-        </paper-toolbar>
-        <list-tasks
-          class='card-content' 
-          id="taskListing"
-        ></list-tasks>
+        <div id="listingContainer"></div>
       </div>
-
     </div>
   </template>
 
@@ -311,16 +364,26 @@ Example:
       },
       selectedTab: {
         type: Number,
-        value: 0 
+        value: function(){ return -1; } 
+      },
+      abc: {
+        type: Array,
+        value:  []
+      },
+      fake: {
+        type: Array,
+        value:  [ {name:"ray"},{name:"jim"} ]
       }
     },
     attached: function(){
-      console.log('attached',this.route);
+      //console.log('attached',this.route);
     },
 
 		tabSelected: function(e){
 			var idx = this.$.tabSelector.indexOf( e.detail.item );
-      console.log("tabSelected",idx,this.route);
+      console.info("tabSelected fired, idx:", idx, " selectedTab", this.selectedTab);
+      if ( this.selectedTab === -1 ) return;
+
       switch(idx){
         case 0:
 
@@ -333,6 +396,9 @@ Example:
 
           this.$.ajax.setEndpoint("api/report:opentasks:bytype");
           this.$.ajax.send({ extraFilters:{ state:'inprog',assignedTo:'me'}, bucketname: 'myInProgTasksByType'});
+
+          this.$.ajax.setEndpoint("api/report:opentasks:bytype");
+          this.$.ajax.send({ extraFilters:{ state:'done',assignedTo:'me'}, bucketname: 'myDoneTasksByType'});
           break;
 
         case 1:
@@ -348,10 +414,19 @@ Example:
           break;
 
         case 2:
+          this.$.ajax.setEndpoint("api/report:opentasks:bytype");
+          this.$.ajax.send({extraFilters:{ state:'done'},bucketname:"allDoneTasksByType"});
+
+          this.$.ajax.setEndpoint("api/report:opentasks:bytiming");
+          this.$.ajax.send({extraFilters:{ state:'done'},bucketname:"allDoneTasksByTiming"});
+
+          this.$.ajax.setEndpoint("api/report:opentasks:byuser");
+          this.$.ajax.send({extraFilters:{ state:'done'},bucketname:"allDoneTasksByUser"});
+          break;
+
+        case 3:
           this.$.ajax.setEndpoint("api/report:programs:count");
           this.$.ajax.send({bucketname:"programs"});
-          break;
-        case 3:
           break;
         case 4:
           break;
@@ -369,63 +444,74 @@ Example:
       console.log(e);
     },
 
-    loadListingByType: function(e,b){
-      this.$.ajaxListing.setEndpoint("api/report:opentasks:bytype" );
-      this.loadListing(e);
-    },
+    loadListingByType: function(e,b){ this.loadListing("api/report:opentasks:bytype",e); },
+    loadListingByTiming: function(e,b){ this.loadListing("api/report:opentasks:bytiming",e); },
+    loadListingByUser: function(e,b){ this.loadListing("api/report:opentasks:byuser",e); },
 
-    loadListingByTiming: function(e,b){
-      this.$.ajaxListing.setEndpoint("api/report:opentasks:bytiming" );
-      this.loadListing(e);
-    },
+    loadDoneListingByType: function(e,b){ this.loadListing("api/report:opentasks:bytype",e, {state:"done"}); },
+    loadDoneListingByTiming: function(e,b){ this.loadListing("api/report:opentasks:bytiming",e, {state:"done"}); },
+    loadDoneListingByUser: function(e,b){ this.loadListing("api/report:opentasks:byuser",e, {state:"done"}); },
 
-    loadListingByUser: function(e,b){
-      this.$.ajaxListing.setEndpoint("api/report:opentasks:byuser" );
-      this.loadListing(e);
-    },
 
     loadMyListingByType: function(e,b){
-      this.$.ajaxListing.setEndpoint("api/report:opentasks:bytype" );
-      this.loadListing(e, {assignedTo:'me'});
+      this.loadListing("api/report:opentasks:bytype", e, {assignedTo:'me'});
     },
 
     loadMyListingByTiming: function(e,b){
-      this.$.ajaxListing.setEndpoint("api/report:opentasks:bytiming" );
-      this.loadListing(e, {assignedTo:'me'});
+      this.loadListing("api/report:opentasks:bytiming",e, {assignedTo:'me'});
     },
 
     loadMyInProgListingByType: function(e,b){
-      this.$.ajaxListing.setEndpoint("api/report:opentasks:bytype" );
-      this.loadListing(e, {state:"inprog",assignedTo:'me'});
+      this.loadListing("api/report:opentasks:bytype",e, {state:"inprog",assignedTo:'me'});
     },
 
-    loadListing: function(e,extraFilters){
+    loadMyDoneListingByType: function(e,b){
+      this.loadListing("api/report:opentasks:bytype",e, {state:"done",assignedTo:'me'});
+    },
+
+    loadListing: function(endpoint,e,extraFilters){
+      console.info("card-reports is loadLIsting", extraFilters);
       var model = e.model;
-      this.$.taskListing.resetTasks();
-      /*
-      var payload = _.merge({
-        listingFilterName: model.item.nm,
-        bucketname: "Tasks " + model.item.nm
-      },extraFilters);
-      */
       var payload = _.merge({
         listingFilterName: model.item.nm,
         bucketname: "Tasks " + model.item.nm,
         extraFilters: extraFilters
       });
 
-      this.set("listingTitle", "Loading tasks ... ");
-      this.$.ajaxListing.send(payload);
+      Polymer.dom(this.$.listingContainer).children.forEach(function(el,idx){ el.remove(); });
+      Polymer.dom.flush();
+      var h = Math.floor( .85 * window.innerHeight );
+      var newListTasks = this.create("iron-list-tasks", {
+        listingTitle: payload.bucketname,
+        listingHeight: h,
+        hostAttributes: {
+          id:"taskListing"
+        }
+      });
+
+      Polymer.dom(this.$.listingContainer).appendChild(newListTasks);
+      newListTasks.loadTasks({ endpoint: endpoint , payload:payload });
     },
 
-    loadListingResponse: function(e,data){
-      this.$.taskListing.applyTasks(data.tasks);
-      this.set("listingTitle", data.bucketname);
+    loadPersonListing: function(e){
+
+      var model = e.model;
+      var payload={
+        timing: "current",
+        "sc-program-name": model.item.nm,
+        "days": 0
+      }
+      console.log(payload);
+
+      Polymer.dom(this.$.listingContainer).children.forEach(function(el,idx){ el.remove(); });
+      Polymer.dom.flush();
+      var newListPersons = this.create("iron-list-persons", { listingTitle: "Currently in " + model.item.nm });
+      console.log(newListPersons);
+      Polymer.dom(this.$.listingContainer).appendChild(newListPersons);
+      newListPersons.loadPersons(payload);
+
     },
 
-    loadListingError: function(e){
-      console.log(e);
-    },
 
     submit: function(e){
       return;

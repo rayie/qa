@@ -51,40 +51,26 @@ Example:
    
     :host > ::content .special {
     }
-   
+
     /* form hdr part */
-    .hdr {
-      @apply(--layout-horizontal);
-      @apply(--layout-justified);
-      @apply(--paper-font-body2)
+    #left {
+      float: left;
+      width: 30%;
+      height: 800px;
+      overflow: scroll;
     }
 
-    .list {
-      @apply(--layout-vertical);
-      padding-top: 12px;
-      background-color: white;
-      width: 240px;
-      height: 228px;
-      margin: 12px;
-      @apply(--shadow-elevation-2dp);
+    #right {
+      float: left;
+      width: 68%;
+      margin-left: 16px;
     }
 
-    .form-num {
-      @apply(--paper-font-body2)
-      text-align: right;
+    #right iron-pages section {
+      height: 800px;
+      overflow: scroll;
     }
-
-    .form-title {
-      @apply(--paper-font-body2)
-    }
-
-    .form-sub-title {
-      @apply(--paper-font-caption)
-    }
-
-    .paper-font-caption {
-      @apply(--paper-font-caption);
-    }
+   
 
     paper-button {
       @apply(--paper-font-button);
@@ -94,159 +80,161 @@ Example:
 
   <template>
     <div class="container">
+      <div id="left">
+        <iron-pages selected="0">
+          <section >
+            <paper-card elevation='4' class='primary'
+              heading="Last Name, First Name"
+            >
+              <div class='main-data'>
+                [[person.ln]]
+                <span hidden="[[!person.suf]]"> 
+                  [[person.suf]]
+                </span>, 
+                [[person.fn]] [[person.mn]] 
+              </div>
+              <div hidden="[[!person.suf]]" class='main-data'>
+                <span >Suffix: [[person.suf]]</span>
+              </div>
+              <div hidden="[[!person.nick]]" class='main-data'>
+                <span >Nickname: [[person.nick]]</span>
+              </div>
+              <div class='main-data'>
+                DOB: [[person.dobStr]]
+              </div>
+              <div class='main-data'>
+                HDMS Account: 
+                <span>
+                  [[person.hdms_acct]]
+                </span>
+                <span hidden="[[person.hdms_acct]]">
+                  <a>Link HDMS Account</a>
+                </span>
+              </div>
+            </paper-card> 
+            <card-contact 
+              id="contactCard"
+              subject-id="[[person._id]]">
+            </card-contact>
 
-      <paper-toolbar>
-        <paper-tabs on-iron-select="tabSelected" id="tabSelector" selected="{{selectedTab}}" elevation='4'>
-          <paper-tab link>Primary Info</paper-tab>
-          <paper-tab>Open Tasks</paper-tab>
-          <paper-tab>Collected Data</paper-tab>
-          <paper-tab>Interactions</paper-tab>
-          <paper-tab>HDMS Data</paper-tab>
-          <paper-tab>HealthCall (Legacy)</paper-tab>
-        </paper-tabs>
-        <span class="title"><!--stub--></span>
-        <menu-tasks 
-          id="menuTask"
-          subject-id="[[person._id]]"
-          subject-last-ts="{{person.ts}}"
-          on-newtask="gotNewTask"
-        ></menu-tasks>
-      </paper-toolbar>
+            <card-data-display
+              id="demographicCard"
+              class="flex-10"
+              name="Demographic"
+              flows='["flows/global.demographic.json"]'
+              subject-id="[[person._id]]">
+            </card-data-display>
 
-      <iron-pages selected="{{selectedTab}}">
+          </section>
+        </iron-pages>
+      </div>
 
-        <section data-tab='primaryInfo' >
-          <paper-card elevation='4' class='primary'
-            heading="Last Name, First Name"
-          >
-            <div class='main-data'>
-              [[person.ln]]
-              <span hidden="[[!person.suf]]"> 
-                [[person.suf]]
-              </span>, 
-              [[person.fn]] [[person.mn]] 
-            </div>
-            <div hidden="[[!person.suf]]" class='main-data'>
-              <span >Suffix: [[person.suf]]</span>
-            </div>
-            <div hidden="[[!person.nick]]" class='main-data'>
-              <span >Nickname: [[person.nick]]</span>
-            </div>
-            <div class='main-data'>
-              DOB: [[person.dobStr]]
-            </div>
-            <div class='main-data'>
-              HDMS Account: 
-              <span>
-                [[person.hdms_acct]]
-              </span>
-              <span hidden="[[person.hdms_acct]]">
-                <a>Link HDMS Account</a>
-              </span>
-            </div>
-          </paper-card> 
-
-          <card-program-display
-            id="programCard"
-            class="flex-10"
-            name="Programs"
+      <div id="right">
+        <paper-toolbar>
+          <paper-tabs on-iron-select="tabSelectedRight" id="tabSelectorRight" selected="{{selectedTabRight}}" elevation='4'>
+            <paper-tab>Open Tasks</paper-tab>
+            <paper-tab>Collected Data</paper-tab>
+            <paper-tab>Interactions</paper-tab>
+            <paper-tab>HDMS Data</paper-tab>
+            <paper-tab>HealthCall (Legacy)</paper-tab>
+          </paper-tabs>
+          <span class="title"><!--stub--></span>
+          <menu-tasks 
+            id="menuTask"
             subject-id="[[person._id]]"
-            as-columns
-          ></card-program-display>
+            subject-last-ts="{{person.ts}}"
+            on-newtask="gotNewTask"
+          ></menu-tasks>
+        </paper-toolbar>
 
-          <card-contact 
-            id="contactCard"
-            subject-id="[[person._id]]">
-          </card-contact>
-
-          <card-data-display
-            id="demographicCard"
-            class="flex-10"
-            name="Demographic"
-            flows='["flows/global.demographic.json"]'
-            as-columns
-            subject-id="[[person._id]]">
-          </card-data-display>
+        <iron-pages selected="{{selectedTabRight}}">
 
 
-        </section>
+          <section data-tab='tasks' >
+            <iron-list-tasks
+              hidden="[[!person]]"
+              listing-title="Not Yet Started"
+              class='card-content' 
+              id="openTasks"
+              subject-id="[[subjectId]]"
+              state='["init"]'
+            ></iron-list-tasks>
+            <iron-list-tasks
+              hidden="[[!person]]"
+              listing-title="In Progress"
+              class='card-content' 
+              id="inprogTasks"
+              subject-id="[[subjectId]]"
+              state='["inprog"]'
+            ></iron-list-tasks>
+          </section>
 
-        <section data-tab='tasks' >
-          <iron-list-tasks
-            hidden="[[!person]]"
-            listing-title="Not Yet Started"
-            class='card-content' 
-            id="openTasks"
-            subject-id="[[subjectId]]"
-            state='["init"]'
-          ></iron-list-tasks>
-          <iron-list-tasks
-            hidden="[[!person]]"
-            listing-title="In Progress"
-            class='card-content' 
-            id="inprogTasks"
-            subject-id="[[subjectId]]"
-            state='["inprog"]'
-          ></iron-list-tasks>
-        </section>
+          <section data-tab='closedtasks'>
+            <iron-list-tasks
+              hidden="[[!person]]"
+              listing-title="Assessments Completed"
+              class='card-content'
+              id="completedAssessments"
+              subject-id="[[subjectId]]"
+              task-def-filter='["assessment"]'
+              state='["done"]'
+            ></iron-list-tasks>
 
-        <section data-tab='closedtasks'>
-          <iron-list-tasks
-            hidden="[[!person]]"
-            listing-title="Assessments Completed"
-            class='card-content'
-            id="completedAssessments"
-            subject-id="[[subjectId]]"
-            task-def-filter='["assessment"]'
-            state='["done"]'
-          ></iron-list-tasks>
+            <iron-list-tasks
+              hidden="[[!person]]"
+              listing-title="Other Tasks Completed"
+              class='card-content'
+              id="completedTasks"
+              subject-id="[[subjectId]]"
+              task-def-filter='["not-assessment"]'
+              state='["done"]'
+            ></iron-list-tasks>
 
-          <iron-list-tasks
-            hidden="[[!person]]"
-            listing-title="Other Tasks Completed"
-            class='card-content'
-            id="completedTasks"
-            subject-id="[[subjectId]]"
-            task-def-filter='["not-assessment"]'
-            state='["done"]'
-          ></iron-list-tasks>
+          </section>
 
-        </section>
+          <section data-tab='interactions' >
+            <card-program-display
+              id="programCard"
+              class="flex-10"
+              name="Programs"
+              subject-id="[[person._id]]"
+              as-columns
+            ></card-program-display>
 
-        <section data-tab='interactions' >
-          <card-data-display
-            class="flex-10"
-            as-columns
-            id="interactionsCard"
-            name="Interactions"
-            flows='["flows/sc.interaction.json","flows/sc.teamaction.json"]'
-            subject-id="[[person._id]]">
-          </card-data-display>
-        </section>
+            <card-data-display
+              class="flex-10"
+              as-columns
+              id="interactionsCard"
+              name="Interactions"
+              flows='["flows/sc.interaction.json","flows/sc.teamaction.json"]'
+              subject-id="[[person._id]]">
+            </card-data-display>
+          </section>
 
 
-        <section data-tab='hdmsdata' >
-          <card-hdmsdata-display
-            class="flex-10"
-            as-columns
-            id="hdmsCard"
-            name="HDMS Notes"
-            subject-id="[[person._id]]"
-            hdms-acct="[[person.hdms_acct]]">
-          </card-hdmsdata-display>
-        </section>
+          <section data-tab='hdmsdata' >
+            <card-hdmsdata-display
+              class="flex-10"
+              as-columns
+              id="hdmsCard"
+              name="HDMS Notes"
+              subject-id="[[person._id]]"
+              hdms-acct="[[person.hdms_acct]]">
+            </card-hdmsdata-display>
+          </section>
 
-        <section data-tab='hcdata' >
-          <card-hcdata-display
-            class="flex-10"
-            as-columns
-            id="hcCard"
-            name="HealthCall"
-            subject-id="[[person._id]]">
-          </card-hcdata-display>
-        </section>
-      </iron-pages>
-
+          <section data-tab='hcdata' >
+            <card-hcdata-display
+              class="flex-10"
+              as-columns
+              id="hcCard"
+              name="HealthCall"
+              subject-id="[[person._id]]">
+            </card-hcdata-display>
+          </section>
+        </iron-pages>
+      </div>
+   
       <qa-ajax-poster
         id="ajax_load_person"       
         no-toast
@@ -280,38 +268,65 @@ Example:
         type: String,
         value: ""
       },
-      selectedTab: {
+      selectedTabLeft: {
+        type: Number,
+        value: 0 
+      },
+      selectedTabRight: {
         type: Number,
         value: 0 
       }
     },
 
-		tabSelected: function(e){
-			var idx = this.$.tabSelector.indexOf( e.detail.item );
-			if ( idx > 0 ){
-				console.log("tabSelected",idx);
-				switch(idx){
-					case 1:
-						this.$.openTasks.loadTasks();
-						this.$.inprogTasks.loadTasks();
-						break;
-					case 2:
-						this.$.completedAssessments.loadTasks();
-						this.$.completedTasks.loadTasks();
-						break;
-					case 3:
-						this.$.interactionsCard.load();
-						break;
-				  case 4:
-						if ( this.person.hdms_acct ){
-							this.$.hdmsCard.load();
-						}
-						break;
-				  case 5:
-						this.$.hcCard.load();
-						break;
-				}
-			}
+		tabSelectedLeft: function(e){
+			var idx = this.$.tabSelectorLeft.indexOf( e.detail.item );
+      console.log("tabSelectedLeft",idx);
+      this.loadSectionLeft(idx);
+    },
+
+    loadSectionLeft: function(idx){
+      switch(idx){
+        case 0:
+          this.$.contactCard.load();
+          this.$.demographicCard.load();
+          break;
+        case 1:
+          break;
+        case 2:
+          break;
+      }
+		},
+
+
+		tabSelectedRight: function(e){
+			var idx = this.$.tabSelectorRight.indexOf( e.detail.item );
+      console.log("tabSelectedRight",idx);
+      this.loadSectionRight(idx);
+    },
+
+    loadSectionRight: function(idx){
+      switch(idx){
+        case 0:
+          this.$.openTasks.loadTasks();
+          this.$.inprogTasks.loadTasks();
+          break;
+        case 1:
+          this.$.completedAssessments.loadTasks();
+          this.$.completedTasks.loadTasks();
+          break;
+        case 2:
+          this.$.programCard.load();
+          this.$.interactionsCard.load();
+          break;
+        case 3:
+          if ( this.person.hdms_acct ){
+            this.$.hdmsCard.load();
+          }
+          break;
+        case 4:
+          this.$.hcCard.load();
+          break;
+      }
 		},
 
     loadPerson: function(){
@@ -320,6 +335,7 @@ Example:
 
       this.$.demographicCard.reset();
       this.$.interactionsCard.reset();
+      this.$.programCard.reset();
       this.$.hdmsCard.reset();
       this.$.hcCard.reset();
 
@@ -327,8 +343,8 @@ Example:
       this.$.inprogTasks.resetTasks();
       this.$.completedAssessments.resetTasks();
       this.$.completedTasks.resetTasks();
-
-
+      
+      this.set("selectedTabRight",0);
       this.$.ajax_load_person.send({subjectId: this.subjectId});
     },
 
@@ -344,32 +360,20 @@ Example:
       person.dobStr = m.format("MMMM DD, YYYY"); 
 
       this.set("person",person);
-			this.$.programCard.load();
-			this.$.contactCard.load();
-      this.$.demographicCard.load();
       if ( person.hdms_acct ){
         this.applyTitle(person.displayAs + " - " + age + " old " + person.sex + " HDMS# " + person.hdms_acct);
       }
       else{ 
         this.applyTitle(person.displayAs + " - " + age + " old " + person.sex);
       }
-      /*
-      this.$.openTasks.loadTasks();
-      this.$.completedTasks.loadTasks();
-      this.$.inprogTasks.loadTasks();
-      this.$.completedAssessments.loadTasks();
-      this.$.programCard.load();
-      this.$.contactCard.load();
-      this.$.interactionsCard.load();
-      this.$.hcCard.load();
-      */
-
+      this.loadSectionLeft(0);
+      this.loadSectionRight(0);
     },
 
     gotNewTask: function(e,data){
       console.log(data);
       this.set("person.ts", data.newTs);
-      this.set("selectedTab", 1);
+      this.set("selectedTabRight", 1);
       this.$.openTasks.loadTasks();
     },
 
