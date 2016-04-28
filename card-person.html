@@ -152,6 +152,7 @@ Example:
 
 
           <section id="sectionOpenTasks" data-tab='tasks' >
+          <!-- open tasks must be loaded imperatively because of task-part timing attachment issues -->
           </section>
 
           <section id="sectionClosedTasks" data-tab='closedtasks'>
@@ -219,7 +220,8 @@ Example:
           </section>
           <section data-tab='workingTaskSection' >
             <qa-active-task 
-              id="activeTask" 
+              id="activeTask" ,
+              app-title= '{{appTitle}}',
               loaded-task-id="{{lastLoadedActiveTaskId}}"
             >
             </qa-active-task>

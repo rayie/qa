@@ -162,10 +162,6 @@ Example:
     </div>
 
     <div class="padbottom" hidden="[[!subjectId]]">
-      <div>
-        <strong>TaskName: [[task.name]] - [[summaryTxt]]</strong>
-      </div>
-
       <!--
       <div class=''>
         <div style="padding-left: 8px;">
@@ -516,7 +512,7 @@ Example:
     },
 
     directToSurvey: function(){
-      console.log("in directToSurvey",this.directSurveyUrl);
+      //console.log("in directToSurvey",this.directSurveyUrl);
       if ( !this.directSurveyUrl) return;
 
       this._reset();
@@ -550,7 +546,7 @@ Example:
     },
 
     addedInstance: function(d){
-      console.log('addedInstance',d.target.get("seq_num"));
+      //console.log('addedInstance',d.target.get("seq_num"));
       var pos_in_qq  = d.target.get("seq_num") - 1;
       var q = this.taskDefinition.qq[ pos_in_qq ];
       var timesCloned = 1 * d.target.get("additionalInstancesAdded");
@@ -571,7 +567,7 @@ Example:
     },
 
     loadSurveyError: function(e){
-      console.log("Failed to load taskDefinition");
+      console.error("Failed to load taskDefinition");
       this.set("subjectId",null);
       return;
     },
@@ -579,7 +575,7 @@ Example:
     loadSurveyResponded: function(event){
       if (!event.detail.response){
         this.set("subjectId",null);
-        console.log("no event response",event.detail.response);
+        console.error("no event response",event.detail.response);
         this.set("hideLoadingMsg",true);
         this.set("hideLoadError",false);
         return;
@@ -603,7 +599,7 @@ Example:
           qn++;
           q.seq_num=qn*1;
           var new_frm = self.create("form-"+q.form.toLowerCase(),q);
-          console.log("created new frm");
+          //console.log("created new frm");
           self.listen(new_frm,"qstate-changed","qstateChanged");
           self.listen(new_frm,"additional-instances-added-changed","addedInstance");
           //self.listen(new_frm,"clone-changed","cloneFired");
@@ -705,7 +701,7 @@ Example:
             a.push( ans );
             if ( q.opts[ans].tasks ){
               self.taskDefinition.tasksFromAnswers = self.taskDefinition.tasksFromAnswers.concat( q.opts[ans].tasks );
-              console.log(q.opts[ans]);
+              //console.info(q.opts[ans]);
             }
           });
           break;
@@ -793,7 +789,7 @@ Example:
     },
 
     taskInprogResponse: function(e,data){
-      console.log(data);   
+      //console.log(data);   
       this.set("task.state","inprog");
       this.set("task.ts", data.newTs);
       this.set("task.dataId", data.dataId);
@@ -819,7 +815,7 @@ Example:
     },
 
     directSurveyCheckRulesResponse: function(e,data){
-      console.log(e,data);
+      //console.info(e,data);
       this.saveDataResponse(e,data);
     },
 
@@ -859,7 +855,7 @@ Example:
         this.set("task.ts", data.newTs);
       this._updateStateMsg();
       var ruleResults = _.get(data,"ruleResults",false);
-      console.log("ruleResults",ruleResults);
+      //console.log("ruleResults",ruleResults);
       var tasksToAddFromRules = [];
       var answersToAddFromRules = [];
       for(var rule in ruleResults){
@@ -871,8 +867,8 @@ Example:
             break;
         }
       }
-      console.log("tasksToAddFromRules ",tasksToAddFromRules );
-      console.log("answersToAddFromRules",answersToAddFromRules);
+      //console.log("tasksToAddFromRules ",tasksToAddFromRules );
+      //console.log("answersToAddFromRules",answersToAddFromRules);
       var ttt = this.taskDefinition.upon.submit.concat( tasksToAddFromRules ).map(this._taskTiming);
       this.set("taskDefinition.tasksToAdd", ttt );
       this.set("taskDefinition.answersToAdd", answersToAddFromRules  );
@@ -890,7 +886,7 @@ Example:
             t.timingText="ASAP";
             break;
           case "schedule":
-            console.log(t.start);
+            //console.log(t.start);
             if(typeof t.plannedFor.start=="string") 
               t.timingText=moment.utc(t.plannedFor.start.replace(/\.[0-9]{3}Z/,"")).local().format("ddd, MMM DD, YYYY hh:mma");
             else{
@@ -940,7 +936,7 @@ Example:
         payload.uponIncomplete = [];
       }
 
-      console.log("payload:",payload);
+      //console.log("payload:",payload);
       this.$.ajax_task_incomplete.send(payload);
       return
     },
@@ -954,7 +950,7 @@ Example:
         taskId: this.taskId,
         lastTs: this.task.ts
       }
-      console.log(payload);
+      //console.log(payload);
       this.$.ajax_task_done.send(payload);
       return
     },
@@ -980,7 +976,7 @@ Example:
         payload[ key ] = answer.a[key];
       }
 
-      console.log(payload);
+      //console.log(payload);
       this.$.ajax_submit_entity.send(payload);
       return;
 
@@ -993,7 +989,7 @@ Example:
 
       if ( this.task ) this.set("task.state", "done");
 
-      console.log(this.submissionResult);
+      //console.log(this.submissionResult);
       if (this.submissionResult.tasks_created.length){ 
         this.set("hasNextTasks",true);
         this.$.nextTasks.applyTasks(this.submissionResult.tasks_created);
@@ -1002,7 +998,7 @@ Example:
     },
 
     submitError: function(e,data){
-      console.log(e);
+      console.error(e);
       var self = this;
 
       app.$.toast.text = "FAILED TO SUBMIT !!!! - "; 
@@ -1036,8 +1032,8 @@ Example:
         q: e.target.txt,
         a: e.target.answer
       };
-      console.log("r",r);
-      console.log("summarize called because qstate changed fired");
+      //console.info("r",r);
+      //console.info("summarize called because qstate changed fired");
       */
       return this.summarize();
     }
