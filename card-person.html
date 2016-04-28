@@ -21,8 +21,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-tabs/paper-tabs.html">
 <link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="section-behaviors.html">
+<link rel="import" href="qa-active-task.html">
 <link rel="import" href="menu-tasks.html">
-<link rel="import" href="list-tasks.html">
 <link rel="import" href="iron-list-tasks.html">
 <link rel="import" href="card-contact.html">
 <link rel="import" href="card-program-display.html">
@@ -84,7 +84,7 @@ Example:
         <iron-pages selected="0">
           <section >
             <paper-card elevation='4' class='primary'
-              heading="Last Name, First Name"
+              heading="Patient"
             >
               <div class='main-data'>
                 [[person.ln]]
@@ -134,9 +134,10 @@ Example:
           <paper-tabs on-iron-select="tabSelectedRight" id="tabSelectorRight" selected="{{selectedTabRight}}" elevation='4'>
             <paper-tab>Open Tasks</paper-tab>
             <paper-tab>Collected Data</paper-tab>
-            <paper-tab>Interactions</paper-tab>
+            <paper-tab>Programs</paper-tab>
             <paper-tab>HDMS Data</paper-tab>
             <paper-tab>HealthCall (Legacy)</paper-tab>
+            <paper-tab hidden="[[!activeTaskId]]">Active Task</paper-tab>
           </paper-tabs>
           <span class="title"><!--stub--></span>
           <menu-tasks 
@@ -150,26 +151,11 @@ Example:
         <iron-pages selected="{{selectedTabRight}}">
 
 
-          <section data-tab='tasks' >
-            <iron-list-tasks
-              hidden="[[!person]]"
-              listing-title="Not Yet Started"
-              class='card-content' 
-              id="openTasks"
-              subject-id="[[subjectId]]"
-              state='["init"]'
-            ></iron-list-tasks>
-            <iron-list-tasks
-              hidden="[[!person]]"
-              listing-title="In Progress"
-              class='card-content' 
-              id="inprogTasks"
-              subject-id="[[subjectId]]"
-              state='["inprog"]'
-            ></iron-list-tasks>
+          <section id="sectionOpenTasks" data-tab='tasks' >
           </section>
 
-          <section data-tab='closedtasks'>
+          <section id="sectionClosedTasks" data-tab='closedtasks'>
+
             <iron-list-tasks
               hidden="[[!person]]"
               listing-title="Assessments Completed"
@@ -189,7 +175,6 @@ Example:
               task-def-filter='["not-assessment"]'
               state='["done"]'
             ></iron-list-tasks>
-
           </section>
 
           <section data-tab='interactions' >
@@ -232,6 +217,13 @@ Example:
               subject-id="[[person._id]]">
             </card-hcdata-display>
           </section>
+          <section data-tab='workingTaskSection' >
+            <qa-active-task 
+              id="activeTask" 
+              loaded-task-id="{{lastLoadedActiveTaskId}}"
+            >
+            </qa-active-task>
+          </section>
         </iron-pages>
       </div>
    
@@ -260,13 +252,30 @@ Example:
     is: 'card-person',
 
     properties: {
+      isAttached: {
+        type: Boolean,
+        value: false
+      },
       person: {
         type: Object,
         value: null
       },
-      subjectId: {
+      lastLoadedSubjectId: {
         type: String,
         value: ""
+      },
+      lastLoadedActiveTaskId: {
+        type: String,
+        value: ""
+      },
+      landingKey: {
+        type: String,
+        value: "",
+        observer:"landingKeyChanged"
+      },
+      subjectId: {
+        type: String,
+        value: "",
       },
       selectedTabLeft: {
         type: Number,
@@ -280,14 +289,20 @@ Example:
 
 		tabSelectedLeft: function(e){
 			var idx = this.$.tabSelectorLeft.indexOf( e.detail.item );
-      console.log("tabSelectedLeft",idx);
-      this.loadSectionLeft(idx);
+      //this.loadSectionLeft(idx);
     },
 
+
+    // not used, using observer on each card
     loadSectionLeft: function(idx){
+      if ( !this.subjectId) return 
+      //this.$.contactCard.load();
+      //this.$.demographicCard.load();
+      return;
+
       switch(idx){
         case 0:
-          this.$.contactCard.load();
+          //this.$.contactCard.load();
           this.$.demographicCard.load();
           break;
         case 1:
@@ -297,6 +312,9 @@ Example:
       }
 		},
 
+    goToActivatedTask: function(){
+      this.set("selectedTabRight",5);
+    },
 
 		tabSelectedRight: function(e){
 			var idx = this.$.tabSelectorRight.indexOf( e.detail.item );
@@ -305,14 +323,47 @@ Example:
     },
 
     loadSectionRight: function(idx){
+      if ( !this.subjectId) return ;
       switch(idx){
         case 0:
-          this.$.openTasks.loadTasks();
-          this.$.inprogTasks.loadTasks();
+          //this.$.openTasks.loadTasks();
+          //this.$.inprogTasks.loadTasks();
+          Polymer.dom(this.$.sectionOpenTasks).children.forEach(function(el,idx){ el.remove(); });
+          Polymer.dom.flush();
+          var openTaskList = this.create("iron-list-tasks",{
+            hidden: (!this.person),
+            listingTitle:"Not Yet Started",
+            hostAttributes:{
+              id:"openTasks"
+            },
+            subjectId:this.subjectId,
+            activeInCard:this.activeTaskId,
+            state:'init'
+          });
+          this.listen(openTaskList,"gotoactivatedtask","goToActivatedTask");
+          Polymer.dom(this.$.sectionOpenTasks).appendChild(openTaskList);
+          openTaskList.loadTasks();
+
+          var inprogTaskList = this.create("iron-list-tasks",{
+            hidden: (!this.person),
+            listingTitle:"Tasks in Progress",
+            hostAttributes:{
+              id:"inprogTasks"
+            },
+            subjectId:this.subjectId,
+            activeInCard:this.activeTaskId,
+            state:'inprog'
+          });
+          this.listen(inprogTaskList,"gotoactivatedtask","goToActivatedTask");
+          Polymer.dom(this.$.sectionOpenTasks).appendChild(inprogTaskList);
+          inprogTaskList.loadTasks();
           break;
         case 1:
           this.$.completedAssessments.loadTasks();
           this.$.completedTasks.loadTasks();
+
+
+
           break;
         case 2:
           this.$.programCard.load();
@@ -329,22 +380,82 @@ Example:
       }
 		},
 
-    loadPerson: function(){
-      if ( !this.subjectId ) return; 
-      this.set("person",null);
-
+    reset: function(){
       this.$.demographicCard.reset();
       this.$.interactionsCard.reset();
       this.$.programCard.reset();
       this.$.hdmsCard.reset();
       this.$.hcCard.reset();
-
-      this.$.openTasks.resetTasks();
-      this.$.inprogTasks.resetTasks();
       this.$.completedAssessments.resetTasks();
       this.$.completedTasks.resetTasks();
-      
-      this.set("selectedTabRight",0);
+
+      return;
+      this.$.openTasks.resetTasks();
+      this.$.inprogTasks.resetTasks();
+    },
+
+    attached: function(){
+      this.set("isAttached",true);
+    },
+
+    landingKeyChanged: function(a,b){
+      if ( !this.isAttached ) return console.info("skipping loadPerson, card-person not yet attached");
+
+      var parts = this.landingKey.split("-");
+      console.info("parts:", parts);
+      if (parts.length==1){
+        //no task
+        var sID = parts[0];
+        var tID = "";
+      }
+      else{
+        var sID = parts[0];
+        var tID = parts[1];
+      }
+      console.info("sid:",sID);
+      console.info("tid:",tID);
+
+      if ( this.subjectId !== sID ){
+        //subjectID changed
+        console.info("A-SUBJECT CHANGED");
+        
+        if ( this.activeTaskId !== tID ){
+          if ( tID ) {
+            console.info("A-1-active Task");
+            this.set("uponLoadPerson","loadActiveTask");
+          }
+          else{
+            console.info("A-2-no active Task");
+            this.set("uponLoadPerson","loadOpenTasks");
+          }
+
+        }
+        else{
+          //error casea
+          if ( tID ){
+            console.error("somthings' wrong, non-sensical case found - subject changed but task didnt'");
+            alert("OOPS - SOMETHINGS VERY WRONG!!!");
+          }
+          else{
+            console.info("A-3-no active Task");
+            this.set("uponLoadPerson","loadOpenTasks");
+          }
+        }
+
+      }
+      else{
+        //subjectID did not change
+        if ( tID ) {
+          this.set("uponLoadPerson","loadActiveTask");
+        }
+        else{
+          this.set("uponLoadPerson","loadOpenTasks");
+        }
+        
+      }
+
+      this.set("subjectId",sID);
+      this.set("activeTaskId",tID);
       this.$.ajax_load_person.send({subjectId: this.subjectId});
     },
 
@@ -360,21 +471,39 @@ Example:
       person.dobStr = m.format("MMMM DD, YYYY"); 
 
       this.set("person",person);
+      this.set("lastLoadedSubjectId",person._id);
       if ( person.hdms_acct ){
         this.applyTitle(person.displayAs + " - " + age + " old " + person.sex + " HDMS# " + person.hdms_acct);
       }
       else{ 
         this.applyTitle(person.displayAs + " - " + age + " old " + person.sex);
       }
-      this.loadSectionLeft(0);
+
+      console.info("got load person response", this.subjectId);
+      console.log("calling " + this.get("uponLoadPerson") );
+      this[ this.get("uponLoadPerson") ]();
+
+    },
+
+    loadOpenTasks: function(){
+      this.set("selectedTabRight",0);
       this.loadSectionRight(0);
+    },
+
+    loadActiveTask: function(){
+      this.set("selectedTabRight",5);
+      this.$.activeTask.loadTask(this.activeTaskId);
+    },
+
+    unloadActiveTask: function(){
+      this.$.activeTask._reset();
     },
 
     gotNewTask: function(e,data){
       console.log(data);
       this.set("person.ts", data.newTs);
-      this.set("selectedTabRight", 1);
-      this.$.openTasks.loadTasks();
+      this.loadSectionRight(0);
+      //this.$.openTasks.loadTasks();
     },
 
     loadPersonError: function(e){

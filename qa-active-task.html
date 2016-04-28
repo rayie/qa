@@ -43,9 +43,8 @@ Example:
 
 @demo
 -->
-<dom-module id="survey-b">
-  <style is="custom-style" include="qa-styles"></style>
-  <style is="custom-style">
+<dom-module id="qa-active-task">
+  <style is="custom-style" include="qa-styles">
     :host {
       display: block;
       box-sizing: border-box;
@@ -163,7 +162,11 @@ Example:
     </div>
 
     <div class="padbottom" hidden="[[!subjectId]]">
+      <div>
+        <strong>TaskName: [[task.name]] - [[summaryTxt]]</strong>
+      </div>
 
+      <!--
       <div class=''>
         <div style="padding-left: 8px;">
           <a hidden="[[!task]]" href$="{{baseUrl}}/patient/[[subjectId]]">
@@ -171,6 +174,7 @@ Example:
           </a>
         </div>
       </div>
+      -->
 
       <div id="qlistWrap">
         <!--the container for our question components, dynamically inserted-->
@@ -269,6 +273,7 @@ Example:
         </div>
       </div>
 
+      <!--
       <div class='layout horizontal justified'>
         <div style="padding-left: 8px;">
           <a hidden="[[!task]]" href$="{{baseUrl}}/patient/[[subjectId]]">
@@ -276,6 +281,7 @@ Example:
           </a>
         </div>
       </div>
+      -->
 
     </div>
 
@@ -360,7 +366,7 @@ Example:
 
   Polymer({
 
-    is: 'survey-b',
+    is: 'qa-active-task',
 
     behaviors: [ SectionBehaviors.Basic ],
 
@@ -376,6 +382,10 @@ Example:
       },
 
       taskId: {
+        type: String,
+        value: function(){ return ""; }
+      },
+      loadedTaskId: {
         type: String,
         value: function(){ return ""; }
       },
@@ -434,7 +444,7 @@ Example:
     },
 
     _reset: function(){
-      //console.log("Reset");
+      console.log("Reset");
       //this.set("taskId","");
       var ref = { 
         answers: [],
@@ -468,11 +478,19 @@ Example:
     * loading a survey based on the task selected
     */
     loadTask: function(taskId){ 
+
       if ( taskId !== undefined ){
+        if ( taskId === this.get('taskId') ){
+          return console.log("Already loaded as active Task ", taskId);
+        }
+        
         this.set('taskId',taskId);
       }
 
-      if ( !this.taskId ) return;
+      if ( !this.taskId ){
+        this.set("loadedTaskId","");
+        return;
+      }
 
       this._reset();
       var payload = { taskId: this.taskId };
@@ -487,6 +505,7 @@ Example:
 
     loadTaskResponded: function(e,data){ 
       this.set("task",data.task);
+      this.set("loadedTaskId",data.task._id);
       var dataDoc = _.get(data,"dataDoc",false);
       if (dataDoc){
         this.set("dataDoc",dataDoc); 

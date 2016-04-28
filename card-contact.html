@@ -80,7 +80,7 @@ Example:
     <paper-card 
       class="primary"
       elevation=4
-      heading="Address & Contact Info"
+      heading="Address & Contact Info [[subjectId]]"
     > 
       <div class="vertical layout">
         <div class="flex-5">
@@ -181,12 +181,25 @@ Example:
       },
       subjectId: {
         type: String,
-        value: ""
+        value: "",
+        observer:"load"
+      },
+
+      isAttached: {
+        type: Boolean,
+        value: false
       }
     },
 
+    attached: function(){
+      this.set("isAttached",true);
+      this.load();
+    },
+
     load: function(){
-      if (!this.subjectId) return;
+      //console.info("card-contact, load", this.isAttached, this.subjectId);
+      if (!this.isAttached || !this.subjectId) return; 
+
       var payload = {
         qids: ["global-address","global-contact"],
         subjectId: this.subjectId

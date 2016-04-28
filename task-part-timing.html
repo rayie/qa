@@ -285,43 +285,12 @@ Example:
       //this.$.dialog.open();
     },
 
-    /*
-    gotDismissDialog:function(closeEvent){
-      //console.log("gotDismissalDialog",closeEvent);
-
-      if ( closeEvent.detail.confirmed !== true ){
-        
-        return;
-      }
-      this._affectTheChange();
-      this.fire('change',{
-        taskId: this.taskId,
-        lastTs: this.taskTs,
-        plannedFor: this.plannedFor
-      });
-    },
-    */
-
     revert: function(){
       this.set( "plannedFor", _.clone(this._lastSaved));
       this._evaluate();
       return;
     },
 
-    /*
-    gotTaskReAssigned: function(e,d){
-      //console.log("gotTaskReAssign",d);
-      if ( this.taskAssignedTo!==d.reAssignTo ){
-        this.fire('reassign',{
-          taskId: this.taskId,
-          lastTs: this.taskTs,
-          assignTo: d.reAssignTo,
-          lastAssignedTo: this.get("taskAssignedTo")
-        });
-        this.set("tmpReAssignTo", d.reAssignTo);
-      }
-    },
-    */
 
     confirm: function(newTs){
       this._lastSaved = _.clone( this.plannedFor );
@@ -329,22 +298,6 @@ Example:
     },
 
 
-    /*
-    _affectTheChange: function(){
-
-      var s = moment(this.selectedStartDate);
-      var e = moment(this.selectedStartDate);
-      s.hour(5).minute(30).second(0).millisecond(0);
-      e.hour(18).minute(30).second(0).millisecond(0);
-      this.set("plannedFor.kind", "schedule");
-      this.set("plannedFor.start", s.format('YYYY-MM-DDThh:mm:ss') );
-      this.set("plannedFor.end", e.format('YYYY-MM-DDThh:mm:ss') );
-      this.set("plannedFor", this.plannedFor);
-
-      //console.log("plannedFor has been set to:", this.plannedFor);
-      this._evaluate(true);
-    },
-    */
     _resetDisplayStates: function(){
       var self = this;
       this.displayState.forEach(function(ds){ self[ds]=false });
@@ -434,7 +387,7 @@ Example:
       this.$.mdfuture.refresh();
       this.set("okToStart",okToStart);
       this.set("evaluated",true);
-    },
+    }
 
   });
 

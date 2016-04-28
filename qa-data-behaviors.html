@@ -11,7 +11,8 @@
       },
       subjectId: {
         type: String,
-        value: ""
+        value: "",
+        observer:"load"
       },
       primaryField: {
         type: String,
@@ -31,8 +32,15 @@
       this.set("records",[]);
     },
 
+    attached: function(){
+      this.set("isAttached",true);
+      this.load();
+    },
+
     load: function(){
-      if (!this.subjectId) return;
+      //console.info("qa-data-behavior, load", this.isAttached, this.subjectId);
+      if (!this.isAttached || !this.subjectId) return; 
+
       var payload = {
         flows: this.flows,
         subjectId: this.subjectId,
