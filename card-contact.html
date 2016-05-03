@@ -163,18 +163,20 @@ Example:
 </dom-module>
 
 <script>
-  var addr_ref  = {
-    "PR": "Primary Residence",
-    "MA": "Mailing",
-    "BL": "Billing"
-  };
-
 
   Polymer({
 
     is: 'card-contact',
 
     properties: {
+      addr_ref  : {
+        value: {
+          "PR": "Primary Residence",
+          "MA": "Mailing",
+          "BL": "Billing"
+        }
+      },
+
       addr: {
         type: Object,
         value: null
@@ -217,13 +219,14 @@ Example:
 
     loadResponse: function(e,data){
       //console.log(data);
+      var self = this;
       var addrs = [];
       var contacts = [];
       data.records.forEach(function(r){
 
         for(var qnum in r.a){
           if ( qnum.search(/^global-address/)===0 ){
-            r.a[qnum].lbls = r.a["global-address"].applies_to.map(function(b){ return addr_ref[b]; });
+            r.a[qnum].lbls = r.a["global-address"].applies_to.map(function(b){ return self.addr_ref[b]; });
             addrs.push(r.a[qnum]);
           }
           else if ( qnum.search(/^global-contact/)===0 ){

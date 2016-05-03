@@ -1,0 +1,295 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-item/paper-item-body.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-input/paper-txtarea.html">
+<link rel="import" href="../paper-styles/typography.html">
+<link rel="import" href="../paper-tabs/paper-tabs.html">
+<link rel="import" href="../iron-list/iron-list.html">
+<link rel="import" href="../moment-display/moment-display.html">
+<link rel="import" href="qa-collapse-block.html">
+<link rel="import" href="qa-ajax-poster.html">
+<link rel="import" href="styles/qa-styles.html">
+
+<!--
+
+Example:
+
+    <card-notes></card-notes>
+
+@demo
+-->
+<dom-module id="card-notes">
+
+  <style is="custom-style" include="qa-styles">
+  <style is="custom-style">
+
+    :host {
+      display: block;
+      box-sizing: border-box;
+    }
+   
+    :host > ::content .special {
+    }
+   
+    .paper-font-caption {
+      @apply(--paper-font-caption);
+    }
+
+    paper-input ,
+    paper-textarea {
+      margin: 6px;
+    }
+
+    .note-container {
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-top: 1px solid #E0E0E0;
+    } 
+
+
+    .leftborder {
+      border-left: 2px solid #512DA8;
+      padding-left: 16px;
+      margin-left: 16px;
+    }
+
+
+    moment-display {
+      --display-size: 14px;
+      --label-size: 14px;
+    }
+    .note-txt {
+      font-size: .88em;
+      margin-bottom: 4px;
+    }
+
+    .note-mdata {
+      margin: 8px 0 0 0;
+      font-size: 12px;
+      padding: 8px 0 0 0;
+    }
+
+    p {
+      font-size: .88em;
+    }
+
+    .tag {
+      padding-right: 4px;
+      font-style: italic;
+      font-size: .82em;
+      color: #01579B;
+    }
+    div.tags {
+      margin-top:8px;
+      padding-bottom:8px;
+    }
+  </style>
+
+  <template>
+
+    <div id="container">
+
+      <!--<paper-toolbar> </paper-toolbar>-->
+      <paper-card class='primary layout vertical pagination' hidden="[[!notesLoaded]]" elevation="4" heading="[[computedListingTitle]]">
+        <div class="card-actions">
+          <template id="progCnt" is="dom-repeat" items="[[pagebtns]]" as="pb" >
+            <paper-button raised elevation=2 class="pg" on-click="pageSelected">[[pb]]</paper-button>
+          </template>
+        </div>
+        <iron-list 
+          selection-enabled="[[selectionEnabled]]"
+          selected-items="{{selectedTasks}}"
+          multi-selection="[[multiSelection]]"
+          id="mainList" 
+          style="height: [[listingHeight]]px;" 
+          items="[[notes]]" 
+          as="note"
+          index-as="idx" 
+        >
+          <template >
+            <div class="row vertical layout" >
+              <div class='note-container layout horizontal' >
+                <div class='note-mdata flex-10'>
+                  <moment-display 
+                  label="[[note.m.u_id]] on "
+                  class='note-mdata'
+                  display-fmt="withday" 
+                  inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                  str="[[note.m.ts]]" 
+                  time></moment-display>
+                </div>
+                <div class='note-mdata flex-2'>
+                  <span>#[[note.idxInSet]] in Result Set</span>
+                </div>
+              </div>
+              <div>
+                <template is="dom-repeat" items="[[note.txt]]" as="txt-entry">  
+                  <div class='note-txt'>
+                    [[txt-entry]]
+                  </div>
+                </template>
+                <div class='tags' >
+                  <template is="dom-repeat" items="[[note.tags]]" as="tag">  
+                    <div class='tag'>
+                      [[tag]]
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </div>  
+          </template>
+        </iron-list>
+      </paper-card>
+
+      <qa-ajax-poster
+        id="ajax_load"       
+        no-toast
+        on-response="loadResponse"
+        on-error="loadError"
+        endpoint="api/notes:get"
+      ></qa-ajax-poster>
+
+    </div>
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'card-notes',
+
+    properties: {
+      listingHeight: {
+        type: Number,
+        value: function(){ return 250; }
+      },
+
+      listingHeightPercentageOfWindow: {
+        type: Number,
+        value: function(){ return 80; }
+      },
+      selectionEnabled: {
+        type: Boolean,
+        value:false
+      },
+      multiSelection: {
+        type: Boolean,
+        value: false
+      },
+      pagebtns: {
+        type: Array,
+        value: function(){ return []; }
+      },
+      flows: {
+        type: Array,
+        value: function(){
+          return [ [], [] ];
+        }
+      },
+      subjectId: {
+        type: String,
+        value: ""
+      },
+      hc: {
+        type: Object
+      },
+      name: {
+        type: String,
+        value: ""
+      },
+      asColumns: {
+        type: Boolean,
+        value: false
+      }
+    },
+
+    reset: function(){
+      this.set("pagebtns",[]);
+      this.set("notes",[]);
+      Polymer.dom.flush();
+    },
+
+    load: function(){
+      //console.info(this.subjectId + "hcload");
+      if (!this.subjectId) return;
+      var payload = {
+        subjectId: this.subjectId
+      }
+      this.$.ajax_load.send(payload);
+    },
+
+
+    loadError: function(e){
+      console.log(e);
+    },
+
+    loadResponse: function(e,data){
+      this.set("notes",data.notes);
+      var pg = _.get(data,"pagination",{
+        "totalRecords": 0,
+        "totalPagesAvailable": 1,
+        "recordCountLastPage": 0,
+        "currentPageNum": 0,
+        "start": 0,
+        "end": 0
+      });
+
+      var te = [
+        "Displaying Notes "+(pg.start+1)+ "-" + pg.end + " of " + pg.totalRecords + " Total",
+        "Page "+(pg.currentPageNum+1)+ " of " + pg.totalPagesAvailable
+      ].join(" - ");
+
+      if ( pg.totalPagesAvailable > 1 ){
+        //console.info("settin gpagebtns",pg);
+        this.set("pagebtns",_.range(1,pg.totalPagesAvailable+1));
+      }
+      else if (pg.totalRecords === 0 ){
+        te =  " - No notes found matching your criteria"; 
+        this.set("pagebtns",[]);
+      }
+      else {
+        this.set("pagebtns",[]);
+      }
+      this.set("computedListingTitle",te);
+      this.computeHeight();
+    },
+
+    computeHeight: function(){
+      var h = Math.floor( this.listingHeightPercentageOfWindow * window.innerHeight )
+      this.set("listingHeight", h);
+      //Polymer.dom.flush();
+    },
+
+    pageSelected: function(a){
+      this.reset();
+      var pageNum = a.model.pb-1;
+      var payload = this.$.ajax_load.get("payload");
+      payload = _.merge(payload,{requestedPageNum: pageNum});
+      //console.log(pageNum,payload);
+      this.set("computedListingTitle","...loading page "+(pageNum+1));
+      return this.$.ajax_load.send(payload);
+    },
+
+    toggle: function(e){
+      console.log(e);
+      return;
+    }
+  });
+
+</script>

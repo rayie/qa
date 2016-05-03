@@ -29,6 +29,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="card-data-display.html">
 <link rel="import" href="card-hdmsdata-display.html">
 <link rel="import" href="card-hcdata-display.html">
+<link rel="import" href="card-notes.html">
 <link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="qa-dateinput.html">
 <link rel="import" href="styles/qa-styles.html">
@@ -135,8 +136,7 @@ Example:
             <paper-tab>Open Tasks</paper-tab>
             <paper-tab>Collected Data</paper-tab>
             <paper-tab>Programs</paper-tab>
-            <paper-tab>HDMS Data</paper-tab>
-            <paper-tab>HealthCall (Legacy)</paper-tab>
+            <paper-tab>Notes</paper-tab>
             <paper-tab hidden="[[!activeTaskId]]">Active Task</paper-tab>
           </paper-tabs>
           <span class="title"><!--stub--></span>
@@ -197,27 +197,14 @@ Example:
             </card-data-display>
           </section>
 
-
-          <section data-tab='hdmsdata' >
-            <card-hdmsdata-display
-              class="flex-10"
-              as-columns
-              id="hdmsCard"
-              name="HDMS Notes"
-              subject-id="[[person._id]]"
-              hdms-acct="[[person.hdms_acct]]">
-            </card-hdmsdata-display>
-          </section>
-
-          <section data-tab='hcdata' >
-            <card-hcdata-display
-              class="flex-10"
-              as-columns
-              id="hcCard"
-              name="HealthCall"
+          <section data-tab='notes' >
+            <card-notes 
+              id="notesCard"
+              name="Notes"
               subject-id="[[person._id]]">
-            </card-hcdata-display>
+            </card-notes>
           </section>
+
           <section data-tab='workingTaskSection' >
             <qa-active-task 
               id="activeTask" ,
@@ -315,7 +302,7 @@ Example:
 		},
 
     goToActivatedTask: function(){
-      this.set("selectedTabRight",5);
+      this.set("selectedTabRight",4);
     },
 
 		tabSelectedRight: function(e){
@@ -372,12 +359,7 @@ Example:
           this.$.interactionsCard.load();
           break;
         case 3:
-          if ( this.person.hdms_acct ){
-            this.$.hdmsCard.load();
-          }
-          break;
-        case 4:
-          this.$.hcCard.load();
+          this.$.notesCard.load();
           break;
       }
 		},
@@ -388,6 +370,7 @@ Example:
       this.$.programCard.reset();
       this.$.hdmsCard.reset();
       this.$.hcCard.reset();
+      this.$.notesCard.reset();
       this.$.completedAssessments.resetTasks();
       this.$.completedTasks.resetTasks();
 
