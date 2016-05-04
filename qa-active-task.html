@@ -154,10 +154,10 @@ Example:
   <template>
     <div>
       <div hidden="[[hideLoadingMsg]]">
-        <h2>...loading data</h2>
+        <paper-card class='primary' elevation="4">...loading data</paper-card>
       </div>
       <div hidden="[[hideLoadError]]">
-        <h2>The survey can not be initiated because a subject ID missing {{subjectId}} - </h2>
+        <paper-card class="primary" elevation="4">[[loadErrorMsg]]</paper-card>
       </div>
     </div>
 
@@ -172,7 +172,7 @@ Example:
       </div>
       -->
 
-      <div id="qlistWrap">
+      <div id="qlistWrap" hidden="[[submissionResult]]">
         <!--the container for our question components, dynamically inserted-->
         <div id="qlist">
           <!--the container for our question components, dynamically inserted-->
@@ -256,7 +256,7 @@ Example:
       <div class='' hidden="[[!submissionResult]]" >
         <div class='layout horizontal justified success-area'>
           <div>
-            <h2 >Submitted Successfully</h2>
+            <h2>[[submissionResultMsg]]</h2>
           </div>
         </div>
 
@@ -281,7 +281,7 @@ Example:
 
     </div>
 
-    <dialog-incompletion id="incompletionDialog" ></dialog-incompletion>
+    <dialog-incompletion on-incomplete="taskIncomplete" id="incompletionDialog" ></dialog-incompletion>
 
     <iron-ajax
       id="ajax_load_survey"       
@@ -390,6 +390,11 @@ Example:
         type: Object,
         value: function(){ return {}; }
       },
+      
+      loadErrorMsg: {
+        type: String,
+        value: function(){ return "Task could not be loaded"; }
+      },
 
       subjectId: {
         type: String,
@@ -413,6 +418,11 @@ Example:
 
       submissionResult: {
         value: null,
+        notifies: true
+      },
+
+      submissionResultMsg: {
+        value: function(){ return "..waiting for submission result"; },
         notifies: true
       },
 
@@ -442,6 +452,9 @@ Example:
     _reset: function(){
       console.log("Reset");
       //this.set("taskId","");
+      this.set("hideLoadingMsg",true);
+      this.set("hideLoadError",false);
+      this.set("loadErrorMsg","This task could not be loaded. You may have arrived here due to an outdated link");
       var ref = { 
         answers: [],
         taskDefinition: {},
@@ -452,8 +465,10 @@ Example:
         state:0,
         submissionError : null,
         submissionResult : null,
+        submissionResultMsg : "",
         ok_to_submit : false,
-        hideSubmitArea: true 
+        hideSubmitArea: true,
+        hideLoadError: true 
       };
 
       for(var k in ref){
@@ -495,11 +510,28 @@ Example:
     },
 
     loadTaskError: function(e){ 
-      console.log("Failed loading task from @", this.$.ajax_load_task.url );
+      this.set("hideLoadingMsg",true);
+      this.set("hideLoadError",false);
+      this.set("loadErrorMsg","This task could not be loaded. You may have arrived here due to an outdated link");
       return;
     },
 
     loadTaskResponded: function(e,data){ 
+      switch( data.task.state ){
+        case "done":
+          this.set("hideLoadingMsg",true);
+          this.set("hideLoadError",false);
+          this.set("loadErrorMsg","This task has already been completed. You arrived here due to an outdated link");
+          return;
+        case "incomplete":
+          this.set("hideLoadingMsg",true);
+          this.set("hideLoadError",false);
+          this.set("loadErrorMsg","This task was submitted as Incomplete. You arrived here due to an outdated link");
+          return;
+      }
+
+
+
       this.set("task",data.task);
       this.set("loadedTaskId",data.task._id);
       var dataDoc = _.get(data,"dataDoc",false);
@@ -658,7 +690,6 @@ Example:
       this.isPopulating=true;
       var addons=0;
 
-      //this.taskDefinition.qq.forEach(function(q,idx){
       for(var qnum in this.dataDoc.a){
         var suffix_idx = qnum.search(/-[0-9]*$/);
         if ( suffix_idx !== -1 ){
@@ -915,7 +946,7 @@ Example:
 
 
     taskIncomplete: function(e,data){
-
+      console.log("got task incomplete fire from dialog",e,data);
       if ( this.is_submitting ) return console.log("Still in progress");
       this.ok_to_submit = false;
 
@@ -995,6 +1026,7 @@ Example:
         this.$.nextTasks.applyTasks(this.submissionResult.tasks_created);
       }
       else this.set("hasNextTasks",false);
+      this.set("submissionResultMsg",data.msg);
     },
 
     submitError: function(e,data){

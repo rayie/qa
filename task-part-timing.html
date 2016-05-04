@@ -369,7 +369,7 @@ Example:
           break;
       }
 
-      if ( this.taskState==="done" || this.taskAssignedTo!==_.get(app,"scenariouser._id") ) {
+      if ( this.taskState=="incomplete" || this.taskState==="done" || this.taskAssignedTo!==_.get(app,"scenariouser._id") ) {
         //console.log("not ok", this.taskAssignedTo);
         okToStart=false;
       }

@@ -100,7 +100,7 @@ Example:
               attr-for-selected="rc"
             > 
               <paper-item rc='AU'>Assignee unavailable</paper-item>
-              <paper-item rc='CT'>Task created in error</paper-item>
+              <paper-item rc='TCE'>Task created in error</paper-item>
               <paper-item rc='SC'>Situation changed</paper-item>
             </paper-listbox>
           </paper-dropdown-menu>
@@ -164,7 +164,7 @@ Example:
     dialogClosed: function(dialogCloseEvent){
       if (!_.get(dialogCloseEvent,'detail.confirmed',false)) {
         //reset
-        console.log("user didn't click confirm");
+        console.log("user didn't click confirm", dialogCloseEvent);
         return;
       }
 
@@ -173,7 +173,7 @@ Example:
         reAssignTo: this.selectedUser.toString()
       }
       console.log(pkg);
-      this.fire("taskIncomplete",pkg);
+      this.fire("incomplete",pkg);
     },
 
     dialogCanceled: function(dialogCloseEvent){

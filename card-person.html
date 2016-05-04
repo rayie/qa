@@ -176,6 +176,16 @@ Example:
               task-def-filter='["not-assessment"]'
               state='["done"]'
             ></iron-list-tasks>
+
+            <iron-list-tasks
+              hidden="[[!person]]"
+              listing-title="Tasks Submitted as Incomplete"
+              class='card-content'
+              id="incompletedTasks"
+              subject-id="[[subjectId]]"
+              state='["incomplete"]'
+            ></iron-list-tasks>
+
           </section>
 
           <section data-tab='interactions' >
@@ -350,9 +360,7 @@ Example:
         case 1:
           this.$.completedAssessments.loadTasks();
           this.$.completedTasks.loadTasks();
-
-
-
+          this.$.incompletedTasks.loadTasks();
           break;
         case 2:
           this.$.programCard.load();
@@ -373,6 +381,7 @@ Example:
       this.$.notesCard.reset();
       this.$.completedAssessments.resetTasks();
       this.$.completedTasks.resetTasks();
+      this.$.incompletedTasks.resetTasks();
 
       return;
       this.$.openTasks.resetTasks();
@@ -386,6 +395,9 @@ Example:
     landingKeyChanged: function(a,b){
       if ( !this.isAttached ) return console.info("skipping loadPerson, card-person not yet attached");
 
+      if ( undefined == this.landingKey ) return;
+
+      console.log(this.landingKey,a,b);
       var parts = this.landingKey.split("-");
       console.info("parts:", parts);
       if (parts.length==1){

@@ -164,6 +164,12 @@ Example:
                     ></moment-display>
                   </div>
 
+                  <div hidden="[[!item.m.incomplete]]" class='age'>
+                    <moment-display label="Marked Incomplete" plus-age display-fmt="withday" time str="[[item.m.incomplete.ts]]" 
+                    inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                    ></moment-display>
+                  </div>
+
                 </div>
               </div>
 
