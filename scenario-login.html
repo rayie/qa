@@ -300,14 +300,14 @@ Example:
       return;
     },
     test_error: function(e){
-      console.log(e);
+      //console.log(e);
     },
     test_response: function(e){
       //console.log(e);
     },
 
     check_error: function(e){
-      console.log(e);
+      console.error(e);
       this.set("sessionIsValid", false);
     },
 
@@ -323,7 +323,7 @@ Example:
       return;
     },
     logout_error: function(e){
-      console.log(e);
+      console.error(e);
     },
     logout_response: function(e){
       //console.log(e.detail.response);
@@ -342,7 +342,7 @@ Example:
       return;
     },
     login_error: function(e){
-      console.log(e);
+      console.error(e);
       Polymer.dom(this.root).querySelectorAll("paper-input").forEach(function(el){
         el.invalid=true;
       });

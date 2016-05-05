@@ -67,7 +67,7 @@ Example:
       margin-left: 16px;
     }
 
-    #right iron-pages section {
+    #right iron-pages section.scroll {
       height: 800px;
       overflow: scroll;
     }
@@ -84,9 +84,7 @@ Example:
       <div id="left">
         <iron-pages selected="0">
           <section >
-            <paper-card elevation='4' class='primary'
-              heading="Patient"
-            >
+            <paper-card elevation='4' class='primary' >
               <div class='main-data'>
                 [[person.ln]]
                 <span hidden="[[!person.suf]]"> 
@@ -151,11 +149,11 @@ Example:
         <iron-pages selected="{{selectedTabRight}}">
 
 
-          <section id="sectionOpenTasks" data-tab='tasks' >
-          <!-- open tasks must be loaded imperatively because of task-part timing attachment issues -->
+          <section class="scroll" id="sectionOpenTasks" data-tab='tasks' >
+            <!-- open tasks must be loaded imperatively because of task-part timing attachment issues -->
           </section>
 
-          <section id="sectionClosedTasks" data-tab='closedtasks'>
+          <section class="scroll" id="sectionClosedTasks" data-tab='closedtasks'>
 
             <iron-list-tasks
               hidden="[[!person]]"
@@ -188,7 +186,7 @@ Example:
 
           </section>
 
-          <section data-tab='interactions' >
+          <section class="scroll" data-tab='interactions' >
             <card-program-display
               id="programCard"
               class="flex-10"
@@ -215,7 +213,7 @@ Example:
             </card-notes>
           </section>
 
-          <section data-tab='workingTaskSection' >
+          <section class="scroll" data-tab='workingTaskSection' >
             <qa-active-task 
               id="activeTask" ,
               app-title= '{{appTitle}}',
@@ -317,7 +315,7 @@ Example:
 
 		tabSelectedRight: function(e){
 			var idx = this.$.tabSelectorRight.indexOf( e.detail.item );
-      console.log("tabSelectedRight",idx);
+      //console.log("tabSelectedRight",idx);
       this.loadSectionRight(idx);
     },
 
@@ -393,7 +391,7 @@ Example:
     },
 
     landingKeyChanged: function(a,b){
-      if ( !this.isAttached ) return console.info("skipping loadPerson, card-person not yet attached");
+      if ( !this.isAttached ) return; //console.info("skipping loadPerson, card-person not yet attached");
 
       if ( undefined == this.landingKey ) return;
 
@@ -409,20 +407,20 @@ Example:
         var sID = parts[0];
         var tID = parts[1];
       }
-      console.info("sid:",sID);
-      console.info("tid:",tID);
+      //console.info("sid:",sID);
+      //console.info("tid:",tID);
 
       if ( this.subjectId !== sID ){
         //subjectID changed
-        console.info("A-SUBJECT CHANGED");
+        //console.info("A-SUBJECT CHANGED");
         
         if ( this.activeTaskId !== tID ){
           if ( tID ) {
-            console.info("A-1-active Task");
+            //console.info("A-1-active Task");
             this.set("uponLoadPerson","loadActiveTask");
           }
           else{
-            console.info("A-2-no active Task");
+            //console.info("A-2-no active Task");
             this.set("uponLoadPerson","loadOpenTasks");
           }
 
@@ -434,7 +432,7 @@ Example:
             alert("OOPS - SOMETHINGS VERY WRONG!!!");
           }
           else{
-            console.info("A-3-no active Task");
+            //console.info("A-3-no active Task");
             this.set("uponLoadPerson","loadOpenTasks");
           }
         }
@@ -476,8 +474,8 @@ Example:
         this.applyTitle(person.displayAs + " - " + age + " old " + person.sex);
       }
 
-      console.info("got load person response", this.subjectId);
-      console.log("calling " + this.get("uponLoadPerson") );
+      //console.info("got load person response", this.subjectId);
+      //console.log("calling " + this.get("uponLoadPerson") );
       this[ this.get("uponLoadPerson") ]();
 
     },

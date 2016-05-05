@@ -144,7 +144,7 @@ Example:
                 <div class='tags' >
                   <template is="dom-repeat" items="[[note.tags]]" as="tag">  
                     <div class='tag'>
-                      [[tag]]
+                      #[[tag]]
                     </div>
                   </template>
                 </div>
@@ -181,7 +181,7 @@ Example:
 
       listingHeightPercentageOfWindow: {
         type: Number,
-        value: function(){ return 80; }
+        value: function(){ return .76; }
       },
       selectionEnabled: {
         type: Boolean,
@@ -227,6 +227,8 @@ Example:
     load: function(){
       //console.info(this.subjectId + "hcload");
       if (!this.subjectId) return;
+      this.set("computedListingTitle","...loading results");
+      this.reset();
       var payload = {
         subjectId: this.subjectId
       }
@@ -271,6 +273,7 @@ Example:
 
     computeHeight: function(){
       var h = Math.floor( this.listingHeightPercentageOfWindow * window.innerHeight )
+      console.info(this.listingHeightPercentageOfWindow , window.innerHeight )
       this.set("listingHeight", h);
       //Polymer.dom.flush();
     },
