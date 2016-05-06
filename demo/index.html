@@ -12,32 +12,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-    <title>Question-MC Demo</title>
+    <title>QA Demo</title>
     <!--
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
     <script>$.noConflict();</script>
     -->
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-    <link rel="import" href="../question-behaviors.html">
-    <link rel="import" href="../survey-a.html">
-    <link rel="import" href="../scenario-login.html">
-    <link rel="import" href="../moment-test.html">
+    <link rel="import" href="../qa-noteinput.html">
+    <link rel="import" href="../qa-noteinput-addon.html">
   </head>
   <body>
-    <moment-test> 
-    </moment-test> 
-    <scenario-login
-      login-url="http://sc3:8600/api/session:login"
-      logout-url="http://sc3:8600/api/session:logout"
-      test-url="http://sc3:8600/api/status"
-      email="rie@supercare.com",
-      pw="pw"
-    >
-    </scenario-login>
-    <survey-a 
-      subject_id="569ef19b599bd20f5ff2dde7"
-      survey-url="http://sc3:8600/flows/sc.copd_casebuild.json"
-    >
-    </survey-a>
+    <div id="#container">
+      <h2>Test</h2>
+      <qa-noteinput>
+      </qa-noteinput>
+    </div>
   </body>
 </html>
