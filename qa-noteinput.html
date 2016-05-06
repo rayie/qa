@@ -21,6 +21,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../moment-display/moment-import.html">
 <link rel="import" href="qa-noteinput-addon.html">
 <!--
+@demo
 -->
 
 <dom-module id="qa-noteinput">
@@ -83,14 +84,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       ></qa-noteinput-addon>
     </paper-input-container>
 
-    <!--
-    <qa-date-validator 
-      num="[[num]]"
-      error-message="{{errorMessage}}"
-      true-value="{{trueValue}}"
-    >
-    </qa-date-validator>
-    -->
 
   </template>
 </dom-module>
@@ -125,11 +118,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     properties: {
       label: {
         type: String,
-        value: function(){ return "Date, any format (4-3-16, today, next week)"; }
+        value: function(){ return "Enter note text here with hashtags..."; }
       },
       msg: {
         type: String,
-        value: function(){  return "Awaiting date entry"; }
+        value: function(){  return "Awaiting note entry..."; }
       }
     },
 

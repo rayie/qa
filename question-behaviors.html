@@ -1,149 +1,156 @@
+<link rel="import" href="../polymer/polymer.html">
+<!--
+Use `QuestionBehaviors.Basic` to implement 
+behavior is implemented by `<question-xxxx>`. 
+@demo
+-->
 <script src="../lodash/lodash.min.js"></script>
 <script>
-  window.QuestionBehaviors = window.QuestionBehaviors || {};
-  QuestionBehaviors.Basic = {
+  window.QuestionBehaviors = window.QuestionBehaviors || {
+    Basic: {
 
-    factoryImpl: function(props){
-      return true;
+      factoryImpl: function(props){
+        return true;
 
-    },
-    properties: {
-      txt: {
-        type: String,
-        value: function(){
-          return "";
-        }
       },
-
-      sub: {
-        type: String,
-        value: function(){
-          return "";
-        }
-      },
-
-      qstate: {
-        type: Number,
-        notify: true,
-        value: 0
-      },
-
-      warn_msg: {
-        type: String,
-        value: function(){
-          return "";
-        }
-      },
-
-      allow: {
-        type: Object,
-        value: function(){
-          return { 
-            na: true,
-            survey_note: true,
-            correction: true,
-            expiration: false,
-            concurrency: true,
-            multiple: 0
+      properties: {
+        txt: {
+          type: String,
+          value: function(){
+            return "";
           }
+        },
+
+        sub: {
+          type: String,
+          value: function(){
+            return "";
+          }
+        },
+
+        qstate: {
+          type: Number,
+          notify: true,
+          value: 0
+        },
+
+        warn_msg: {
+          type: String,
+          value: function(){
+            return "";
+          }
+        },
+
+        allow: {
+          type: Object,
+          value: function(){
+            return { 
+              na: true,
+              survey_note: true,
+              correction: true,
+              expiration: false,
+              concurrency: true,
+              multiple: 0
+            }
+          }
+        },
+
+        sn: {
+          type: String,
+          value: ""
+        },
+
+        /**
+        * hidden 
+        * If true, the question does not display, within a survey
+        *   
+        */ 
+        hidden: {
+          type: Boolean,
+          value: function(){
+            return false;
+          }
+        },
+
+        idx_in_survey: {
+          type: Number
+        },
+
+
+      },
+
+      qstateChanged: function(e){
+        //console.log("qstateChanged", e);
+      },
+
+      qstateChangedInFooter: function(e){
+        //console.log("qstateChangedInFooter", e.detail.value);
+        this.set("qstate", e.detail.value);
+      },
+
+      populateNote: function(note){
+        this.set("sn",note);
+      },
+
+      populateAnswer: function(a){
+        if ( a===undefined ){  
+          /* leave as is, because there has not been an answer provied */
+          return;
         }
-      },
 
-      sn: {
-        type: String,
-        value: ""
-      },
-
-      /**
-      * hidden 
-      * If true, the question does not display, within a survey
-      *   
-      */ 
-      hidden: {
-        type: Boolean,
-        value: function(){
-          return false;
+        if ( a===null ){
+          //mark as NA
+          this.set("qstate",3);
+          this.$.qpartFooter.querySelector("#mark_btn").set("active",true);
+          return;
         }
-      },
 
-      idx_in_survey: {
-        type: Number
-      },
+        if ( "function" === typeof this.populateNext ){
+          //subclass may have populateNext function to handle specific answer values
+          return this.populateNext(a);
+        }
 
-
-    },
-
-    qstateChanged: function(e){
-      //console.log("qstateChanged", e);
-    },
-
-    qstateChangedInFooter: function(e){
-      //console.log("qstateChangedInFooter", e.detail.value);
-      this.set("qstate", e.detail.value);
-    },
-
-    populateNote: function(note){
-      this.set("sn",note);
-    },
-
-    populateAnswer: function(a){
-      if ( a===undefined ){  
-        /* leave as is, because there has not been an answer provied */
+        this.set("qstate",2);
+        this.set("answer",a);
         return;
       }
 
-      if ( a===null ){
-        //mark as NA
-        this.set("qstate",3);
-        this.$.qpartFooter.querySelector("#mark_btn").set("active",true);
-        return;
-      }
+    },
 
-      if ( "function" === typeof this.populateNext ){
-        //subclass may have populateNext function to handle specific answer values
-        return this.populateNext(a);
-      }
+    QuestionsOnly : {
 
-      this.set("qstate",2);
-      this.set("answer",a);
-      return;
-    }
+      properties: {
+        /*
+        * Interally used to track if a siblings reveal/hide change is necessary
+        */
+        siblingsrevealed: [],
 
-  };
-  
-  QuestionBehaviors.QuestionsOnly = {
+        siblingdisplay: {
+          type: Object,
+          notify: true,
+          value:{ "reveal":[], "hide": [] }
+        }
 
-    properties: {
-      /*
-      * Interally used to track if a siblings reveal/hide change is necessary
-      */
-      siblingsrevealed: [],
+      },
 
-      siblingdisplay: {
-        type: Object,
-        notify: true,
-        value:{ "reveal":[], "hide": [] }
+      setToPristine: function(){
+        if ( this.get("qstate") !== 0 ){
+          this.set("answer","");
+          this.set("qstate",0);
+        }
       }
 
     },
 
-    setToPristine: function(){
-      if ( this.get("qstate") !== 0 ){
-        this.set("answer","");
-        this.set("qstate",0);
-      }
-    }
+    FormsOnly : {
 
-  };
+      properties: {
 
-  QuestionBehaviors.FormsOnly = {
-
-    properties: {
-
-      additionalInstancesAdded: {
-        type: Number,
-        value: 0,
-        notify: true
+        additionalInstancesAdded: {
+          type: Number,
+          value: 0,
+          notify: true
+        }
       }
     }
 
