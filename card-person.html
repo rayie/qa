@@ -30,6 +30,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="card-hdmsdata-display.html">
 <link rel="import" href="card-hcdata-display.html">
 <link rel="import" href="card-notes.html">
+<link rel="import" href="qa-noteinput.html">
 <link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="qa-dateinput.html">
 <link rel="import" href="styles/qa-styles.html">
@@ -84,6 +85,11 @@ Example:
       <div id="left">
         <iron-pages selected="0">
           <section >
+            
+            <paper-card elevation='4' class='primary' >
+              <qa-noteinput>
+              </qa-noteinput>
+            </paper-card>
             <paper-card elevation='4' class='primary' >
               <div class='main-data'>
                 [[person.ln]]
@@ -395,9 +401,9 @@ Example:
 
       if ( undefined == this.landingKey ) return;
 
-      console.log(this.landingKey,a,b);
+      //console.log(this.landingKey,a,b);
       var parts = this.landingKey.split("-");
-      console.info("parts:", parts);
+      //console.info("parts:", parts);
       if (parts.length==1){
         //no task
         var sID = parts[0];

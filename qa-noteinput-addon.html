@@ -9,12 +9,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../paper-input/paper-input-addon-behavior.html">
 
-<dom-module id="qa-dateinput-addon">
+<dom-module id="qa-noteinput-addon">
   <template>
-    <style>
+    <style is="custom-style">
       :host {
         display: inline-block;
         /* visibility: hidden; */
@@ -37,13 +36,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         font-weight: var(--msg-weight,300); 
       };
     </style>
-    <span>[[msg]]</span>
+    <div>[[msg]]</div>
   </template>
 </dom-module>
 
 <script>
   Polymer({
-    is: 'qa-dateinput-addon',
+    is: 'qa-noteinput-addon',
 
     behaviors: [
       Polymer.PaperInputAddonBehavior
@@ -52,7 +51,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     properties: {
       msg: { 
         type: String , 
-        value: function(){ return "Waiting for date entry..."; } 
+        value: function(){ return "Waiting for note entry..."; } 
       },
       /**
        * True if the error is showing.

@@ -10,9 +10,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-styles/typography.html">
+<link rel="import" href="../iron-autogrow-textarea/iron-autogrow-textarea.html">
 <link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html">
-<link rel="import" href="../iron-validatable-behavior/iron-validatable-behavior.html">
 <link rel="import" href="../iron-input/iron-input.html">
+<link rel="import" href="../paper-card/paper-card.html">
 <link rel="import" href="../paper-input/paper-input-behavior.html">
 <link rel="import" href="../paper-input/paper-input-char-counter.html">
 <link rel="import" href="../paper-input/paper-input-container.html">
@@ -20,8 +21,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../datejs-parseronly-import/datejs-parseronly-import.html">
 <link rel="import" href="../moment-display/moment-import.html">
 <link rel="import" href="qa-noteinput-addon.html">
+<link rel="import" href="styles/qa-styles.html">
 <!--
 @demo
+-->
+<!--
+`<qa-noteinput>` is a multi-line text field with Material Design styling.
+    <qa-noteinput label="Textarea label"></qa-noteinput>
+See `Polymer.PaperInputBehavior` for more API docs.
+### Validation
+Currently only `required` and `maxlength` validation is supported.
+### Styling
+See `Polymer.PaperInputContainer` for a list of custom properties used to
+style this element.
 -->
 
 <dom-module id="qa-noteinput">
@@ -30,149 +42,118 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       :host {
         display: block;
       }
-
-      input::-webkit-input-placeholder {
-        color: var(--paper-input-container-color, --secondary-text-color);
-      }
-
-      input:-moz-placeholder {
-        color: var(--paper-input-container-color, --secondary-text-color);
-      }
-
-      input::-moz-placeholder {
-        color: var(--paper-input-container-color, --secondary-text-color);
-      }
-
-      input:-ms-input-placeholder {
-        color: var(--paper-input-container-color, --secondary-text-color);
-      }
-      --paper-input-container {
-        width: 100%;
+      iron-autogrow-textarea {
+        --iron-autogrow-textarea: {
+          font-size: .82em;
+        };
+        --iron-autogrow-textarea-placehoder: {
+          font-weight: bold;
+        }
       }
     </style>
+    <div>
+      <paper-input-container no-label-float$="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
 
-    <paper-input-container 
-      no-label-float="[[noLabelFloat]]" 
-      always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" 
-      auto-validate$="[[autoValidate]]" 
-      disabled$="[[disabled]]" 
-      invalid="[[invalid]]"
-    >
-      <label hidden$="[[!label]]">[[label]]</label>
-      <input 
-        is="iron-input" 
-        id="input"
-        aria-labelledby$="[[_ariaLabelledBy]]"
-        aria-describedby$="[[_ariaDescribedBy]]"
-        disabled$="[[disabled]]"
-        title$="[[title]]"
-        bind-value="{{value}}"
-        invalid="{{invalid}}"
-        required$="[[required]]"
-        autofocus$="[[autofocus]]"
-        name$="[[name]]"
-        placeholder$="[[placeholder]]"
-        readonly$="[[readonly]]"
-        list$="[[list]]"
-        size$="[[size]]"
-        on-change="_onChange"
-        tabindex$="[[tabindex]]"
-      >
+        <label hidden$="[[!label]]" aria-hidden="true">[[label]]</label>
 
-      <qa-noteinput-addon 
-        msg="[[msg]]"
-      ></qa-noteinput-addon>
-    </paper-input-container>
+        <iron-autogrow-textarea id="input" class="paper-input-input"
+          bind-value="{{value}}"
+          disabled$="[[disabled]]"
+          autocomplete$="[[autocomplete]]"
+          autofocus$="[[autofocus]]"
+          inputmode$="[[inputmode]]"
+          name$="[[name]]"
+          placeholder$="[[placeholder]]"
+          readonly$="[[readonly]]"
+          required$="[[required]]"
+          maxlength$="[[maxlength]]"
+          autocapitalize$="[[autocapitalize]]"
+          rows$="[[rows]]"
+          max-rows$="[[maxRows]]"
+          on-change="_onChange"></iron-autogrow-textarea>
 
+        <qa-noteinput-addon>
+        </qa-noteinput-addon>
 
+        <template is="dom-if" if="[[errorMessage]]">
+          <paper-input-error>[[errorMessage]]</paper-input-error>
+        </template>
+
+        <template is="dom-if" if="[[charCounter]]">
+          <paper-input-char-counter></paper-input-char-counter>
+        </template>
+
+      </paper-input-container>
+      <div style="height: 10px"></div>
+    </div>
   </template>
 </dom-module>
 
 <script>
   Polymer({
-
     is: 'qa-noteinput',
-
     behaviors: [
-      Polymer.IronFormElementBehavior,
-      Polymer.PaperInputBehavior
+      Polymer.PaperInputBehavior,
+      Polymer.IronFormElementBehavior
     ],
 
-
     listeners: {
-      'input': '_onInput',
-      'blur': '_onBlur'
-    },
-
-    _onInput: function(){
-      this.value = this.$.input.value;
-      this.validate();
-      //console.log("Value after validate:", this.value, " is invalid: ", this.invalid);
-    },
-
-    _onBlur: function(){
-      //console.log("Got blur in qa-date, value about to be set to trueValue", this.trueValue);
-      this.set("value", this.trueValue );
+      'input': '_onInput'
+      //'blur': '_onBlur'
     },
 
     properties: {
       label: {
         type: String,
-        value: function(){ return "Enter note text here with hashtags..."; }
+        value: "Enter note text here"
       },
-      msg: {
-        type: String,
-        value: function(){  return "Awaiting note entry..."; }
+      _ariaLabelledBy: {
+        observer: '_ariaLabelledByChanged',
+        type: String
+      },
+      _ariaDescribedBy: {
+        observer: '_ariaDescribedByChanged',
+        type: String
+      },
+      /**
+       * The initial number of rows.
+       *
+       * @attribute rows
+       * @type number
+       * @default 1
+       */
+      rows: {
+        type: Number,
+        value: 1
+      },
+      /**
+       * The maximum number of rows this element can grow to until it
+       * scrolls. 0 means no maximum.
+       *
+       * @attribute maxRows
+       * @type number
+       * @default 0
+       */
+      maxRows: {
+       type: Number,
+       value: 0
       }
     },
 
-    validate: function(){
-      //console.log("validating ", this.value);
-      // this regex validates incomplete ssn's (by design)
-      if ( !this.value ){
-        var msg = "";
-        this.set("invalid",true);
-        this.set("msg",msg);
-        this.set("trueValue","");
-        return false;
-      }
-
-      if ( this.value.length < 4 ){
-        var msg = "..keep typing";
-        this.set("invalid",true);
-        this.set("msg",msg);
-        this.set("trueValue","");
-        return false;
-      }
-
-      var pr = Date.parse( this.value );
-
-      if ( pr === null ){
-        var msg = "..can't interpret,try again.";
-        this.set("invalid",true);
-        this.set("msg",msg);
-        this.set("trueValue","");
-        return false;
-      }
-
-      var msg = pr.toString().substr(0,15);
-
-      var m  = moment(pr);
-
-      var now = new Date();
-
-      if ( m.isSame(now,'day') ){
-
-      }
-      else{
-        msg += " (" + m.fromNow() + ")";
-      }
-
-      this.set("invalid",false);
-      this.set("trueValue",m.format("MM-DD-YYYY"));
-      this.set("msg",msg);
-      return true;
-    }
-
+    _onInput: function(){
+      console.log(this.$.input.value);
+    },
+    _onChange: function(e){
+      console.log("Got chagne",e);
+    },
+    _ariaLabelledByChanged: function(ariaLabelledBy) {
+      this.$.input.textarea.setAttribute('aria-labelledby', ariaLabelledBy);
+    },
+    _ariaDescribedByChanged: function(ariaDescribedBy) {
+      this.$.input.textarea.setAttribute('aria-describedby', ariaDescribedBy);
+    },
+    get _focusableElement() {
+      return this.$.input.textarea;
+    },
   });
 </script>
