@@ -14,6 +14,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html">
 <link rel="import" href="../iron-input/iron-input.html">
 <link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-input/paper-input-behavior.html">
 <link rel="import" href="../paper-input/paper-input-char-counter.html">
 <link rel="import" href="../paper-input/paper-input-container.html">
@@ -21,6 +22,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../datejs-parseronly-import/datejs-parseronly-import.html">
 <link rel="import" href="../moment-display/moment-import.html">
 <link rel="import" href="qa-noteinput-addon.html">
+<link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="styles/qa-styles.html">
 <!--
 @demo
@@ -49,6 +51,14 @@ style this element.
         --iron-autogrow-textarea-placehoder: {
           font-weight: bold;
         }
+      }
+      .help {
+        font-size: .82em;
+      }
+      .help ul li {
+        margin-left: 2px;
+        padding: 0;
+        list-style: none;
       }
     </style>
     <div>
@@ -84,8 +94,50 @@ style this element.
         </template>
 
       </paper-input-container>
-      <div style="height: 10px"></div>
-    </div>
+      <div style="height: 4px"></div>
+      <div style="height: auto" hidden="[[!value]]">
+        <span style=".92em">instructions</span>
+        <div class="help interaction-help">
+          <ul style="margin-left: 2px; padding-left: 2px;">
+            <li>#iic - inbound call</li>
+            <li>#ioc - outbound  call</li>
+            <li>#iov - outbound video call</li>
+            <li>#iie - inbound email</li>
+            <li>#ioe - outbound email</li>
+            <li>...f-fax, t-text, m-mail</li>
+          </ul> 
+          <ul style="margin-left: 2px; padding-left: 2px;">
+            <li>#wp - with patient</li>
+            <li>#wf - with (patient's) family</li>
+            <li>#wcg - with caregiver</li>
+            <li>#whp - with healthplan</li>
+            <li>...pc-primary care, sp-specialist, cl-clinic</li>
+          </ul>
+        </div>
+        <div class="card-actions">
+          <paper-button
+            raised
+            on-click="_reset"
+          >
+            <iron-icon icon="cancel"></iron-icon>
+            Cancel
+          </paper-button>
+          <paper-button
+            raised
+          >
+            <iron-icon icon="save"></iron-icon>
+            Add Note
+          </paper-button>
+        </div>
+      </div>
+      <qa-ajax-poster
+        id="ajax_add_note"  
+        on-response="addNoteResponse"
+        on-error="addNoteErr"
+        loading="{{isLoading}}"
+        endpoint="api/note:add"
+      ></qa-ajax-poster>
+      </div>
   </template>
 </dom-module>
 
@@ -103,6 +155,10 @@ style this element.
     },
 
     properties: {
+      value: {
+        type: String,
+        value: function(){ return ""; }
+      },
       label: {
         type: String,
         value: "Enter note text here"
@@ -140,12 +196,22 @@ style this element.
       }
     },
 
+    _reset: function(){
+      this.set("value","");
+    },
+
     _onInput: function(){
-      console.log(this.$.input.value);
+      console.log(this.value, this.$.input.value);
     },
     _onChange: function(e){
       console.log("Got chagne",e);
     },
+
+    parse: function(str){
+      
+    },
+
+
     _ariaLabelledByChanged: function(ariaLabelledBy) {
       this.$.input.textarea.setAttribute('aria-labelledby', ariaLabelledBy);
     },

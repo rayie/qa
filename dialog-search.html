@@ -36,7 +36,7 @@ Example:
     #dialog {
 
       --paper-dialog: {
-        width: 75%;
+        width: 50%;
         padding-bottom: 16px;
         color: #000;
       };
@@ -78,7 +78,6 @@ Example:
             remote-url="api/person:search"
             on-pt-item-select="userSelectedItem"
             on-pt-item-confirmed="userConfirmedItem"
-            value='{{searchStr}}'
           >
           </qa-typeahead-input>
         </div>
@@ -96,10 +95,6 @@ Example:
     is: 'dialog-search',
 
     properties: {
-      searchStr: {
-        type: String, 
-        value: function(){ return ""; }
-      },
       reasonCode: {
         type: String, 
         value: function(){ return ""; }
@@ -123,13 +118,12 @@ Example:
     },
 
     userConfirmedItem: function(item){
-      console.log(item);
-      console.log( this.$.search.inputObject );
+      //console.log(item);
+      //console.log( this.$.search.inputObject );
       var url = this.baseUrl + "patient/"+ this.$.search.inputObject._id;
-      console.log(url);
+      //console.log(url);
       this.$.dialog.close();
       page(url);
-      this.set("searchStr","");
       //this.fire("user-confirmed",url);
     },
 

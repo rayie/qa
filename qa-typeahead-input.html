@@ -84,7 +84,11 @@ If you want to save it in bower.json file, remember to add flag --save
 
 
    <div style="position:relative;">
-    <paper-input value="{{inputValue}}" on-keyup="_keyup" on-keydown="_keydown"  label="{{placeholder}}"
+     <paper-input 
+      value="{{inputValue}}" 
+      on-keyup="_keyup" 
+      on-keydown="_keydown"  
+      label="{{placeholder}}"
       always-float-label="{{alwaysFloatLabel}}"
       autofocus="{{autofocus}}"
       char-counter="{{charCounter}}"
@@ -391,15 +395,16 @@ If you want to save it in bower.json file, remember to add flag --save
 
         if (this.isCandidatesJson == true){
           this.inputObject = this._suggestions[index];
-          this.inputValue = this._getDisplayValue(this.inputObject);
+          //this.inputValue = this._getDisplayValue(this.inputObject);
         } 
         else{
-          this.inputValue = this._suggestions[index];
+          //this.inputValue = this._suggestions[index];
         }
 
         this._suggestions = [];
         this.fire('pt-item-confirmed',e.target);
         e.stopPropagation();
+        this.set("inputValue","");
       }
       else{
         console.log("suggestionsMenu not defined");
@@ -445,10 +450,10 @@ If you want to save it in bower.json file, remember to add flag --save
 
             if (this.isCandidatesJson == true){
               this.inputObject = this._suggestions[index];
-              this.inputValue = this._getDisplayValue(this.inputObject);
+              //this.inputValue = this._getDisplayValue(this.inputObject);
             } 
             else{
-              this.inputValue = this._suggestions[index];
+              //this.inputValue = this._suggestions[index];
             }
             this._suggestions = [];
             this.fire('pt-item-confirmed',selectedItem);
@@ -561,7 +566,8 @@ If you want to save it in bower.json file, remember to add flag --save
       this.fire('pt-remote-searching-end',this);
     },
     searchError: function(e,data){
-      var cuttedMatched = data.results.slice(0,this.maxSuggestions);
+      console.log("search Error data:", data);
+      var cuttedMatched = _.get(data,'results',[]).slice(0,this.maxSuggestions);
       var matched = data.passBack.concat(cuttedMatched);
       this._suggestions = matched;
       this.remoteUrlSearching = false;
