@@ -101,8 +101,10 @@ style this element.
 
 
       <div style="height: auto" hidden="[[!value]]">
-        <span style=".92em">instructions</span>
         <div class="help interaction-help">
+
+          <p style="background-color: gray; padding:2px; font-size:.92em">[[noteText]]</p>
+
           <ul hidden="[[!tagsSelected.length]]" style="margin-left: 2px; padding-left: 2px;">
             <template is="dom-repeat" items="[[tagsSelected]]" as="st">
               <li style="font-weight: bold; color: blue;">[[st]]</li>
@@ -120,10 +122,10 @@ style this element.
           </ul> 
           <ul style="margin-left: 2px; padding-left: 2px;">
             <li>#wp - with patient</li>
-            <li>#wf - with (patient's) family</li>
-            <li>#wcg - with caregiver</li>
-            <li>#whp - with healthplan</li>
-            <li>...pc-primary care, sp-specialist, cl-clinic</li>
+            <li>#wf - with family</li>
+            <li>#wc - with caregiver</li>
+            <li>#wi - with insuranceplan</li>
+            <li>...d-primary doctor, s-specialist, c-clinic</li>
           </ul>
         </div>
         <div class="card-actions">
@@ -170,6 +172,10 @@ style this element.
       tagsSelected: {
         type: Array,
         value: function(){ return []; }
+      },
+      noteText: {
+        type: String,
+        value: function(){ return ""; }
       },
       value: {
         type: String,
@@ -295,8 +301,7 @@ style this element.
         //console.log(commandStartIdxs);
       });
       
-      console.log(commands);
-      console.log(txt);
+      //console.log(commands); console.log(txt);
       var tagsSelected = commands.map(function(commstr){
         var wordparts = commstr.split(/ /g);
         //var commparts = wordparts[0].substr(1).split(""); //skip the hashtag
