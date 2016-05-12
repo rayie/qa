@@ -227,7 +227,7 @@ Example:
 
       <!--</paper-card>-->
     </div>
-    <dialog-assign id="dialogAssign" on-attempted-reassign="gotAttemptedReassign">
+    <dialog-assign id="dialogAssign" on-reassigned="gotAttemptedReassign">
     </dialog-assign>
     <div id="datePickerDialogContainer">
       <paper-dialog 
@@ -493,7 +493,7 @@ Example:
     },
 
     gotAttemptedReassign: function(e,d){
-      console.log("gotAttemptedReassign",d);
+      //console.log("gotAttemptedReassign",d);
       if ( d.origTaskDoc.assignedTo!==d.reAssignTo ){
         var payload = { 
           taskId: d.origTaskDoc._id,
@@ -509,7 +509,9 @@ Example:
     },
 
     reassignTaskResponse: function(e,data){
+
       var model = this.get("tmpModel");
+      model.set("item.assignedTo", data.newAssignedTo);
       model.set("item.ts", data.newTs);
 
       app.$.toast.text = "Task REASSIGNED to " + this.get("tmpReAssignTo"); 
@@ -518,7 +520,8 @@ Example:
     },
 
     reassignTaskError: function(e){
-
+      app.$.toast.text = "Task DID NOT GET REASSIGNED";
+      app.$.toast.show();
     },
 
     moreTasks: function(moreTasks){
@@ -527,8 +530,6 @@ Example:
         self.push("tasks", t);
       });
     },
-
-
 
     gotShowDatePicker: function(a,b){
       console.log("selected start date of chosen model",a.model.item);

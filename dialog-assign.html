@@ -33,7 +33,7 @@ An element providing a solution to no problem in particular.
     #dialogReAssign {
 
       --paper-dialog: {
-        width: 75%;
+        width: 55%;
         padding-bottom: 16px;
         color: #fff;
       };
@@ -121,7 +121,7 @@ An element providing a solution to no problem in particular.
         <paper-button 
           raised 
           dialog-confirm
-          disabled="[[!reasonCode]]"
+          disabled="[[!selectedUser]]"
         >
           Confirm Re-Assignment
         </paper-button>
@@ -170,13 +170,17 @@ An element providing a solution to no problem in particular.
         return;
       }
 
+      var selUser = this.selectedUser.toString();
+      console.log(selUser);
+      if ( !selUser ){
+        return;
+      }
+
       var pkg = {
-        //reason: _.clone({ code: this.reasonCode, note: this.reasonNote }),
         reAssignTo: this.selectedUser.toString(),
         origTaskDoc: this.taskDoc
       }
-      console.log(pkg);
-      this.fire("attempted-reassign",pkg);
+      this.fire("reassigned",pkg);
     },
 
     dialogCanceled: function(dialogCloseEvent){

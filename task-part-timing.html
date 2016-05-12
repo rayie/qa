@@ -382,9 +382,9 @@ Example:
         this.isDone=true;
       }
       
-      
       this.$.mdcurrent.refresh();
       this.$.mdfuture.refresh();
+      //console.log("setting okToStart",okToStart, this.taskAssignedTo);
       this.set("okToStart",okToStart);
       this.set("evaluated",true);
     }
