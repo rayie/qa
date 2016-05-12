@@ -207,10 +207,31 @@ style this element.
       console.log("Got chagne",e);
     },
 
-    parse: function(str){
-      
+    tagRef : {
+      "iic": { },
+      "ioc": { },
     },
 
+    /*
+    Examples
+        #iov #wcg   
+
+
+    */
+    parse: function(str){
+      var commandRG = /--i[a-zA-Z]{1,}[ $]|--t[ $]/;
+      if ( -1 === str.search(commandRG) ){
+        //no commands
+      }
+      else{
+
+        var lines = str.split(/\n/g);
+        lines.forEach(function(line){
+            line.match(commandRG);
+        });
+      
+      }
+    },
 
     _ariaLabelledByChanged: function(ariaLabelledBy) {
       this.$.input.textarea.setAttribute('aria-labelledby', ariaLabelledBy);

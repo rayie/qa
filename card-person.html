@@ -224,6 +224,8 @@ Example:
               id="activeTask" ,
               app-title= '{{appTitle}}',
               loaded-task-id="{{lastLoadedActiveTaskId}}"
+              on-backtoperson="backToPerson"
+              on-taskdone="taskdone"
             >
             </qa-active-task>
           </section>
@@ -288,6 +290,14 @@ Example:
         type: Number,
         value: 0 
       }
+    },
+
+    backToPerson: function(){
+      return page("/patient/"+this.subjectId);  
+    },
+
+    taskdone: function(){
+      this._setBasicTitle();
     },
 
 		tabSelectedLeft: function(e){
@@ -466,24 +476,22 @@ Example:
       var list=[];
 
       var m = moment(person.dob);
-      var age = _.trimRight( m.fromNow(true), "s" );
       var S = { M: "Male", F: "Female" };
+      person.age = _.trimRight( m.fromNow(true), "s" );
       person.sex = S[person.sex];
       person.dobStr = m.format("MMMM DD, YYYY"); 
-
       this.set("person",person);
       this.set("lastLoadedSubjectId",person._id);
-      if ( person.hdms_acct ){
-        this.applyTitle(person.displayAs + " - " + age + " old " + person.sex + " HDMS# " + person.hdms_acct);
-      }
-      else{ 
-        this.applyTitle(person.displayAs + " - " + age + " old " + person.sex);
-      }
-
-      //console.info("got load person response", this.subjectId);
-      //console.log("calling " + this.get("uponLoadPerson") );
+      this._setBasicTitle();
       this[ this.get("uponLoadPerson") ]();
+    },
 
+    _setBasicTitle: function(){
+      var t = this.person.displayAs + " - " + this.person.age + " old " + this.person.sex; 
+      if ( this.person.hdms_acct ){
+        t+= " HDMS# " + this.person.hdms_acct;
+      }
+      this.applyTitle(t);
     },
 
     loadOpenTasks: function(){

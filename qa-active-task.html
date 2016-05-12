@@ -145,10 +145,6 @@ Example:
       padding-bottom: 128px;
     }
 
-    .success-area {
-       
-    }
-
   </style>
 
   <template>
@@ -157,7 +153,14 @@ Example:
         <paper-card class='primary' elevation="4">...loading data</paper-card>
       </div>
       <div hidden="[[hideLoadError]]">
-        <paper-card class="primary" elevation="4">[[loadErrorMsg]]</paper-card>
+        <paper-card class="primary" elevation="4">
+          <div>[[loadErrorMsg]]</div>
+          <div>
+            <a on-click="backToPerson" class='pointer' style="color: blue; font-weight:bold"
+              <h4 style="margin-top:0">Go to main patient page.</h4>
+            </a>
+          </div>
+        </paper-card>
       </div>
     </div>
 
@@ -254,12 +257,19 @@ Example:
       </div>
 
       <div class='' hidden="[[!submissionResult]]" >
-        <div class='layout horizontal justified success-area'>
+        <paper-card 
+         class="primary"
+         elevation="4"
+        >
           <div>
             <h2>[[submissionResultMsg]]</h2>
+            <br/>
+            <a on-click="backToPerson" class='pointer' style="color: blue; font-weight:bold"
+              <h4 style="margin-top:0">Go to main patient page.</h4>
+            </a>
           </div>
-        </div>
-
+        <paper-card>
+        <!--
         <div hidden="[[!hasNextTasks]]">
           <iron-list-tasks
             listing-title="New Tasks Generated"
@@ -267,6 +277,7 @@ Example:
             subject-id="[[subjectId]]"
           ></iron-list-tasks>
         </div>
+        -->
       </div>
 
       <!--
@@ -450,7 +461,7 @@ Example:
     },
 
     _reset: function(){
-      console.log("Reset");
+      //console.log("Reset");
       //this.set("taskId","");
       this.set("hideLoadingMsg",true);
       this.set("hideLoadError",false);
@@ -529,8 +540,6 @@ Example:
           this.set("loadErrorMsg","This task was submitted as Incomplete. You arrived here due to an outdated link");
           return;
       }
-
-
 
       this.set("task",data.task);
       this.set("loadedTaskId",data.task._id);
@@ -714,6 +723,10 @@ Example:
 
       this.isPopulating=false;
     },
+
+    backToPerson: function(){
+      this.fire("backtoperson");
+    },
   
     _build_answer_sheet: function(q){
       var self = this;
@@ -858,7 +871,7 @@ Example:
       var self = this;
       this.debounce("savedata",function(){
         var answers_for_payload = self.answers.map(function(a){
-          var _a = _.clone(a);
+          var _a = _.cloneDeep(a);
           delete _a.q;
           return _a;
         })
@@ -1023,10 +1036,13 @@ Example:
       //console.log(this.submissionResult);
       if (this.submissionResult.tasks_created.length){ 
         this.set("hasNextTasks",true);
-        this.$.nextTasks.applyTasks(this.submissionResult.tasks_created);
+        //this.$.nextTasks.applyTasks(this.submissionResult.tasks_created);
       }
-      else this.set("hasNextTasks",false);
+      else {
+        this.set("hasNextTasks",false);
+      }
       this.set("submissionResultMsg",data.msg);
+      this.fire("taskdone");
     },
 
     submitError: function(e,data){
