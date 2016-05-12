@@ -85,11 +85,6 @@ Example:
       <div id="left">
         <iron-pages selected="0">
           <section >
-            
-            <paper-card elevation='4' class='primary' >
-              <qa-noteinput>
-              </qa-noteinput>
-            </paper-card>
             <paper-card elevation='4' class='primary' >
               <div class='main-data'>
                 [[person.ln]]
@@ -117,6 +112,13 @@ Example:
                 </span>
               </div>
             </paper-card> 
+            
+            <paper-card 
+            heading="Add Note" elevation='4' class='secondary' >
+              <qa-noteinput>
+              </qa-noteinput>
+            </paper-card>
+
             <card-contact 
               id="contactCard"
               subject-id="[[person._id]]">

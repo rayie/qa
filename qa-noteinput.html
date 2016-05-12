@@ -55,14 +55,14 @@ style this element.
       .help {
         font-size: .82em;
       }
-      .help ul li {
-        margin-left: 2px;
-        padding: 0;
+      .help ul {
+        margin-left: 0;
+        padding-left: 0;
         list-style: none;
       }
     </style>
     <div>
-      <paper-input-container no-label-float$="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
+      <paper-input-container no-label-float disabled$="[[disabled]]" invalid="[[invalid]]">
 
         <label hidden$="[[!label]]" aria-hidden="true">[[label]]</label>
 
@@ -82,8 +82,10 @@ style this element.
           max-rows$="[[maxRows]]"
           on-change="_onChange"></iron-autogrow-textarea>
 
+        <!--
         <qa-noteinput-addon>
         </qa-noteinput-addon>
+        -->
 
         <template is="dom-if" if="[[errorMessage]]">
           <paper-input-error>[[errorMessage]]</paper-input-error>
@@ -94,11 +96,28 @@ style this element.
         </template>
 
       </paper-input-container>
-      <div style="height: 4px"></div>
+
       <div style="height: auto" hidden="[[!value]]">
-        <span style=".92em">instructions</span>
+        <div class="help paper-card header">
+          <div class="title-text paper-card">Preview:</div>
+
+          <p>[[noteText]]</p>
+
+          <ul hidden="[[!tagsSelected.length]]" >
+            <template is="dom-repeat" items="[[tagsSelected]]" as="st">
+              <li style="font-weight: bold; color: blue;">[[st]]</li>
+            </template>
+          </ul> 
+
+        </div>
+      </div>
+
+      <div id="cheatsheet" style="height: auto" hidden="[[!value]]">
+        <div class="paper-card header">
+          <div class="title-text paper-card">Cheat Sheet:</div>
+        </div>
         <div class="help interaction-help">
-          <ul style="margin-left: 2px; padding-left: 2px;">
+          <ul>
             <li>#iic - inbound call</li>
             <li>#ioc - outbound  call</li>
             <li>#iov - outbound video call</li>
@@ -106,12 +125,12 @@ style this element.
             <li>#ioe - outbound email</li>
             <li>...f-fax, t-text, m-mail</li>
           </ul> 
-          <ul style="margin-left: 2px; padding-left: 2px;">
+          <ul>
             <li>#wp - with patient</li>
-            <li>#wf - with (patient's) family</li>
-            <li>#wcg - with caregiver</li>
-            <li>#whp - with healthplan</li>
-            <li>...pc-primary care, sp-specialist, cl-clinic</li>
+            <li>#wf - with family</li>
+            <li>#wc - with caregiver</li>
+            <li>#wi - with insuranceplan</li>
+            <li>...d-primary doctor, s-specialist, c-clinic</li>
           </ul>
         </div>
         <div class="card-actions">
@@ -124,12 +143,14 @@ style this element.
           </paper-button>
           <paper-button
             raised
+            disabled="[[disabled]]"
           >
             <iron-icon icon="save"></iron-icon>
             Add Note
           </paper-button>
         </div>
       </div>
+
       <qa-ajax-poster
         id="ajax_add_note"  
         on-response="addNoteResponse"
@@ -155,6 +176,18 @@ style this element.
     },
 
     properties: {
+      disabled: {
+        type: Boolean,
+        value: function(){ return false }
+      },
+      tagsSelected: {
+        type: Array,
+        value: function(){ return []; }
+      },
+      noteText: {
+        type: String,
+        value: function(){ return ""; }
+      },
       value: {
         type: String,
         value: function(){ return ""; }
@@ -201,7 +234,9 @@ style this element.
     },
 
     _onInput: function(){
-      console.log(this.value, this.$.input.value);
+      //console.log(this.value, this.$.input.value);
+      this.parse(this.value);
+
     },
     _onChange: function(e){
       console.log("Got chagne",e);
@@ -214,22 +249,121 @@ style this element.
 
     /*
     Examples
-        #iov #wcg   
+    #iovcg note text   -> interaction, no task
+    #iovcg #t on   note text -> interaciton, task
+      #t #iovcg note text
+      note text #t #iovcg  
 
 
     */
-    parse: function(str){
-      var commandRG = /--i[a-zA-Z]{1,}[ $]|--t[ $]/;
-      if ( -1 === str.search(commandRG) ){
-        //no commands
-      }
-      else{
+    commandRG : "#i[a-z]{0,} |#i[a-z]{0,}$|#w[a-z]{0,} |#w[a-z]{0,}$|#t |#t$",
 
-        var lines = str.split(/\n/g);
-        lines.forEach(function(line){
-            line.match(commandRG);
-        });
+    parse: function(str){
+      if (!str) return;
+
+      var txt = [];
+      var commands = [];
+      var self = this;
+
+      str.split(/\n/g).forEach(function(line){
+        var commandStartIdxs = [];
+        var rg = new RegExp( self.commandRG, "g" );
+        //console.log("line:",line);
+        var result;
+        while( (result = rg.exec(line)) !== null ){
+          //console.log(result);
+          commandStartIdxs.push( result.index );
+        }
+
+        if ( !commandStartIdxs.length ){
+          //it's only note txt
+          txt.push(line);
+          
+        }
+        else{
+          if ( commandStartIdxs[0] === 0 ){
+            for(var i = 0; i < commandStartIdxs.length ; i++ ){
+              var start = commandStartIdxs[i];
+              if ( commandStartIdxs.length > (i+1) ){
+                var stop = commandStartIdxs[i+1] - start;
+              }
+              else{
+                var stop = line.length - start;
+              }
+              var entry = line.substr(start,stop).trim();
+              commands.push(entry.toLowerCase());
+            }
+          }
+          else{
+
+            var start = 0;
+            commandStartIdxs.forEach(function(cidx,i){ 
+              var entry = line.substr(start,(cidx-start)).trim() ;
+              if (i) commands.push(entry.toLowerCase());
+              else txt.push(entry);
+              start = cidx*1;
+            });
+            if ( start < ( line.length -1 ) ){
+              var entry = line.substr(start).trim();
+              commands.push(entry.toLowerCase());
+            }
+          }
+        }
+        //console.log(commandStartIdxs);
+      });
       
+      //console.log(commands); console.log(txt);
+      var tagsSelected = commands.map(function(commstr){
+        var wordparts = commstr.split(/ /g);
+        //var commparts = wordparts[0].substr(1).split(""); //skip the hashtag
+        var commparts = wordparts.splice(0,1).pop().substr(1).split(""); //skip the hashtag
+        var key = commparts.splice(0,1)[0] ;
+        var cf = _.get(self.commRef , key , false);
+        var _cf = self.commRef[ key ] ;
+        var taghelp = [];
+        if ( cf ){
+          if ( cf.prefix ) 
+            taghelp.push(cf.prefix);
+          if ( cf.tags ){
+            commparts.forEach(function(cp){
+              taghelp.push(cf.tags[cp]);
+            });
+          }
+          if ( cf.suffix) 
+            taghelp.push(cf.suffix);
+          
+
+        }
+        else{
+          //it's cateogry tag
+          console.log("not a command", key);
+
+        }
+        return taghelp.join(" ").trim();
+      });
+
+      this.set("noteText", txt);
+      this.set("tagsSelected", tagsSelected );
+    },
+
+    commRef: {
+      "i": {
+        suffix: "Interaction",
+        tags: {
+           "o": "Outbound", "i":"Inbound" ,
+           "c": "Call", "v":"Video", 
+           "e": "Email", "f": "Fax", "m": "Snail Mail", "p": "In Person" 
+        }
+      },
+      "w": {
+        prefix: "With:",
+        tags: {
+           "p": "Patient", "c":"Caregiver","f":"FamilyMember",
+           "d": "PCP", "s":"Specialist", "i": "Insurance Plan"
+        }
+      },
+      "t": {
+        prefix: "Task:",
       }
     },
 
