@@ -216,6 +216,10 @@ style this element.
         type: Boolean,
         value: function(){ return false }
       },
+      tags: {
+        type: Array,
+        value: function(){ return []; }
+      },
       tagsSelected: {
         type: Array,
         value: function(){ return []; }
@@ -230,7 +234,7 @@ style this element.
       },
       label: {
         type: String,
-        value: "Enter note text here"
+        value: "Enter note text here with tags (#ioc, #cust, #auth)"
       },
       _ariaLabelledBy: {
         observer: '_ariaLabelledByChanged',
@@ -267,6 +271,10 @@ style this element.
 
     _reset: function(){
       this.set("value","");
+      this.set("isTask",false);
+      this.set("okToSubmit",false);
+      this.set("tagsSelected",[]);
+      this.set("tags",[]);
     },
 
     _onInput: function(){
@@ -421,7 +429,7 @@ style this element.
 
       if ( !tagsSelected.length  ){
         tagsSelected = [ "general-note" ];
-        tags = [ "#gn" ];
+        tags = [ "gn" ];
       }
 
       this.set("noteText", txt);

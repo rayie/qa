@@ -520,8 +520,8 @@ Example:
     gotNewTask: function(e,data){
       console.log(data);
       this.set("person.ts", data.newTs);
+      this.set("selectedTabRight",0);
       this.loadSectionRight(0);
-      //this.$.openTasks.loadTasks();
     },
 
     loadPersonError: function(e){
