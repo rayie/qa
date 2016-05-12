@@ -23,6 +23,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../moment-display/moment-import.html">
 <link rel="import" href="qa-noteinput-addon.html">
 <link rel="import" href="qa-ajax-poster.html">
+<link rel="import" href="team-dropdown.html">
 <link rel="import" href="styles/qa-styles.html">
 <!--
 @demo
@@ -55,20 +56,19 @@ style this element.
       .help {
         font-size: .82em;
       }
-      .help ul li {
-        margin-left: 2px;
-        padding: 0;
+      .help ul {
+        margin-left: 0;
+        padding-left: 0;
         list-style: none;
       }
     </style>
     <div>
-      <paper-input-container no-label-float$="[[noLabelFloat]]" always-float-label="[[_computeAlwaysFloatLabel(alwaysFloatLabel,placeholder)]]" auto-validate$="[[autoValidate]]" disabled$="[[disabled]]" invalid="[[invalid]]">
+      <paper-input-container no-label-float invalid="[[invalid]]">
 
         <label hidden$="[[!label]]" aria-hidden="true">[[label]]</label>
 
         <iron-autogrow-textarea id="input" class="paper-input-input"
           bind-value="{{value}}"
-          disabled$="[[disabled]]"
           autocomplete$="[[autocomplete]]"
           autofocus$="[[autofocus]]"
           inputmode$="[[inputmode]]"
@@ -80,7 +80,8 @@ style this element.
           autocapitalize$="[[autocapitalize]]"
           rows$="[[rows]]"
           max-rows$="[[maxRows]]"
-          on-change="_onChange"></iron-autogrow-textarea>
+          on-change="_onChange">
+        </iron-autogrow-textarea>
 
         <!--
         <qa-noteinput-addon>
@@ -97,22 +98,39 @@ style this element.
 
       </paper-input-container>
 
-      <div style="height: 4px"></div>
-
-
       <div style="height: auto" hidden="[[!value]]">
-        <div class="help interaction-help">
+        <div class="help paper-card header">
+          <div class="title-text paper-card">Preview:</div>
 
-          <p style="background-color: gray; padding:2px; font-size:.92em">[[noteText]]</p>
+          <template is="dom-repeat" items="[[noteText]]" as="t">
+            <p style="margin: 4px 0">[[t]]</p>
+          </template>
 
-          <ul hidden="[[!tagsSelected.length]]" style="margin-left: 2px; padding-left: 2px;">
+
+          <div class="title-text paper-card">Tags:</div>
+          <ul hidden="[[!tagsSelected.length]]" >
             <template is="dom-repeat" items="[[tagsSelected]]" as="st">
               <li style="font-weight: bold; color: blue;">[[st]]</li>
             </template>
           </ul> 
 
+        </div>
+      </div>
 
-          <ul style="margin-left: 2px; padding-left: 2px;">
+      <div id="taskDiv" style="height: auto" hidden="[[!isTask]]">
+        <div class="paper-card header">
+          <div class="title-text paper-card">New Task:</div>
+        </div>
+        <team-dropdown selected-user="{{selectedUser}}"></team-dropdown>
+      </div>
+
+
+      <div id="cheatsheet" style="height: auto" hidden="[[!value]]">
+        <div class="paper-card header">
+          <div class="title-text paper-card">Cheat Sheet:</div>
+        </div>
+        <div class="help interaction-help">
+          <ul>
             <li>#iic - inbound call</li>
             <li>#ioc - outbound  call</li>
             <li>#iov - outbound video call</li>
@@ -120,7 +138,7 @@ style this element.
             <li>#ioe - outbound email</li>
             <li>...f-fax, t-text, m-mail</li>
           </ul> 
-          <ul style="margin-left: 2px; padding-left: 2px;">
+          <ul>
             <li>#wp - with patient</li>
             <li>#wf - with family</li>
             <li>#wc - with caregiver</li>
@@ -128,8 +146,13 @@ style this element.
             <li>...d-primary doctor, s-specialist, c-clinic</li>
           </ul>
         </div>
+      </div>
+
+
+      <div id="noteBtns" style="height: auto" hidden="[[!value]]">
         <div class="card-actions">
           <paper-button
+            class$="bad"
             raised
             on-click="_reset"
           >
@@ -137,13 +160,17 @@ style this element.
             Cancel
           </paper-button>
           <paper-button
+            class$="good"
             raised
+            disabled$="[[!okToSubmit]]"
+            on-click="submit"
           >
             <iron-icon icon="save"></iron-icon>
-            Add Note
+            [[addBtnTxt]]
           </paper-button>
         </div>
       </div>
+
       <qa-ajax-poster
         id="ajax_add_note"  
         on-response="addNoteResponse"
@@ -169,6 +196,26 @@ style this element.
     },
 
     properties: {
+      subjectId: {
+        type: String,
+        value: "",
+      },
+      isTask: {
+        type: Boolean,
+        value: function(){ return false }
+      },
+      selectedUser: {
+        type: String,
+        value: "",
+      },
+      addBtnTxt: {
+        type: String,
+        value: "Add Note",
+      },
+      okToSubmit: {
+        type: Boolean,
+        value: function(){ return false }
+      },
       tagsSelected: {
         type: Array,
         value: function(){ return []; }
@@ -225,10 +272,30 @@ style this element.
     _onInput: function(){
       //console.log(this.value, this.$.input.value);
       this.parse(this.value);
-
     },
+
     _onChange: function(e){
-      console.log("Got chagne",e);
+    },
+
+    submit: function(){
+      var payload = {
+        subjectId: this.subjectId,
+        txt: this.noteText,
+        tags: this.tags,
+        taskId: false
+      };
+      console.info(payload);
+      this.$.ajax_add_note.send(payload);
+    },
+
+    addNoteResponse: function(e,data){
+      this.fire("noteadded",data);
+      this._reset();
+    },
+
+    addNoteErr: function(e,data){
+      console.error(e,data);
+        
     },
 
     tagRef : {
@@ -256,7 +323,7 @@ style this element.
 
       str.split(/\n/g).forEach(function(line){
         var commandStartIdxs = [];
-        var rg = new RegExp( self.commandRG, "g" );
+        var rg = new RegExp( self.commandRG, "ig" );
         //console.log("line:",line);
         var result;
         while( (result = rg.exec(line)) !== null ){
@@ -302,58 +369,128 @@ style this element.
       });
       
       //console.log(commands); console.log(txt);
-      var tagsSelected = commands.map(function(commstr){
+      var tagResults = commands.map(function(commstr){
         var wordparts = commstr.split(/ /g);
         //var commparts = wordparts[0].substr(1).split(""); //skip the hashtag
         var commparts = wordparts.splice(0,1).pop().substr(1).split(""); //skip the hashtag
         var key = commparts.splice(0,1)[0] ;
         var cf = _.get(self.commRef , key , false);
         var _cf = self.commRef[ key ] ;
-        var taghelp = [];
+        var tagdisplay = [];
+        var tags = [];
+        var data=null;
         if ( cf ){
           if ( cf.prefix ) 
-            taghelp.push(cf.prefix);
+            tagdisplay.push(cf.prefix);
           if ( cf.tags ){
             commparts.forEach(function(cp){
-              taghelp.push(cf.tags[cp]);
+              if ( cf.prefix )
+                tags.push(cf.prefix+":"+cf.tags[cp]);
+              else
+                tags.push(cf.tags[cp]);
+
+              tagdisplay.push(cf.tags[cp]);
             });
           }
-          if ( cf.suffix) 
-            taghelp.push(cf.suffix);
-          
 
+          if ( cf.suffix) 
+            tagdisplay.push(cf.suffix);
+
+          if (cf.fn){
+            data = cf.fn(wordparts);
+          }
         }
         else{
           //it's cateogry tag
           console.log("not a command", key);
-
         }
-        return taghelp.join(" ").trim();
+
+        return { tags: tags, data: data  , display: tagdisplay.join(" ").trim() }
       });
+
+      var tagsSelected = [];
+      var tags = [];
+      var isTask = false;
+      tagResults.forEach(function(t){
+        tagsSelected.push( t.display );
+        tags = tags.concat( t.tags );
+        if (_.get(t,'data.isTask',false) ){
+          isTask=true;
+        }
+      });
+
+      if ( !tagsSelected.length  ){
+        tagsSelected = [ "general-note" ];
+        tags = [ "#gn" ];
+      }
 
       this.set("noteText", txt);
       this.set("tagsSelected", tagsSelected );
+      this.set("tags", tags);
+      this.set("isTask",isTask);
+
+      console.log( tags.length , txt.length );
+      if ( tags.length && txt.length ){
+        this.set("okToSubmit",true);
+      }
+      else{
+        this.set("okToSubmit",false);
+      }
     },
 
     commRef: {
       "i": {
-        suffix: "Interaction",
+        prefix: "interaction",
         tags: {
-           "o": "Outbound", "i":"Inbound" ,
-           "c": "Call", "v":"Video", 
-           "e": "Email", "f": "Fax", "m": "Snail Mail", "p": "In Person" 
+           "o": "outbound", "i":"inbound" ,
+           "c": "call", "v":"video", 
+           "e": "email", "f": "fax", "m": "mail", "p": "in-person" 
         }
       },
       "w": {
-        prefix: "With:",
+        prefix: "with",
         tags: {
-           "p": "Patient", "c":"Caregiver","f":"FamilyMember",
-           "d": "PCP", "s":"Specialist", "i": "Insurance Plan"
+           "p": "patient", "c":"caregiver","f":"family",
+           "d": "pcp", "s":"specialist", "i": "insurance"
         }
       },
       "t": {
-        prefix: "Task:",
-      }
+        prefix: "task:",
+        fn: function(params){
+          var kind = "asap"; 
+          var dt = null;
+          params.forEach(function(p){
+            switch(p){
+              case "asap":
+                kind="asap";
+                break;
+              case "sched":
+                kind="sched";
+                break;
+              default:
+                var dt = Date.parse(p);
+                break;
+            }
+          });
+          var pf = { kind: kind };
+          if (dt){
+            if ( kind==="sched" ){ //to schedule
+              pf.start = null;
+              pf.end= null;
+              pf.target = {
+                start: dt,
+                end: dt,
+              }
+            }
+            else{ //planned
+              pf.kind=="sched";
+              pf.start = pf.end = dt;
+            }
+          }
+          return { plannedFor : pf, isTask: true };
+        }
+
+      },
     },
 
     _ariaLabelledByChanged: function(ariaLabelledBy) {
