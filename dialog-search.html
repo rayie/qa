@@ -133,7 +133,7 @@ Example:
     dialogClosed: function(dialogCloseEvent){
       if (!_.get(dialogCloseEvent,'detail.confirmed',false)) {
         //reset
-        console.log("user didn't click confirm");
+        //console.log("user didn't click confirm");
         return;
       }
 
@@ -146,7 +146,7 @@ Example:
     },
 
     dialogCanceled: function(dialogCloseEvent){
-      console.log("user cancelled");
+      //console.log("user cancelled");
       return;
     }
 

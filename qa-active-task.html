@@ -55,6 +55,10 @@ Example:
       border-bottom: 1px solid gray;
     }
 
+    #taskSubTitle {
+      padding: 4px;
+      font-size: .92em;
+    }
     .vbottom {
       padding-top: 30px;
       vertical-align: bottom;
@@ -174,6 +178,9 @@ Example:
         </div>
       </div>
       -->
+      <p id="taskSubTitle" hidden="[[!taskDefinition.sub]]">
+        [[taskDefinition.sub]]
+      </p>
 
       <div id="qlistWrap" hidden="[[submissionResult]]">
         <!--the container for our question components, dynamically inserted-->
@@ -232,6 +239,7 @@ Example:
           <paper-button 
           class='bad'
           raised
+          hidden="[[!task.m.inprog]]"
           disabled="[[ok_to_submit]]"
           on-click="openIncompletionDialog"
           >
@@ -292,7 +300,11 @@ Example:
 
     </div>
 
-    <dialog-incompletion on-incomplete="taskIncomplete" id="incompletionDialog" ></dialog-incompletion>
+    <dialog-incompletion 
+      on-incomplete="taskIncomplete" id="incompletionDialog" 
+      current-assigned-to="[[task.assignedTo]]"
+    >
+    </dialog-incompletion>
 
     <iron-ajax
       id="ajax_load_survey"       
@@ -837,7 +849,6 @@ Example:
       this.set("task.state","inprog");
       this.set("task.ts", data.newTs);
       this.set("task.dataId", data.dataId);
-    
       return this.saveData();
     },
 
@@ -957,7 +968,6 @@ Example:
       return this.taskDone();
     },
 
-
     taskIncomplete: function(e,data){
       console.log("got task incomplete fire from dialog",e,data);
       if ( this.is_submitting ) return console.log("Still in progress");
@@ -966,23 +976,20 @@ Example:
       var payload = { 
         taskId: this.taskId,
         lastTs: this.task.ts,
-        reason: data.reason 
+        incomplete: data
       }
 
-      if ( data.reAssignTo ){
-        payload.uponIncomplete = [{
-          url: this.task.url,
-          name: this.task.name,
-          assignedTo: data.reAssignTo 
-        }] 
+      if ( payload.incomplete.code=="AU" ){
+        payload.uponSubmit = []; //because it's a transfer, so don't create the usual next tasks
       }
       else{
-        payload.uponIncomplete = [];
+        //it's not a transfer, so apply the next tasks that a completion would have generated
+        payload.uponSubmit = [].concat( this.taskDefinition.tasksToAdd );
       }
+      console.log("payload:",payload);
+      this.$.ajax_task_done.send(payload);
+      return;
 
-      //console.log("payload:",payload);
-      this.$.ajax_task_incomplete.send(payload);
-      return
     },
 
     taskDone: function(){

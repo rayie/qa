@@ -32,7 +32,7 @@ Example:
   </style>
   <template>
     <paper-dropdown-menu 
-      label="Assign To"
+      label="[[label]]"
     >
       <paper-listbox
         class="dropdown-content"
@@ -55,6 +55,12 @@ Example:
     is: 'team-dropdown',
 
     properties: {
+      label: {
+        type: String, 
+        value: function(){ 
+          return "Assign To";
+        }
+      },
       selectedUser: {
         type: String, 
         value: function(){ 

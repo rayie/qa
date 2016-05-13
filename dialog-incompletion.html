@@ -53,15 +53,7 @@ Example:
       --input-color: #fff;
     }
 
-
-    #incompletionReasonNote { 
-      --paper-input-container-label: { color: yellow; };
-      --paper-input-container-label-floating: { color: yellow; };
-      --paper-input-container-label-focus: { color: yellow; };
-      --paper-input-container-input-color: #fff;
-    }
-
-    #incompletionReasonCode {
+    paper-dropdown-menu {
       --paper-input-container-label: { color: yellow; };
       --paper-input-container-label-floating: { color: yellow; };
       --paper-input-container-label-focus: { color: yellow; };
@@ -99,15 +91,19 @@ Example:
               selected="{{reasonCode}}"
               attr-for-selected="rc"
             > 
-              <paper-item rc='AU'>Assignee unavailable</paper-item>
-              <paper-item rc='TCE'>Task created in error</paper-item>
-              <paper-item rc='SC'>Situation changed</paper-item>
+              <paper-item rc='AU'>Assignee unavailable - Re-Assign remainder of this Task</paper-item>
+              <paper-item rc='TCE'>Task created in error - no need to complete</paper-item>
+              <paper-item rc='SC'>Situation changed - no need to complete</paper-item>
+              <paper-item rc='FF'>Attempted but unsuccessful - mark as failed</paper-item>
+
             </paper-listbox>
+
           </paper-dropdown-menu>
         </div>
-        <div>
-          <team-dropdown selected-user="{{selectedUser}}" ></team-dropdown>
-        <div>
+
+        <div hidden="[[hideTeamDropDown]]" >
+          <team-dropdown label="Transfer To:" selected-user="{{selectedUser}}" ></team-dropdown>
+        </div>
 
         <div>
           <paper-input
@@ -123,10 +119,13 @@ Example:
         <paper-button 
           raised 
           dialog-confirm
-          disabled="[[!reasonCode]]"
+          disabled="[[!okToProceed]]"
         >
           Confirm Incompletion
         </paper-button>
+      </div>
+      <div class="buttons">
+        [[helpmsg]]
       </div>
     </paper-dialog>
   </template>
@@ -140,6 +139,10 @@ Example:
     is: 'dialog-incompletion',
 
     properties: {
+      helpmsg: {
+        type: String,
+        value: function(){ return "You must select a reason"; }
+      },
       reasonNote: {
         type: String, 
         value: function(){ return ""; }
@@ -148,10 +151,23 @@ Example:
         type: String, 
         value: function(){ return ""; }
       },
+      currentAssignedTo: {
+        type: String, 
+        value: function(){ return ""; }
+      },
       selectedUser: {
         type: String, 
         value: function(){ return ""; }
+      },
+      hideTeamDropDown: {
+        type: Boolean,
+        value: function(){ return true; }
+      },
+      okToProceed: {
+        type: Boolean,
+        value: function(){ return false; }
       }
+      
     },
 
     show: function(){
@@ -162,6 +178,37 @@ Example:
     * Workaround - iron-overlay-behavior fires close event whe a drop down menu is cha
     */
     dialogClosed: function(dialogCloseEvent){
+      var helpmsg = "";
+      var okToProceed=true;
+      switch(this.reasonCode){
+        case "AU":
+          if ( !this.selectedUser ){
+            helpmsg = "You must select an asignee";
+            okToProceed=false;
+          } else if ( this.currentAssignedTo === this.selectedUser.toString() ){
+            helpmsg = "You can not select the current assignee. Choose another user";
+            okToProceed=false;
+          }
+          this.set("hideTeamDropDown",false);
+          break;
+        case "TCE":
+          this.set("hideTeamDropDown",true);
+          break;
+        case "SC":
+          this.set("hideTeamDropDown",true);
+          break;
+        case "FF":
+          this.set("hideTeamDropDown",true);
+          break;
+        default:
+          helpmsg = "You must select a reason";
+          okToProceed=false;
+          break;
+      }
+
+      this.set("okToProceed",okToProceed);
+      this.set("helpmsg",helpmsg);
+
       if (!_.get(dialogCloseEvent,'detail.confirmed',false)) {
         //reset
         console.log("user didn't click confirm", dialogCloseEvent);
@@ -169,9 +216,11 @@ Example:
       }
 
       var pkg = {
-        reason: _.clone({ code: this.reasonCode, note: this.reasonNote }),
-        reAssignTo: this.selectedUser.toString()
+        code: _.clone(this.reasonCode),
+        note: _.clone( this.reasonNote),
+        transferTo: this.selectedUser.toString()
       }
+
       console.log(pkg);
       this.fire("incomplete",pkg);
     },
