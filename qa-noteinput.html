@@ -98,6 +98,29 @@ style this element.
 
       </paper-input-container>
 
+      <div id="noteBtns" style="height: auto" hidden="[[!value]]">
+        <div class="card-actions">
+          <paper-button
+            class$="bad"
+            raised
+            on-click="_reset"
+          >
+            <iron-icon icon="cancel"></iron-icon>
+            Cancel
+          </paper-button>
+          <paper-button
+            class$="good"
+            raised
+            disabled$="[[!okToSubmit]]"
+            on-click="submit"
+          >
+            <iron-icon icon="save"></iron-icon>
+            [[addBtnTxt]]
+          </paper-button>
+        </div>
+      </div>
+
+
       <div style="height: auto" hidden="[[!value]]">
         <div class="help paper-card header">
           <div class="title-text paper-card">Preview:</div>
@@ -145,29 +168,6 @@ style this element.
             <li>#wi - with insuranceplan</li>
             <li>...d-primary doctor, s-specialist, c-clinic</li>
           </ul>
-        </div>
-      </div>
-
-
-      <div id="noteBtns" style="height: auto" hidden="[[!value]]">
-        <div class="card-actions">
-          <paper-button
-            class$="bad"
-            raised
-            on-click="_reset"
-          >
-            <iron-icon icon="cancel"></iron-icon>
-            Cancel
-          </paper-button>
-          <paper-button
-            class$="good"
-            raised
-            disabled$="[[!okToSubmit]]"
-            on-click="submit"
-          >
-            <iron-icon icon="save"></iron-icon>
-            [[addBtnTxt]]
-          </paper-button>
         </div>
       </div>
 
