@@ -62,123 +62,36 @@ style this element.
         list-style: none;
       }
     </style>
-    <div>
-      <paper-input-container no-label-float invalid="[[invalid]]">
+    <paper-input-container no-label-float invalid="[[invalid]]">
 
-        <label hidden$="[[!label]]" aria-hidden="true">[[label]]</label>
+      <label hidden$="[[!label]]" aria-hidden="true">[[label]]</label>
 
-        <iron-autogrow-textarea id="input" class="paper-input-input"
-          bind-value="{{value}}"
-          autocomplete$="[[autocomplete]]"
-          autofocus$="[[autofocus]]"
-          inputmode$="[[inputmode]]"
-          name$="[[name]]"
-          placeholder$="[[placeholder]]"
-          readonly$="[[readonly]]"
-          required$="[[required]]"
-          maxlength$="[[maxlength]]"
-          autocapitalize$="[[autocapitalize]]"
-          rows$="[[rows]]"
-          max-rows$="[[maxRows]]"
-          on-change="_onChange">
-        </iron-autogrow-textarea>
-
-        <!--
-        <qa-noteinput-addon>
-        </qa-noteinput-addon>
-        -->
-
-        <template is="dom-if" if="[[errorMessage]]">
-          <paper-input-error>[[errorMessage]]</paper-input-error>
-        </template>
-
-        <template is="dom-if" if="[[charCounter]]">
-          <paper-input-char-counter></paper-input-char-counter>
-        </template>
-
-      </paper-input-container>
-
-      <div id="noteBtns" style="height: auto" hidden="[[!value]]">
-        <div class="card-actions">
-          <paper-button
-            class$="bad"
-            raised
-            on-click="_reset"
-          >
-            <iron-icon icon="cancel"></iron-icon>
-            Cancel
-          </paper-button>
-          <paper-button
-            class$="good"
-            raised
-            disabled$="[[!okToSubmit]]"
-            on-click="submit"
-          >
-            <iron-icon icon="save"></iron-icon>
-            [[addBtnTxt]]
-          </paper-button>
-        </div>
-      </div>
+      <iron-autogrow-textarea id="input" class="paper-input-input"
+        bind-value="{{value}}"
+        autocomplete$="[[autocomplete]]"
+        autofocus$="[[autofocus]]"
+        inputmode$="[[inputmode]]"
+        name$="[[name]]"
+        placeholder$="[[placeholder]]"
+        readonly$="[[readonly]]"
+        required$="[[required]]"
+        maxlength$="[[maxlength]]"
+        autocapitalize$="[[autocapitalize]]"
+        rows$="[[rows]]"
+        max-rows$="[[maxRows]]"
+      >
+      </iron-autogrow-textarea>
 
 
-      <div style="height: auto" hidden="[[!value]]">
-        <div class="help paper-card header">
-          <div class="title-text paper-card">Preview:</div>
+      <template is="dom-if" if="[[errorMessage]]">
+        <paper-input-error>[[errorMessage]]</paper-input-error>
+      </template>
 
-          <template is="dom-repeat" items="[[noteText]]" as="t">
-            <p style="margin: 4px 0">[[t]]</p>
-          </template>
+      <template is="dom-if" if="[[charCounter]]">
+        <paper-input-char-counter></paper-input-char-counter>
+      </template>
 
-
-          <div class="title-text paper-card">Tags:</div>
-          <ul hidden="[[!tagsSelected.length]]" >
-            <template is="dom-repeat" items="[[tagsSelected]]" as="st">
-              <li style="font-weight: bold; color: blue;">[[st]]</li>
-            </template>
-          </ul> 
-
-        </div>
-      </div>
-
-      <div id="taskDiv" style="height: auto" hidden="[[!isTask]]">
-        <div class="paper-card header">
-          <div class="title-text paper-card">New Task:</div>
-        </div>
-        <team-dropdown selected-user="{{selectedUser}}"></team-dropdown>
-      </div>
-
-
-      <div id="cheatsheet" style="height: auto" hidden="[[!value]]">
-        <div class="paper-card header">
-          <div class="title-text paper-card">Cheat Sheet:</div>
-        </div>
-        <div class="help interaction-help">
-          <ul>
-            <li>#iic - inbound call</li>
-            <li>#ioc - outbound  call</li>
-            <li>#iov - outbound video call</li>
-            <li>#iie - inbound email</li>
-            <li>#ioe - outbound email</li>
-            <li>...f-fax, t-text, m-mail</li>
-          </ul> 
-          <ul>
-            <li>#wp - with patient</li>
-            <li>#wf - with family</li>
-            <li>#wc - with caregiver</li>
-            <li>#wi - with insuranceplan</li>
-            <li>...d-primary doctor, s-specialist, c-clinic</li>
-          </ul>
-        </div>
-      </div>
-
-      <qa-ajax-poster
-        id="ajax_add_note"  
-        on-response="addNoteResponse"
-        on-error="addNoteErr"
-        loading="{{isLoading}}"
-        endpoint="api/note:add"
-      ></qa-ajax-poster>
-      </div>
+    </paper-input-container>
   </template>
 </dom-module>
 
@@ -192,40 +105,27 @@ style this element.
 
     listeners: {
       'input': '_onInput'
-      //'blur': '_onBlur'
     },
 
     properties: {
-      subjectId: {
-        type: String,
-        value: "",
-      },
-      isTask: {
+      task: {
         type: Boolean,
-        value: function(){ return false }
-      },
-      selectedUser: {
-        type: String,
-        value: "",
-      },
-      addBtnTxt: {
-        type: String,
-        value: "Add Note",
-      },
-      okToSubmit: {
-        type: Boolean,
+        notify: true,
         value: function(){ return false }
       },
       tags: {
         type: Array,
+        notify: true,
         value: function(){ return []; }
       },
-      tagsSelected: {
+      tagsDisplay: {
         type: Array,
+        notify: true,
         value: function(){ return []; }
       },
       noteText: {
         type: String,
+        notify:true,
         value: function(){ return ""; }
       },
       value: {
@@ -235,14 +135,6 @@ style this element.
       label: {
         type: String,
         value: "Enter note text here with tags (#ioc, #cust, #auth)"
-      },
-      _ariaLabelledBy: {
-        observer: '_ariaLabelledByChanged',
-        type: String
-      },
-      _ariaDescribedBy: {
-        observer: '_ariaDescribedByChanged',
-        type: String
       },
       /**
        * The initial number of rows.
@@ -269,46 +161,9 @@ style this element.
       }
     },
 
-    _reset: function(){
-      this.set("value","");
-      this.set("isTask",false);
-      this.set("okToSubmit",false);
-      this.set("tagsSelected",[]);
-      this.set("tags",[]);
-    },
 
     _onInput: function(){
-      //console.log(this.value, this.$.input.value);
       this.parse(this.value);
-    },
-
-    _onChange: function(e){
-    },
-
-    submit: function(){
-      var payload = {
-        subjectId: this.subjectId,
-        txt: this.noteText,
-        tags: this.tags,
-        taskId: false
-      };
-      console.info(payload);
-      this.$.ajax_add_note.send(payload);
-    },
-
-    addNoteResponse: function(e,data){
-      this.fire("noteadded",data);
-      this._reset();
-    },
-
-    addNoteErr: function(e,data){
-      console.error(e,data);
-        
-    },
-
-    tagRef : {
-      "iic": { },
-      "ioc": { },
     },
 
     /*
@@ -341,8 +196,10 @@ style this element.
 
         if ( !commandStartIdxs.length ){
           //it's only note txt
-          txt.push(line);
-          
+          if ( line ){
+            console.log("pushing in line value:" + line + "-");
+            txt.push(line);
+          }
         }
         else{
           if ( commandStartIdxs[0] === 0 ){
@@ -364,7 +221,10 @@ style this element.
             commandStartIdxs.forEach(function(cidx,i){ 
               var entry = line.substr(start,(cidx-start)).trim() ;
               if (i) commands.push(entry.toLowerCase());
-              else txt.push(entry);
+              else {
+                console.log("pushing in txt value:" + entry + "-");
+                txt.push(entry);
+              }
               start = cidx*1;
             });
             if ( start < ( line.length -1 ) ){
@@ -416,34 +276,27 @@ style this element.
         return { tags: tags, data: data  , display: tagdisplay.join(" ").trim() }
       });
 
-      var tagsSelected = [];
+      var tagsDisplay = [];
       var tags = [];
-      var isTask = false;
+      var task = null;
       tagResults.forEach(function(t){
-        tagsSelected.push( t.display );
+        tagsDisplay.push( t.display );
         tags = tags.concat( t.tags );
         if (_.get(t,'data.isTask',false) ){
-          isTask=true;
+          task = { plannedFor: t.data.plannedFor };
+          tags.push("task");
         }
       });
 
-      if ( !tagsSelected.length  ){
-        tagsSelected = [ "general-note" ];
+      if ( !tagsDisplay.length  ){
+        tagsDisplay = [ "general-note" ];
         tags = [ "gn" ];
       }
-
       this.set("noteText", txt);
-      this.set("tagsSelected", tagsSelected );
+      this.set("tagsDisplay", tagsDisplay );
       this.set("tags", tags);
-      this.set("isTask",isTask);
-
-      console.log( tags.length , txt.length );
-      if ( tags.length && txt.length ){
-        this.set("okToSubmit",true);
-      }
-      else{
-        this.set("okToSubmit",false);
-      }
+      this.set("task",task);
+      this.fire("gotinput");
     },
 
     commRef: {
@@ -463,23 +316,27 @@ style this element.
         }
       },
       "t": {
-        prefix: "task:",
+        prefix: "task",
         fn: function(params){
           var kind = "asap"; 
-          var dt = null;
+          var _dtxt = [];
           params.forEach(function(p){
             switch(p){
               case "asap":
                 kind="asap";
                 break;
               case "sched":
+              case "target":
                 kind="sched";
                 break;
               default:
-                var dt = Date.parse(p);
+                _dtxt.push( p ); //if it's not a special term, assume it's part of the date
                 break;
             }
           });
+          _dtxt = _dtxt.join(" "); 
+          var dt = Date.parse(_dtxt);
+          console.log("dtxt partsed:", _dtxt)
           var pf = { kind: kind };
           if (dt){
             if ( kind==="sched" ){ //to schedule
@@ -491,7 +348,7 @@ style this element.
               }
             }
             else{ //planned
-              pf.kind=="sched";
+              pf.kind = "sched";
               pf.start = pf.end = dt;
             }
           }
@@ -501,14 +358,8 @@ style this element.
       },
     },
 
-    _ariaLabelledByChanged: function(ariaLabelledBy) {
-      this.$.input.textarea.setAttribute('aria-labelledby', ariaLabelledBy);
-    },
-    _ariaDescribedByChanged: function(ariaDescribedBy) {
-      this.$.input.textarea.setAttribute('aria-describedby', ariaDescribedBy);
-    },
     get _focusableElement() {
       return this.$.input.textarea;
-    },
+    }
   });
 </script>

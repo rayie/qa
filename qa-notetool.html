@@ -1,0 +1,300 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-styles/typography.html">
+<link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html">
+<link rel="import" href="../iron-input/iron-input.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-input/paper-input-behavior.html">
+<link rel="import" href="../paper-input/paper-input-char-counter.html">
+<link rel="import" href="../paper-input/paper-input-container.html">
+<link rel="import" href="../paper-input/paper-input-error.html">
+<link rel="import" href="../datejs-parseronly-import/datejs-parseronly-import.html">
+<link rel="import" href="../moment-display/moment-import.html">
+<link rel="import" href="qa-noteinput.html">
+<link rel="import" href="qa-ajax-poster.html">
+<link rel="import" href="team-dropdown.html">
+<link rel="import" href="menu-tasks.html">
+<link rel="import" href="styles/qa-styles.html">
+<!--
+@demo
+-->
+<!--
+`<qa-notetool>` is a multi-line text field with Material Design styling.
+    <qa-notetool label="Textarea label"></qa-notetool>
+See `Polymer.PaperInputBehavior` for more API docs.
+### Validation
+Currently only `required` and `maxlength` validation is supported.
+### Styling
+See `Polymer.PaperInputContainer` for a list of custom properties used to
+style this element.
+-->
+
+<dom-module id="qa-notetool">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+      .help {
+        font-size: .82em;
+      }
+      .help ul {
+        margin-left: 0;
+        padding-left: 0;
+        list-style: none;
+      }
+    </style>
+    <div>
+      <qa-noteinput
+        task="{{task}}"
+        value="{{value}}"
+        tags="{{tags}}" 
+        tags-display="{{tagsDisplay}}" 
+        note-text="{{noteText}}"
+        on-gotinput="gotTextInput"
+      >
+      </qa-noteinput>
+
+      <div id="noteBtns" style="height: auto" hidden="[[!value]]">
+        <div class="card-actions">
+          <paper-button
+            class$="bad"
+            raised
+            on-click="_reset"
+          >
+            <iron-icon icon="cancel"></iron-icon>
+            Cancel
+          </paper-button>
+          <paper-button
+            class$="good"
+            raised
+            disabled$="[[!okToSubmit]]"
+            on-click="submit"
+          >
+            <iron-icon icon="save"></iron-icon>
+            [[addBtnTxt]]
+          </paper-button>
+        </div>
+      </div>
+
+      <div style="height: auto" hidden="[[!value]]">
+        <div class="help paper-card header">
+          <div class="title-text paper-card">[[previewLabelTxt]]</div>
+          <template is="dom-repeat" items="[[noteText]]" as="t">
+            <p style="margin: 4px 0">[[t]]</p>
+          </template>
+        </div>
+      </div>
+
+
+      <div id="taskDiv" style="height: auto" hidden="[[!task]]">
+        <menu-tasks selected-task-type="{{selectedTaskType}}" ></menu-tasks>
+        <team-dropdown selected-user="{{selectedUser}}"></team-dropdown>
+        <div style="font-size: .92em; font-weight: bold;">[[timingText]]</div>
+      </div>
+
+      <div style="height: auto" hidden="[[!value]]">
+        <div class="help paper-card header">
+          <div class="title-text paper-card">Tags:</div>
+          <ul hidden="[[!tagsDisplay.length]]" >
+            <template is="dom-repeat" items="[[tagsDisplay]]" as="st">
+              <li style="font-weight: bold; color: blue;">[[st]]</li>
+            </template>
+          </ul> 
+        </div>
+      </div>
+
+
+      <div id="cheatsheet" style="height: auto" hidden="[[!value]]">
+        <div class="paper-card header">
+          <div class="title-text paper-card">Cheat Sheet:</div>
+        </div>
+        <div class="help interaction-help">
+          <ul>
+            <li>#iic - inbound call</li>
+            <li>#ioc - outbound  call</li>
+            <li>#iov - outbound video call</li>
+            <li>#iie - inbound email</li>
+            <li>#ioe - outbound email</li>
+            <li>...f-fax, t-text, m-mail</li>
+          </ul> 
+          <ul>
+            <li>#wp - with patient</li>
+            <li>#wf - with family</li>
+            <li>#wc - with caregiver</li>
+            <li>#wi - with insuranceplan</li>
+            <li>...d-primary doctor, s-specialist, c-clinic</li>
+          </ul>
+        </div>
+      </div>
+
+      <qa-ajax-poster
+        id="ajax_add_note"  
+        on-response="addNoteResponse"
+        on-error="addNoteErr"
+        loading="{{isLoading}}"
+        endpoint="api/note:add"
+      ></qa-ajax-poster>
+      </div>
+  </template>
+</dom-module>
+
+<script>
+  Polymer({
+    is: 'qa-notetool',
+
+    properties: {
+      selectedUser: {
+        type: String,
+        value: "",
+      },
+      subjectId: {
+        type: String,
+        value: "",
+      },
+      task: {
+        type: Object,
+        value: function(){ return null; }
+      },
+      previewLabelTxt: {
+        type: String,
+        value: "",
+      },
+      addBtnTxt: {
+        type: String,
+        value: "Add Note",
+      },
+      okToSubmit: {
+        type: Boolean,
+        value: function(){ return false }
+      },
+      tags: {
+        type: Array,
+        value: function(){ return []; }
+      },
+      tagsDisplay: {
+        type: Array,
+        value: function(){ return []; }
+      },
+      noteText: {
+        type: String,
+        value: function(){ return ""; }
+      },
+      value: {
+        type: String,
+        value: function(){ return ""; }
+      },
+      label: {
+        type: String,
+        value: "Enter note text here with tags (#ioc, #cust, #auth)"
+      },
+      /**
+       * The initial number of rows.
+       *
+       * @attribute rows
+       * @type number
+       * @default 1
+       */
+      rows: {
+        type: Number,
+        value: 1
+      },
+      /**
+       * The maximum number of rows this element can grow to until it
+       * scrolls. 0 means no maximum.
+       *
+       * @attribute maxRows
+       * @type number
+       * @default 0
+       */
+      maxRows: {
+       type: Number,
+       value: 0
+      }
+    },
+
+    _reset: function(){
+      this.set("value","");
+      this.set("task",null);
+      this.set("okToSubmit",false);
+      this.set("tagsDisplay",[]);
+      this.set("tags",[]);
+      this.set("previewLabelTxt","");
+      this.set("timingText","");
+      console.log("note tool reset");
+    },
+
+    gotTextInput: function(hasTagsAndText){
+      if ( this.task ){ 
+        this.set("previewLabelTxt", "Task Instruction Preview");
+        console.log(this.task);
+        switch(this.task.plannedFor.kind){
+          case "asap":
+            var txt = "ASAP";
+            break;
+          case "sched":
+            if ( this.task.plannedFor.start ){
+              var txt = "PLANNED FOR " + moment( this.task.plannedFor.start ).format("dddd MM/DD/YYYY");
+            }
+            else if ( this.task.plannedFor.target ){
+              var txt = "UNSCHEDULED " + moment( this.task.plannedFor.target.start ).format("dddd MM/DD/YYYY");
+            }
+            else{
+              var txt = "UNSCHEDULED";
+            }
+            break;
+        }
+        console.log(txt);
+        if ( app.scenariouser && !this.selectedUser){
+          this.set("selectedUser",app.scenariouser._id);
+        }
+        this.set("timingText", txt);
+        this.set("addBtnTxt", "Add Task");
+      }
+      else  {
+        this.set("previewLabelTxt", "Note Text Preview");
+        this.set("timingText", "");
+        this.set("addBtnTxt", "Add Note");
+      }
+
+      console.log( this.tags.length , this.noteText.length);
+      this.set("okToSubmit", (this.tags.length &&  this.noteText.length) );
+    },
+
+
+    submit: function(){
+      var payload = {
+        subjectId: this.subjectId,
+        txt: this.noteText,
+        tags: this.tags,
+        taskId: false
+      };
+      console.info(payload);
+      this.$.ajax_add_note.send(payload);
+    },
+
+    addNoteResponse: function(e,data){
+      this.fire("noteadded",data);
+      this._reset();
+    },
+
+    addNoteErr: function(e,data){
+      console.error(e,data);
+        
+    },
+
+    get _focusableElement() {
+      return this.$.input.textarea;
+    }
+  });
+</script>

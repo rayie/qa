@@ -90,6 +90,10 @@ Example:
     is: 'menu-tasks',
 
     properties: {
+      isDirect: {
+        type: Boolean,
+        value: function(){ return false; }
+      },
       isCreatingTask: {
         type: Boolean,
         value: function(){ return false; },
@@ -102,8 +106,9 @@ Example:
       },
       subjectId: { type: String, value: function(){ return null } },
       selectedTaskType: { 
-        type: String, value: function(){ return null },
-        observer: "gotSelectedTaskType"
+        type: String, 
+        value: function(){ return null },
+        notify: true
       },
       taskTypes: {
         type: Array,
@@ -124,7 +129,8 @@ Example:
             { url: 'flows/sc.pharmacy.json', name: 'Pharmacy', plannedFor: 'asap' },
             { url: 'flows/sc.barriers.json', name: 'Barriers', plannedFor: 'asap' },
             { url: 'flows/sc.problemlist.json', name: 'Problemlist', plannedFor: 'asap' },
-            { url: 'flows/sc.program-wizard.json', name: 'Program Wizard', plannedFor: 'asap' } 
+            { url: 'flows/sc.program-wizard.json', name: 'Program Wizard', plannedFor: 'asap' } ,
+            { url: 'flows/sc.review-program.json', name: 'SC REVIEW PROGRAM', plannedFor: 'asap' } 
           ]
         }
       }
@@ -133,14 +139,17 @@ Example:
     gotSelectedTaskType: function(){
       //console.log(this.selectedTaskType)
       if ( this.selectedTaskType === null ) return;
-      var payload = _.merge( 
-        this.taskTypes[ this.selectedTaskType ],
-        { subjectId: this.subjectId, lastTs: this.subjectLastTs }
-      );
-      if (!payload.plannedFor) payload.plannedFor = "schedule";
-      console.log(payload);
-      this.$.ajax_init_task.send(payload);
-      return;
+
+      if ( this.isDirect ){
+        var payload = _.merge( 
+          this.taskTypes[ this.selectedTaskType ],
+          { subjectId: this.subjectId, lastTs: this.subjectLastTs }
+        );
+        if (!payload.plannedFor) payload.plannedFor = "schedule";
+        console.log(payload);
+        this.$.ajax_init_task.send(payload);
+        return;
+      }
     },
 
     taskInitResponse: function(e,data){

@@ -30,7 +30,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="card-hdmsdata-display.html">
 <link rel="import" href="card-hcdata-display.html">
 <link rel="import" href="card-notes.html">
-<link rel="import" href="qa-noteinput.html">
+<link rel="import" href="qa-notetool.html">
 <link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="qa-dateinput.html">
 <link rel="import" href="styles/qa-styles.html">
@@ -113,13 +113,13 @@ Example:
               </div>
             </paper-card> 
             
-            <paper-card heading="Add Note" elevation='4' class='secondary' >
-              <qa-noteinput
-                id="noteInput"
+            <paper-card heading="Add Note or Task (#t)" elevation='4' class='secondary' >
+              <qa-notetool
+                id="noteTool"
                 subject-id="[[person._id]]"
                 on-noteadded="noteAdded"
               >
-              </qa-noteinput>
+              </qa-notetool>
             </paper-card>
 
             <card-contact 
