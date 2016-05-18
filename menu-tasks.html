@@ -32,23 +32,14 @@ Example:
   <style is="custom-style">
 
     :host {
-      display: block;
+      --paper-input-container-label: { color: var(--label-color); };
+      --paper-input-container-label-floating: { color: var(--label-floating-color); };
+      --paper-input-container-label-focus: { color: var(--label-focus-color); };
+      --paper-input-container-input-color: var(--input-color);
+      font-size: 14px;
+      font-weight: 400;
     }
    
-    paper-dropdown-menu {
-      --paper-input-container: {
-        margin-top: -18px;
-      };
-      --paper-input-container-color: #fff;
-      --paper-input-container-label: {
-        font-size: 14px;
-        font-weight: 500;
-      };
-    }
-    paper-item {
-      font-size: 14px;
-      font-weight: 500;
-    }
 
   </style>
 
@@ -56,18 +47,20 @@ Example:
     <div id="container" hidden="[[!subjectId]]">
       <paper-dropdown-menu 
         no-animations
-        label="Create Task" 
+        label="[[label]]" 
+        always-float-label
         hidden="[[isCreatingTask]]"
       >
         <paper-listbox 
           class="dropdown-content" 
-          selected="{{selectedTaskType}}"
+          selected="{{selectedTaskTypeIndex}}"
         >
           <template id="rptr" is="dom-repeat" items="[[taskTypes]]" as="t">
             <paper-item >[[t.name]]</paper-item>
           </template>
         </paper-listbox>
       </paper-dropdown-menu>
+
       <span hidden="[[!isCreatingTask]]">...creating task</span>
 
       <qa-ajax-poster
@@ -99,23 +92,27 @@ Example:
         value: function(){ return false; },
         notify: true
       },
+      label: { 
+        type: String, 
+        value: function(){ return "Task Type" }
+      },
       subjectLastTs: { 
         type: String, 
         value: function(){ return null },
         noitfy: true
       },
       subjectId: { type: String, value: function(){ return null } },
-      selectedTaskType: { 
-        type: String, 
-        value: function(){ return null },
+      selectedTaskTypeIndex: { 
+        type: Number, 
+        value: function(){ return 0 },
         notify: true
       },
       taskTypes: {
         type: Array,
+        notify: true,
         value: function(){
           return [
-            //{ url: "flows/sc.interaction.json", name: "Interaction/Communication Record" , plannedFor: "asap" },
-            { url: "flows/sc.teamaction.json", name: "Team Action", plannedFor: "schedule" },
+            //{ url: "flows/sc.teamaction.json", name: "Team Action", plannedFor: "schedule" },
             { url: "flows/global.contact.json", name: "Contact Form", plannedFor: "asap" },
             { url: "flows/global.address.json", name: "Address Form", plannedFor: "asap" },
             { url: 'flows/global.demographic.json', name: 'Demographic', plannedFor: 'asap' },
@@ -138,11 +135,11 @@ Example:
 
     gotSelectedTaskType: function(){
       //console.log(this.selectedTaskType)
-      if ( this.selectedTaskType === null ) return;
+      if ( this.selectedTaskTypeIndex === null ) return;
 
       if ( this.isDirect ){
         var payload = _.merge( 
-          this.taskTypes[ this.selectedTaskType ],
+          this.taskTypes[ this.selectedTaskTypeIndex ],
           { subjectId: this.subjectId, lastTs: this.subjectLastTs }
         );
         if (!payload.plannedFor) payload.plannedFor = "schedule";
@@ -154,7 +151,7 @@ Example:
 
     taskInitResponse: function(e,data){
       this.fire("newtask", data);
-      this.set("selectedTaskType",null);
+      this.set("selectedTaskTypeIndex",null);
     },
 
     taskInitError: function(e,data){

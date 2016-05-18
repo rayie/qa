@@ -98,7 +98,7 @@ style this element.
 
 
       <div id="taskDiv" style="height: auto" hidden="[[!task]]">
-        <menu-tasks selected-task-type="{{selectedTaskType}}" ></menu-tasks>
+        <menu-tasks task-types="{{taskTypes}}" id="taskTypeMenu" subject-id="[[subjectId]]" selected-task-type-index="{{selectedTaskTypeIndex}}" ></menu-tasks>
         <team-dropdown selected-user="{{selectedUser}}"></team-dropdown>
         <div style="font-size: .92em; font-weight: bold;">[[timingText]]</div>
       </div>
@@ -165,6 +165,13 @@ style this element.
       task: {
         type: Object,
         value: function(){ return null; }
+      },
+      taskTypes: {
+        type: Array
+      },
+      selectedTaskTypeIndex: {
+        type: Number,
+        value: 0
       },
       previewLabelTxt: {
         type: String,
@@ -242,7 +249,7 @@ style this element.
           case "asap":
             var txt = "ASAP";
             break;
-          case "sched":
+          case "schedule":
             if ( this.task.plannedFor.start ){
               var txt = "PLANNED FOR " + moment( this.task.plannedFor.start ).format("dddd MM/DD/YYYY");
             }
@@ -275,12 +282,25 @@ style this element.
     submit: function(){
       var payload = {
         subjectId: this.subjectId,
-        txt: this.noteText,
-        tags: this.tags,
-        taskId: false
+        txt: this.noteText.toString(),
+        tags: [].concat( this.tags )
       };
+      if ( this.task ){
+        var taskType = _.clone( this.taskTypes[ this.selectedTaskTypeIndex ] );
+        payload.tags.push( taskType.name.toLowerCase().replace(/ /g,"-") );
+        payload.taskPayload = {
+          plannedFor:  _.clone( this.task.plannedFor ), 
+          assignedTo: this.selectedUser.toString(),
+          url: taskType.url, 
+          name: taskType.name 
+        };
+
+        console.log(payload.taskPayload);
+      }
+
+
       console.info(payload);
-      this.$.ajax_add_note.send(payload);
+      return this.$.ajax_add_note.send(payload);
     },
 
     addNoteResponse: function(e,data){

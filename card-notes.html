@@ -66,36 +66,6 @@ Example:
       margin-left: 16px;
     }
 
-
-    moment-display {
-      --display-size: 14px;
-      --label-size: 14px;
-    }
-    .note-txt {
-      font-size: .88em;
-      margin-bottom: 4px;
-    }
-
-    .note-mdata {
-      margin: 8px 0 0 0;
-      font-size: 12px;
-      padding: 8px 0 0 0;
-    }
-
-    p {
-      font-size: .88em;
-    }
-
-    .tag {
-      padding-right: 4px;
-      font-style: italic;
-      font-size: .82em;
-      color: #01579B;
-    }
-    div.tags {
-      margin-top:8px;
-      padding-bottom:8px;
-    }
   </style>
 
   <template>
@@ -141,9 +111,9 @@ Example:
                     [[txt-entry]]
                   </div>
                 </template>
-                <div class='tags' >
+                <div class='notetags' >
                   <template is="dom-repeat" items="[[note.tags]]" as="tag">  
-                    <div class='tag'>
+                    <div class='notetag'>
                       #[[tag]]
                     </div>
                   </template>

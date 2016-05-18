@@ -197,7 +197,7 @@ style this element.
         if ( !commandStartIdxs.length ){
           //it's only note txt
           if ( line ){
-            console.log("pushing in line value:" + line + "-");
+            //console.log("pushing in line value:" + line + "-");
             txt.push(line);
           }
         }
@@ -222,7 +222,7 @@ style this element.
               var entry = line.substr(start,(cidx-start)).trim() ;
               if (i) commands.push(entry.toLowerCase());
               else {
-                console.log("pushing in txt value:" + entry + "-");
+                //console.log("pushing in txt value:" + entry + "-");
                 txt.push(entry);
               }
               start = cidx*1;
@@ -271,6 +271,7 @@ style this element.
         else{
           //it's cateogry tag
           console.log("not a command", key);
+
         }
 
         return { tags: tags, data: data  , display: tagdisplay.join(" ").trim() }
@@ -327,7 +328,7 @@ style this element.
                 break;
               case "sched":
               case "target":
-                kind="sched";
+                kind="schedule";
                 break;
               default:
                 _dtxt.push( p ); //if it's not a special term, assume it's part of the date
@@ -339,7 +340,7 @@ style this element.
           console.log("dtxt partsed:", _dtxt)
           var pf = { kind: kind };
           if (dt){
-            if ( kind==="sched" ){ //to schedule
+            if ( kind==="schedule" ){ //to schedule
               pf.start = null;
               pf.end= null;
               pf.target = {
@@ -348,7 +349,7 @@ style this element.
               }
             }
             else{ //planned
-              pf.kind = "sched";
+              pf.kind = "schedule";
               pf.start = pf.end = dt;
             }
           }

@@ -55,10 +55,13 @@ Example:
       border-bottom: 1px solid gray;
     }
 
-    #taskSubTitle {
-      padding: 4px;
+    .specialMsgs{
+
+      padding: 16px;
       font-size: .92em;
+
     }
+
     .vbottom {
       padding-top: 30px;
       vertical-align: bottom;
@@ -178,9 +181,38 @@ Example:
         </div>
       </div>
       -->
-      <p id="taskSubTitle" hidden="[[!taskDefinition.sub]]">
+      <p class="specialMsgs" id="taskSubTitle" hidden="[[!taskDefinition.sub]]">
         [[taskDefinition.sub]]
       </p>
+      <div id="noteArea" class="specialMsgs row vertical layout" hidden="[[!task.n]]" as="note">
+        <template is="dom-repeat" items="[[task.n]]" as="note">
+          <div class='note-container layout horizontal' >
+            <div class='note-mdata flex-10'>
+              <moment-display
+              label="[[note.m.u_id]] on "
+              class='note-mdata'
+              display-fmt="withday"
+              inbound-fmt="YYYY-MM-DDThh:mm:ss"
+              str="[[note.m.ts]]"
+              time></moment-display>
+            </div>
+          </div>
+          <div>
+            <template is="dom-repeat" items="[[note.txt]]" as="txt-entry">
+              <div class='note-txt'>
+                [[txt-entry]]
+              </div>
+            </template>
+            <div class='tags' >
+              <template is="dom-repeat" items="[[note.tags]]" as="tag">
+                <div class='tag'>
+                  #[[tag]]
+                </div>
+              </template>
+            </div>
+          </div>
+        </template> 
+      </div>
 
       <div id="qlistWrap" hidden="[[submissionResult]]">
         <!--the container for our question components, dynamically inserted-->
