@@ -339,13 +339,23 @@ Example:
     </dialog-incompletion>
 
     <iron-ajax
-      id="ajax_load_survey"       
+      id="ajax_load_survey_legacy"       
       no-toast
       handle-as="json",
       on-response="loadSurveyResponded"
       on-error="loadSurveyError"
       loading="{{loading}}"
     ></iron-ajax>
+
+    <qa-ajax-poster
+      id="ajax_load_survey"
+      no-toast
+      on-response="loadSurveyResponded"
+      on-error="loadSurveyError"
+      loading="{{loading}}"
+      endpoint="api/taskdef:get"
+    ></qa-ajax-poster>
+
 
     <qa-ajax-poster
       id="ajax_load_task"
@@ -592,7 +602,8 @@ Example:
         this.set("dataDoc",dataDoc); 
       }
       this.set("subjectId",this.task.subjectId);
-      this._loadSurvey(window.APIBASEURL+this.task.url);
+      //this._loadSurvey(window.APIBASEURL+this.task.url);
+      this._loadSurvey(this.task.url);
       return;
     },
 
@@ -602,12 +613,8 @@ Example:
 
       this._reset();
       this.set("subjectId", "STUB");
-      this._loadSurvey(window.APIBASEURL +"flows/"+ this.directSurveyUrl + ".json");
-    },
-
-    _loadSurvey: function(surveyUrl){
-      this.$.ajax_load_survey.url= surveyUrl;
-      this.$.ajax_load_survey.generateRequest();
+      //this._loadSurvey(window.APIBASEURL +"flows/"+ this.directSurveyUrl + ".json");
+      this._loadSurvey("flows/"+ this.directSurveyUrl + ".json");
     },
 
     _convert_yn_to_mc: function(q){
@@ -651,13 +658,22 @@ Example:
 
     },
 
+    _loadSurvey: function(surveyUrl){
+      /* legacy:
+      this.$.ajax_load_survey.url= surveyUrl;
+      this.$.ajax_load_survey.generateRequest();
+      */
+      this.$.ajax_load_survey.send({url: surveyUrl});
+    },
+
     loadSurveyError: function(e){
       console.error("Failed to load taskDefinition");
       this.set("subjectId",null);
       return;
     },
 
-    loadSurveyResponded: function(event){
+    loadSurveyResponded: function(event,data){
+      /*
       if (!event.detail.response){
         this.set("subjectId",null);
         console.error("no event response",event.detail.response);
@@ -665,8 +681,17 @@ Example:
         this.set("hideLoadError",false);
         return;
       }
+      */
+      if (!data){
+        this.set("subjectId",null);
+        console.error("no event response",event.detail.response);
+        this.set("hideLoadingMsg",true);
+        this.set("hideLoadError",false);
+        return;
+      }
 
-      var taskDefinition = event.detail.response;
+
+      var taskDefinition = data.taskDef;
       taskDefinition.subtitle = "For Subject: " + this.subjectId;
       this.$.ajax_submit_entity.setEndpoint(taskDefinition.submitUrl);
       this.set("taskDefinition",taskDefinition);

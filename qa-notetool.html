@@ -274,7 +274,7 @@ style this element.
         this.set("addBtnTxt", "Add Note");
       }
 
-      console.log( this.tags.length , this.noteText.length);
+      //console.log( this.tags.length , this.noteText.length);
       this.set("okToSubmit", (this.tags.length &&  this.noteText.length) );
     },
 
@@ -295,11 +295,11 @@ style this element.
           name: taskType.name 
         };
 
-        console.log(payload.taskPayload);
+       // console.log(payload.taskPayload);
       }
 
 
-      console.info(payload);
+      //console.info(payload);
       return this.$.ajax_add_note.send(payload);
     },
 
