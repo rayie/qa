@@ -110,6 +110,9 @@ Example:
                   <div class='note-txt'>
                     [[txt-entry]]
                   </div>
+                  <div class='note-link' hidden="[[!note.filename]]">
+                    <a class="pointer" on-click="downloadFile">Click to Download [[note.filename]]</a>
+                  </div>
                 </template>
                 <div class='notetags' >
                   <template is="dom-repeat" items="[[note.tags]]" as="tag">  
@@ -132,6 +135,13 @@ Example:
         endpoint="api/notes:get"
       ></qa-ajax-poster>
 
+      <qa-ajax-poster
+        id="ajax_download_file"       
+        no-toast
+        on-response="downloadFileResponse"
+        on-error="downloadFileErr"
+        endpoint="api/notes:getpathtodoc"
+      ></qa-ajax-poster>
     </div>
   </template>
 
@@ -186,6 +196,17 @@ Example:
         type: Boolean,
         value: false
       }
+    },
+
+    downloadFile: function(e){
+      console.log(e.model.note);
+      this.$.ajax_download_file.send({ noteId: e.model.note._id });
+    },
+
+    downloadFileResponse: function(e,data){
+      console.log(data);
+      if ( data.pathToDoc )
+        return window.open(window.APIBASEURL + data.pathToDoc, data.filename);
     },
 
     reset: function(){

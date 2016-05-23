@@ -57,33 +57,44 @@ Example:
   </style>
 
   <template>
-    <paper-icon-button icon="search" on-click="show"></paper-icon-button>
-    <paper-dialog 
-      id="dialog" 
-      on-iron-overlay-closed="dialogClosed"
-      on-iron-overlay-canceled="dialogCanceled"
-    >
-      <h2>Search for Patient</h2>
-      <div>
-
+    <div>
+      <paper-icon-button icon="search" on-click="show"></paper-icon-button>
+      <paper-dialog 
+        id="dialog" 
+        on-iron-overlay-closed="dialogClosed"
+        on-iron-overlay-canceled="dialogCanceled"
+      >
+        <h2>Search for Patient</h2>
         <div>
-          <qa-typeahead-input
-            id="search"
-            autofocus
-            is-candidates-json
-            searchable-props='["displayAs"]'
-            display-prop='revealStr'
-            remote-url-wait-ms='300'
-            placeholder="Search for patient by name or acct#"
-            remote-url="api/person:search"
-            on-pt-item-select="userSelectedItem"
-            on-pt-item-confirmed="userConfirmedItem"
-          >
-          </qa-typeahead-input>
-        </div>
 
-      </div>
-    </paper-dialog>
+          <div>
+            <qa-typeahead-input
+              id="search"
+              autofocus
+              is-candidates-json
+              searchable-props='["displayAs"]'
+              display-prop='revealStr'
+              remote-url-wait-ms='300'
+              placeholder="Search for patient by name or acct#"
+              remote-url="api/person:search"
+              on-pt-item-select="userSelectedItem"
+              on-pt-item-confirmed="userConfirmedItem"
+            >
+            </qa-typeahead-input>
+          </div>
+
+        </div>
+      </paper-dialog>
+      <qa-ajax-poster
+        id="ajax_create_person"
+        no-toast
+        handle-as="json",
+        on-response="createPersonResponse"
+        on-error="createPersonErr"
+        loading="{{is_loading}}"
+        endpoint="api/antipattern:createpersonfromhdms"
+      ></qa-ajax-poster>
+    </div>
   </template>
 
 </dom-module>
@@ -119,12 +130,27 @@ Example:
 
     userConfirmedItem: function(item){
       //console.log(item);
-      //console.log( this.$.search.inputObject );
-      var url = this.baseUrl + "patient/"+ this.$.search.inputObject._id;
+      console.log( this.$.search.inputObject );
+      var person = _.cloneDeep( this.$.search.inputObject );
+      if (person.from_hdms){
+        
+        delete person.from_hdms;
+        console.log(person);
+        return this.$.ajax_create_person.send(person);
+      }
+
+      var url = this.baseUrl + "patient/"+ person._id;
       //console.log(url);
       this.$.dialog.close();
       page(url);
       //this.fire("user-confirmed",url);
+    },
+
+    createPersonResponse: function(e,data){
+
+      var url = this.baseUrl + "patient/"+ data.subjectId;
+      this.$.dialog.close();
+      return page(url);
     },
 
     /*
