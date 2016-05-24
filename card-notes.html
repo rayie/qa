@@ -59,7 +59,6 @@ Example:
       border-top: 1px solid #E0E0E0;
     } 
 
-
     .leftborder {
       border-left: 2px solid #512DA8;
       padding-left: 16px;
@@ -74,6 +73,12 @@ Example:
 
       <!--<paper-toolbar> </paper-toolbar>-->
       <paper-card class='primary layout vertical pagination' hidden="[[!notesLoaded]]" elevation="4" heading="[[computedListingTitle]]">
+        <div class="card-actions">
+          <template id="tagFiltersTpl" is="dom-repeat" items="[[tagCounts]]" as="tc" >
+            <paper-button raised elevation=2 active="{{tc.active}}" class="notetag" toggles>[[tc.tag]] ([[tc.n]])</paper-button>
+          </template>
+          <paper-button on-click="applyTagFilters" hidden="[[!tagCounts.length]]" raised elevation=2 class="notetag good" >Apply</paper-button>
+        </div>
         <div class="card-actions">
           <template id="progCnt" is="dom-repeat" items="[[pagebtns]]" as="pb" >
             <paper-button raised elevation=2 class="pg" on-click="pageSelected">[[pb]]</paper-button>
@@ -111,7 +116,7 @@ Example:
                     [[txt-entry]]
                   </div>
                   <div class='note-link' hidden="[[!note.filename]]">
-                    <a class="pointer" on-click="downloadFile">Click to Download [[note.filename]]</a>
+                    <a style="color:blue;" class="pointer" on-click="downloadFile">Click to Download [[note.filename]]</a>
                   </div>
                 </template>
                 <div class='notetags' >
@@ -171,6 +176,14 @@ Example:
         type: Boolean,
         value: false
       },
+      tagFilters: {
+        type: Array,
+        value: function(){ return []; }
+      },
+      tagCounts: {
+        type: Array,
+        value: function(){ return []; }
+      },
       pagebtns: {
         type: Array,
         value: function(){ return []; }
@@ -210,6 +223,12 @@ Example:
     },
 
     reset: function(){
+      this.set("tagCounts",[]);
+      this.set("tagFilters",[]);
+      this.pageReset();
+    },
+
+    pageReset: function(){
       this.set("pagebtns",[]);
       this.set("notes",[]);
       Polymer.dom.flush();
@@ -259,7 +278,41 @@ Example:
         this.set("pagebtns",[]);
       }
       this.set("computedListingTitle",te);
+      if ( this.tagFilters.length ){
+        var self = this;
+        data.counts.forEach(function(t){
+          t.active=( self.tagFilters.indexOf(t.tag)!==-1 );
+        });
+      }
+      else{
+        //first time we got the counts, apply all filters as active
+        var tagFilters=[];
+        data.counts.forEach(function(t){
+          t.active=true;
+          tagFilters.push(t.tag);
+        });
+        this.set("tagFilters", tagFilters);
+      }
+
+      this.set("tagCounts", data.counts);
       this.computeHeight();
+    },
+
+    applyTagFilters: function(){
+      var tagFilters = [];
+      this.tagCounts.forEach(function(t){
+        if ( t.active ){
+          tagFilters.push(t.tag);
+        }
+      });
+      this.set("tagFilters", tagFilters);
+      this.set("computedListingTitle","...applying filters");
+      this.pageReset();
+      var payload = {
+        subjectId: this.subjectId,
+        extraFilters: { tags:  [].concat(tagFilters) }
+      }
+      this.$.ajax_load.send(payload);
     },
 
     computeHeight: function(){
@@ -270,7 +323,7 @@ Example:
     },
 
     pageSelected: function(a){
-      this.reset();
+      this.pageReset();
       var pageNum = a.model.pb-1;
       var payload = this.$.ajax_load.get("payload");
       payload = _.merge(payload,{requestedPageNum: pageNum});
