@@ -79,9 +79,11 @@ Example:
     attached: function(){
       this.$.locstore.reload();
       this.$.main.url = window.APIBASEURL + this.endpoint;
+      //console.log("attached - ", this.$.main.url);
     },
 
     setEndpoint: function(endpoint){
+      console.log("setEndpoint", endpoint);
       this.$.locstore.reload();
       this.$.main.url = window.APIBASEURL + endpoint;
     },
@@ -97,6 +99,15 @@ Example:
         return;
       }
       this.payload.csrfToken = this.scenariouser.csrfToken;
+      this.$.main.body=this.payload;
+      this.$.main.generateRequest();
+    },
+
+    sendNoCSRF: function(payload,passBack){
+      console.log("sending to url", this.$.main.url, payload);
+      if (payload===undefined) payload={};
+      this.set("payload",payload);
+      this.passBack = passBack;
       this.$.main.body=this.payload;
       this.$.main.generateRequest();
     },

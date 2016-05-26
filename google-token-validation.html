@@ -1,0 +1,177 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-localstorage/iron-localstorage.html">
+<link rel="import" href="qa-ajax-poster.html">
+
+<!--
+Description:
+  DOES NOT RENDER THE GOOGLE LOGIN BTN.
+  This is a helper to send the post-GoogleLogin tokens to our own server to validate the user's identity and client validity
+
+Example:
+
+    <google-token-validation></google-token-validation>
+
+@demo
+-->
+<dom-module id="google-token-validation">
+
+  <template>
+    <div class="container">
+    </div>
+
+    <qa-ajax-poster
+      id="ajax_validate"       
+      no-toast
+      handle-as="json",
+      on-response="validateGoogleTokenResponse"
+      on-error="validateGoogleTokenErr"
+      loading="{{is_loading}}"
+      endpoint="api/session:validategoogletoken"
+    ></qa-ajax-poster>
+    <qa-ajax-poster
+      id="ajax_check"       
+      no-toast
+      handle-as="json",
+      on-response="checkResponse"
+      on-error="checkErr"
+      loading="{{is_loading}}"
+      endpoint="api/session:check"
+    ></qa-ajax-poster>
+    <qa-ajax-poster
+      id="ajax_logout"       
+      no-toast
+      handle-as="json",
+      on-response="logoutResponse"
+      on-error="logoutErr"
+      loading="{{is_loading}}"
+      endpoint="api/session:logout"
+    ></qa-ajax-poster>
+
+
+
+    <iron-localstorage
+      id="locstore"
+      name="scenariouser"
+      auto-save-disabled
+      value="{{scenariouser}}"
+    >
+    </iron-localstorage>
+  </template>
+
+</dom-module>
+
+<script>
+
+
+  Polymer({
+
+    is: 'google-token-validation',
+
+    properties: {
+      googleToken: {
+        type: String
+      },
+      scenariouser: {
+        //observer: "_scenariouserChanged",
+        type: Object,
+        notify: true,
+        value: function(){ return null }
+      },
+      sessionIsValid: {
+        type: Boolean,
+        notify: true,
+        value: function(){ return false }
+      }
+    },
+
+    validateGoogleTokenResponse: function(e,data){
+      console.info(data);
+      if( data.success===true ){
+        this.set("scenariouser", data.user);
+        app.set("scenariouser", data.user);
+        this.$.locstore.save();
+        this.set("sessionIsValid", true);
+        page('/home');
+      }
+    },
+
+    validateGoogleTokenErr: function(e,data){
+      console.error(data);
+    },
+
+    validateGoogleToken: function(idToken){
+      var payload = {
+        idToken:idToken 
+      };
+      console.log("payload", payload);
+      this.$.ajax_validate.sendNoCSRF(payload);
+    },
+
+    attached: function(){
+      this.set("isAttached",true);
+      this.$.locstore.reload();
+      if ( !this.scenariouser ) {
+        console.log("no scenariouser in locstore - user must login");
+        this.fire("badsession");
+        return;
+      }
+
+      console.log("found scenariouser in locstore, checking if session still valid");
+      if (!_.has( this.scenariouser ,'csrfToken' ) ){
+        console.log("no csrfToken in locstore") 
+        this.fire("badsession");
+        return;
+      }
+
+      this.$.ajax_check.setEndpoint("api/session:check");
+      this.$.ajax_check.sendNoCSRF({csrfToken : this.scenariouser.csrfToken });
+    },
+
+    _scenariouserChanged: function(newVal,oldVal){
+      //console.log("scenariouserChanged in LoginForm",newVal,oldVal);
+    },
+
+    checkErr: function(e){
+      console.error(e);
+      this.set("sessionIsValid", false);
+      this.fire("badsession");
+    },
+
+    checkResponse: function(e){
+      //console.log("setting sessionIsValid to true");
+      this.set("sessionIsValid", true);
+    },
+
+    logout: function(){
+      return this.$.ajax_logout.send({});
+    },
+
+    logoutErr: function(e,d){
+      console.error(e,d);
+    },
+
+    logoutResponse: function(e){
+      this.set("scenariouser", null);
+      app.set("scenariouser", null);
+      this.$.locstore.save();
+      this.set("sessionIsValid", false);
+    },
+
+    login_error: function(e){
+      console.error(e);
+      Polymer.dom(this.root).querySelectorAll("paper-input").forEach(function(el){
+        el.invalid=true;
+      });
+    }
+  });
+
+</script>
