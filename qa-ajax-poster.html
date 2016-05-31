@@ -83,7 +83,7 @@ Example:
     },
 
     setEndpoint: function(endpoint){
-      console.log("setEndpoint", endpoint);
+      //console.log("setEndpoint", endpoint);
       this.$.locstore.reload();
       this.$.main.url = window.APIBASEURL + endpoint;
     },
@@ -104,7 +104,7 @@ Example:
     },
 
     sendNoCSRF: function(payload,passBack){
-      console.log("sending to url", this.$.main.url, payload);
+      //console.log("sending to url", this.$.main.url, payload);
       if (payload===undefined) payload={};
       this.set("payload",payload);
       this.passBack = passBack;

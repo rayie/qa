@@ -9,19 +9,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icons/av-icons.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
-<link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-item/paper-item-body.html">
-<link rel="import" href="../paper-input/paper-input.html">
-
-<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../paper-listbox/paper-listbox.html">
-
+<link rel="import" href="../iron-list/iron-list.html">
 <link rel="import" href="../paper-styles/typography.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-date-picker/paper-date-picker.html">
+<link rel="import" href="../moment-display/moment-import.html">
 <link rel="import" href="../moment-display/moment-display.html">
-<link rel="import" href="section-behaviors.html">
+<link rel="import" href="task-behaviors.html">
+<link rel="import" href="qa-btn.html">
 <link rel="import" href="qa-ajax-poster.html">
+<link rel="import" href="task-part-timing.html">
+<link rel="import" href="dialog-assign.html">
 <link rel="import" href="styles/qa-styles.html">
 
 <!--
@@ -33,38 +35,98 @@ Example:
 @demo
 -->
 <dom-module id="iron-list-persons">
-  <style is="custom-style" include="qa-styles"></style>
+
+  <style is="custom-style" include="qa-styles">
+
+    :host {
+      display: block;
+      box-sizing: border-box;
+    }
+
+    iron-list {
+       --iron-list-items-container: {
+          position: inherit; 
+          margin: 12px 0 12px 0;
+       };
+     }
+   
+    .name {
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .age {
+      font-size: 12px;
+    }
+
+    .doneInfo {
+      font-size: 12px;
+    }
+
+    .row {
+      margin-top: 2px;
+      margin-bottom: 2px;
+      /* border-bottom: 1px solid var(--paper-pink-a200); */
+    }
+
+    a { 
+      text-decoration: none;
+    }
+
+    iron-icon {
+      --iron-icon-width: 16px;
+    }
+
+    .item.selected {
+      background-color: #FFE082;
+      margin-bottom: 8px;
+      padding:8px;
+    }
+
+  </style>
+
   <template>
     <div id="container">
-      <paper-card class='primary' hidden="[[!persons]]" elevation="4" heading="[[listingTitle]]">
-        <iron-list id="mainList" items="[[persons]]" as="p" index-as="idx" style="height: 700px;">
+      <paper-card class='primary layout vertical pagination' hidden="[[!personsLoaded]]" elevation="4" heading="[[computedListingTitle]]">
+        <div class="card-actions">
+          <template id="progCnt" is="dom-repeat" items="[[pagebtns]]" as="pb" >
+            <paper-button raised elevation=2 class="pg" on-click="pageSelected">[[pb]]</paper-button>
+          </template>
+        </div>
+        <iron-list 
+          selection-enabled="[[selectionEnabled]]"
+          selected-items="{{selectedTasks}}"
+          multi-selection="[[multiSelection]]"
+          id="mainList" 
+          style="height: [[listingHeight]]px;" 
+          items="[[persons]]" 
+          index-as="idx" 
+          as="p"
+        >
           <template >
             <div class="row horizontal layout" style="height: 64px;">
-              <paper-item> 
-                <paper-item-body two-line> 
-                  <div>
-                    <a href$="patient/[[p._id]]">
-                      <span class='name'>
-                      [[p.revealStr]] 
-                      </span>
-                    </a>
-                  </div>
-                  <div seconday>
-                    <moment-display 
+              <div class="flex">
+                <a href$="patient/[[p._id]]">
+                  [[p.revealStr]]
+                </a>
+                <br/>
+                <small>[[p.programInfo]]</small>
+              </div>
+              <div class="flex">
+                <small>
+                  Last activity: 
+                  <moment-display 
+                    display-fmt='withday'
                      inbound-fmt="YYYY-MM-DDThh:mm:ss"
-                    class='emph' label="Program Date Range:" str="[[p.programDates.start]]" ></moment-display>
-                    <moment-display 
-                     inbound-fmt="YYYY-MM-DDThh:mm:ss"
-                    class='emph' label="to" str="[[p.programDates.end]]" ></moment-display>
-                  </div>
-                </paper-item-body>
-              </paper-item> 
+                  time str="[[p.ts]]" ></moment-display>
+                <small>
+              </div>
             </div>
           </template>
         </iron-list>
       </paper-card>
       <qa-ajax-poster
-        id="ajax_load_persons"       
+        id="ajax_load_persons"
         no-toast
         on-response="loadPersonsResponse"
         on-error="loadPersonsError"
@@ -73,24 +135,71 @@ Example:
       ></qa-ajax-poster>
     </div>
   </template>
+
 </dom-module>
+
 <script>
+
 
   Polymer({
 
     is: 'iron-list-persons',
 
     behaviors: [ SectionBehaviors.Basic ],
-
+    
     properties: {
-      persons: {
+
+      listingHeight: {
+        type: Number,
+        value: function(){ return 700; }
+      },
+
+      listingHeightPercentageOfWindow: {
+        type: Number,
+        value: function(){ return 80; }
+      },
+
+      pagebtns: {
         type: Array,
-        value: []
-      }, 
-      listTitle: { 
+        value: function(){ return []; }
+      },
+      listingTitle: {
         type: String,
-        value: function(){ return "missing title"; }
+        value: ""
+      },
+      computedListingTitle: {
+        type: String,
+        value: "Tasks loading ..."
+      },
+      isReady: {
+        type: Boolean,
+        value: false
+      },
+      isAttached: {
+        type: Boolean,
+        value: false
       }
+    },
+
+    attached: function(){
+      this.isAttached=true;
+      //this.resetTasks();
+    },
+    ready: function(){
+      this.isReady=true;
+    },
+
+    workTask: function(e){
+      console.log(e);
+    },
+
+
+    pageSelected: function(a){
+      var pageNum = a.model.pb-1;
+      var payload = this.$.ajax_load_persons.get("payload");
+      payload = _.merge(payload,{requestedPageNum: pageNum});
+      //console.log(pageNum,payload);
+      return this.$.ajax_load_persons.send(payload);
     },
 
     loadPersons: function(overridePayload){
@@ -100,8 +209,8 @@ Example:
         return this.$.ajax_load_persons.send(overridePayload);
       }
 
-      if ( 
-        this.selectedProgram !== null 
+      if (
+        this.selectedProgram !== null
         &&
         this.selectedProgram !== undefined
       ){
@@ -122,14 +231,58 @@ Example:
       this.set("persons",data.persons);
       var listResultTitle = data.persons.length + " Patients Found";
       this.applyTitle("Patient Listing by Program - "+ listResultTitle);
+
+
+      var pg = _.get(data,"pagination",{
+        "totalRecords": 0,
+        "totalPagesAvailable": 1,
+        "recordCountLastPage": 0,
+        "currentPageNum": 0,
+        "start": 0,
+        "end": 0
+      });
+
+      var te = [
+        " - Displaying Patients "+(pg.start+1)+ "-" + pg.end + " of " + pg.totalRecords + " Total",
+        "Page "+(pg.currentPageNum+1)+ " of " + pg.totalPagesAvailable
+      ].join(" - ");
+
+      var title = this.get("listingTitle") + te;
+      if ( pg.totalPagesAvailable > 1 ){
+        //console.info("settin gpagebtns",pg);
+        this.set("pagebtns",_.range(1,pg.totalPagesAvailable+1));
+      }
+      else if (pg.totalRecords === 0 ){
+        te =  " - No tasks found in this bucket "; 
+        this.set("pagebtns",[]);
+      }
+      else {
+        this.set("pagebtns",[]);
+      }
+      this.set("computedListingTitle",this.get("listingTitle") + te);
+
     },
 
     loadPersonsError: function(e){
       console.log(e);
 
+    }, 
+
+    computeHeight: function(){
+      var h = Math.floor( this.listingHeightPercentageOfWindow * window.innerHeight )
+      this.set("listingHeight", h);
+      //Polymer.dom.flush();
+    },
+
+
+    _computedClass: function(isSelected) {
+      return [
+        'flex-5 item', 
+        (isSelected)?'selected':'',
+        (this.selectionEnabled)?'pointer':''
+      ].join(" ")
     }
 
   });
 
 </script>
-
