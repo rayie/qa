@@ -123,19 +123,19 @@ Example:
       var payload = {
         idToken:idToken 
       };
-      console.log("payload", payload);
+      //console.log("payload", payload);
       this.$.ajax_validate.sendNoCSRF(payload);
     },
 
     validateGoogleTokenResponse: function(e,data){
-      console.info(data);
+      //console.info("user:",data);
       if( data.success===true ){
         this.set("scenariouser", data.user);
         app.set("scenariouser", data.user);
         this.$.locstore.save();
         this.set("sessionIsValid", true);
         this.fire("googlevalidated");
-        return page('/home');
+        return //page('/home');
       }
     },
 

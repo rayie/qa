@@ -175,7 +175,7 @@ style this element.
 
 
     */
-    commandRG : "#i[a-z]{0,} |#i[a-z]{0,}$|#w[a-z]{0,} |#w[a-z]{0,}$|#t |#t$",
+    commandRG : "#i[a-z]{0,} |#i[a-z]{0,}$|#w[a-z]{0,} |#w[a-z]{0,}$|#t |#t$|#[a-z]",
 
     parse: function(str){
       if (!str) return;
@@ -239,9 +239,11 @@ style this element.
       //console.log(commands); console.log(txt);
       var tagResults = commands.map(function(commstr){
         var wordparts = commstr.split(/ /g);
+        var wp = [].concat(wordparts);
         //var commparts = wordparts[0].substr(1).split(""); //skip the hashtag
         var commparts = wordparts.splice(0,1).pop().substr(1).split(""); //skip the hashtag
         var key = commparts.splice(0,1)[0] ;
+        //console.log("key:",key,"wordparts:", wordparts);
         var cf = _.get(self.commRef , key , false);
         var _cf = self.commRef[ key ] ;
         var tagdisplay = [];
@@ -270,7 +272,13 @@ style this element.
         }
         else{
           //it's cateogry tag
-          console.log("not a command", key);
+          var catTag = _.get(self.categoryTagRef, wp[0], false);
+          //console.log("not a command", wp, catTag);
+          if(catTag){
+            tagdisplay.push(catTag);
+            //tags.push(wp[0].substr(1));
+            tags.push(catTag);
+          }
 
         }
 
@@ -298,6 +306,12 @@ style this element.
       this.set("tags", tags);
       this.set("task",task);
       this.fire("gotinput");
+    },
+    categoryTagRef: {
+      "#ph": "pharmacy",
+      "#au": "auth",
+      "#in": "insur",
+      "#bl": "billing"
     },
 
     commRef: {

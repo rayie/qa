@@ -259,15 +259,12 @@ Example:
 
   Polymer({
 
-    behaviors: [ SectionBehaviors.Basic ],
-
     is: 'card-person',
 
+    behaviors: [ SectionBehaviors.Basic ],
+
     properties: {
-      isAttached: {
-        type: Boolean,
-        value: false
-      },
+
       person: {
         type: Object,
         value: null
@@ -313,15 +310,12 @@ Example:
 
 		tabSelectedLeft: function(e){
 			var idx = this.$.tabSelectorLeft.indexOf( e.detail.item );
-      //this.loadSectionLeft(idx);
     },
 
 
     // not used, using observer on each card
     loadSectionLeft: function(idx){
       if ( !this.subjectId) return 
-      //this.$.contactCard.load();
-      //this.$.demographicCard.load();
       return;
 
       switch(idx){
@@ -413,11 +407,17 @@ Example:
       this.$.inprogTasks.resetTasks();
     },
 
-    attached: function(){
-      this.set("isAttached",true);
-    },
 
     landingKeyChanged: function(a,b){
+      //console.log("firing landingKeyChanged", this.sessionIsValid);
+      if ( false===this.sessionIsValid ){
+        //console.log("sessionIsValid in card-persons", this.sessionIsValid);
+        var self = this;
+        return setTimeout(function(){self.landingKeyChanged()},500);
+      }
+      //console.log("sessionIsValid in Card-persons", this.sessionIsValid);
+
+
       if ( !this.isAttached ) return; //console.info("skipping loadPerson, card-person not yet attached");
 
       if ( undefined == this.landingKey ) return;
