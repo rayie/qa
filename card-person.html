@@ -434,8 +434,13 @@ Example:
         var sID = parts[0];
         var tID = parts[1];
       }
-      //console.info("sid:",sID);
-      //console.info("tid:",tID);
+
+      //console.info("sid:",sID,"tid:",tID);
+
+      if ( !sID ) {
+        //console.info("sid:",sID);
+        return;
+      }
 
       if ( this.subjectId !== sID ){
         //subjectID changed
