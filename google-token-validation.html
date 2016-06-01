@@ -10,6 +10,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-localstorage/iron-localstorage.html">
 <link rel="import" href="qa-ajax-poster.html">
+<link rel="import" href="styles/qa-styles.html">
 
 <!--
 Description:
@@ -24,8 +25,31 @@ Example:
 -->
 <dom-module id="google-token-validation">
 
+  <style is="custom-style" include="qa-styles">
+    ul li {
+      font-size: .90em;
+      font-weight: 680;
+      margin-top: 12px;
+    }
+  </style>
   <template>
-    <div class="container">
+    <div class="container layout horizontal">
+      <div class="flex" >
+        <paper-card class="primary" heading="CareConnect Log-in" elevation="4">
+        <ul>
+          <li>
+          Your SuperCare CareConnect user account is linked to your Supercare GMail account.</li>
+          <li>
+          Click on the [Sign in with Google] button below to launch the Google Sign In window.  
+          </li>
+          <li>
+          If you have more than 1 Google account associated with this device, please select only your @supercare.com account.
+          </li>
+          <li>
+            If this is the first time you're attempting to Log-In to CareConnect, a Google window will popup asking you to authorize CareConnect to use your GMail account to log in to CareConnect.
+          </li>
+        </paper-card> 
+      </div>
     </div>
 
     <qa-ajax-poster
@@ -77,11 +101,13 @@ Example:
     is: 'google-token-validation',
 
     properties: {
+      loginBtnRendered: {
+        type:Boolean, value: false 
+      },
       googleToken: {
         type: String
       },
       scenariouser: {
-        //observer: "_scenariouserChanged",
         type: Object,
         notify: true,
         value: function(){ return null }
@@ -93,21 +119,6 @@ Example:
       }
     },
 
-    validateGoogleTokenResponse: function(e,data){
-      console.info(data);
-      if( data.success===true ){
-        this.set("scenariouser", data.user);
-        app.set("scenariouser", data.user);
-        this.$.locstore.save();
-        this.set("sessionIsValid", true);
-        page('/home');
-      }
-    },
-
-    validateGoogleTokenErr: function(e,data){
-      console.error(data);
-    },
-
     validateGoogleToken: function(idToken){
       var payload = {
         idToken:idToken 
@@ -116,22 +127,54 @@ Example:
       this.$.ajax_validate.sendNoCSRF(payload);
     },
 
-    attached: function(){
-      this.set("isAttached",true);
+    validateGoogleTokenResponse: function(e,data){
+      console.info(data);
+      if( data.success===true ){
+        this.set("scenariouser", data.user);
+        app.set("scenariouser", data.user);
+        this.$.locstore.save();
+        this.set("sessionIsValid", true);
+        this.fire("googlevalidated");
+        return page('/home');
+      }
+    },
+
+    validateGoogleTokenErr: function(e,data){
+      console.error(data);
+    },
+
+    ready: function(){
+
+      /*
+      When this component attaches, it implies the user landed.
+      With every landing, we need to validate with google to check if user is signed on
+      So there is no longer a need to do session:check (check the redis-cache)
+      because we will 
+
+      */
       this.$.locstore.reload();
+      this.fire("landed");
+
+    },
+
+    legacyAttached: function(){
+
+      this.$.locstore.reload();
+      this.set("isAttached",true);
       if ( !this.scenariouser ) {
         console.log("no scenariouser in locstore - user must login");
         this.fire("badsession");
         return;
       }
 
-      console.log("found scenariouser in locstore, checking if session still valid");
+      console.log("found scenariouser in locstore");
       if (!_.has( this.scenariouser ,'csrfToken' ) ){
         console.log("no csrfToken in locstore") 
         this.fire("badsession");
         return;
       }
 
+      console.log("scenariouser has csrfToken, do session:check");
       this.$.ajax_check.setEndpoint("api/session:check");
       this.$.ajax_check.sendNoCSRF({csrfToken : this.scenariouser.csrfToken });
     },
@@ -140,16 +183,19 @@ Example:
       //console.log("scenariouserChanged in LoginForm",newVal,oldVal);
     },
 
+
+    /*
     checkErr: function(e){
-      console.error(e);
+      console.error("session:check rejected");
       this.set("sessionIsValid", false);
       this.fire("badsession");
     },
 
     checkResponse: function(e){
-      //console.log("setting sessionIsValid to true");
+      console.log("setting sessionIsValid to true");
       this.set("sessionIsValid", true);
     },
+    */
 
     logout: function(){
       return this.$.ajax_logout.send({});
