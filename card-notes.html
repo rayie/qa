@@ -77,6 +77,7 @@ Example:
           <template id="tagFiltersTpl" is="dom-repeat" items="[[tagCounts]]" as="tc" >
             <paper-button raised elevation=2 active="{{tc.active}}" class="notetag" toggles>[[tc.tag]] ([[tc.n]])</paper-button>
           </template>
+          <paper-button on-click="clearFilters" hidden="[[!tagCounts.length]]" raised elevation=2 class="notetag" >Clear All</paper-button>
           <paper-button on-click="applyTagFilters" hidden="[[!tagCounts.length]]" raised elevation=2 class="notetag good" >Apply</paper-button>
         </div>
         <div class="card-actions">
@@ -119,6 +120,14 @@ Example:
                     <a style="color:blue;" class="pointer" on-click="downloadFile">Click to Download [[note.filename]]</a>
                   </div>
                 </template>
+
+                <template is="dom-repeat" items="[[note.hashMap]]" as="hm">  
+                  <div class='note-txt'>
+                    <label style="font-size: .92em;">[[hm.k]]:</label>
+                    <strong>[[hm.v]]</strong>
+                  </div>
+                </template>
+
                 <div class='notetags' >
                   <template is="dom-repeat" items="[[note.tags]]" as="tag">  
                     <div class='notetag'>
@@ -297,7 +306,12 @@ Example:
       this.set("tagCounts", data.counts);
       this.computeHeight();
     },
-
+    clearFilters: function(){
+      var tg = this.get("tagCounts");
+      this.set("tagCounts",[]);
+      Polymer.dom.flush();
+      this.set("tagCounts",  tg.map(function(t){ t.active = false; return t; }));
+    },
     applyTagFilters: function(){
       var tagFilters = [];
       this.tagCounts.forEach(function(t){
