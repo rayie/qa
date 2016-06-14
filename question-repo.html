@@ -11,9 +11,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-card/paper-card.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-list/iron-list.html">
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../paper-material/paper-material.html">
-<link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-item/paper-item-body.html">
 <link rel="import" href="../paper-styles/typography.html">
@@ -22,9 +22,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../iron-pages/iron-pages.html">
 <link rel="import" href="section-behaviors.html">
 <link rel="import" href="menu-tasks.html">
-<link rel="import" href="iron-list-tasks.html">
 <link rel="import" href="qa-ajax-poster.html">
-<link rel="import" href="qa-dateinput.html">
 <link rel="import" href="styles/qa-styles.html">
 <!--
 
@@ -51,7 +49,6 @@ Example:
       float: left;
       width: 38%;
       height: 800px;
-      overflow: scroll;
     }
 
     #right {
@@ -99,7 +96,12 @@ Example:
       @apply(--paper-font-button);
     }
     .link { cursor: pointer; }
-
+    iron-list {
+       --iron-list-items-container: {
+          position: inherit;
+          margin: 12px 0 12px 0;
+       };
+     }
   </style>
 
   <template>
@@ -107,44 +109,81 @@ Example:
       <div id="left">
         <paper-toolbar>
           <paper-tabs on-iron-select="tabSelected" id="tabSelector" selected="{{selectedTab}}" elevation='4'>
-            <paper-tab>Questions</paper-tab>
             <paper-tab>Assessment</paper-tab>
+            <paper-tab>Questions</paper-tab>
           </paper-tabs>
         </paper-toolbar>
 
         <iron-pages selected="{{selectedTab}}">
-
+          <section data-tab='flisting' >
+            <paper-material elevation='4' class='primary' heading="Total Task Definitions: [[allFlowsTotal]]">
+              <div class='layout vertical'>
+                <div class='vertical-menu' role=''>
+                  <iron-list
+                    selection-enabled="[[selectionEnabled]]"
+                    selected-items="{{selectedTasks}}"
+                    multi-selection="[[multiSelection]]"
+                    id="mainList"
+                    style="height: [[listingHeight]]px;"
+                    items="[[allFlows]]"
+                    index-as="idx"
+                  > 
+                  <template >
+                    <paper-item class='link tall'>
+                      <div on-click="listItemClicked" class="pointer" >
+                        <strong>[[item.name]]</strong>
+                      </div>
+                    </paper-item>
+                  </template>
+                </iron-list>
+              </div>
+            </paper-material>
+          </section>
           <section data-tab='qlisting' >
-            <paper-material elevation='4' class='primary' heading="All Questions">
+            <paper-material elevation='4' class='primary' heading="Total Questions: [[allQuestionsTotal]]">
               <div class='layout vertical'>
                 <div class='vertical-menu' role=''>
                   <paper-item class='menusectionLbl'>
-                    <label>Total: [[allQuestionsTotal]]</label>
+                    <label>Total: [[total]]</label>
                   </paper-item>
-
-                  <template is="dom-repeat" items="[[allQuestions]]">
+                  <iron-list
+                    selection-enabled="[[selectionEnabled]]"
+                    selected-items="{{selectedTasks}}"
+                    multi-selection="[[multiSelection]]"
+                    id="mainList"
+                    style="height: [[listingHeight]]px;"
+                    items="[[allQuestions]]"
+                    index-as="idx"
+                  > 
+                  <template >
                     <paper-item class='link tall'>
-                      <div on-click="viewQuestion" class="pointer" >
+                      <div on-click="listItemClicked" class="pointer" >
                         <strong>[[item._id]]</strong>
                         <span>[[item.txt]]<span> 
                       </div>
                     </paper-item>
                   </template>
-
-                </div>
+                </iron-list>
               </div>
             </paper-material>
           </section>
-
         </iron-pages>
 
         <qa-ajax-poster
           id="ajax"       
           no-toast
-          handle-as="json",
           endpoint="api/questions:listall"
-          on-response="loadResponse"
-          on-error="loadError"
+          on-response="response"
+          on-error="err"
+          loading="{{is_loading}}"
+        ></qa-ajax-poster>
+
+        <qa-ajax-poster
+          id="ajaxflows"       
+          no-toast
+          endpoint="api/flows:listall"
+          on-response="response"
+          on-error="err"
           loading="{{is_loading}}"
         ></qa-ajax-poster>
 
@@ -156,16 +195,29 @@ Example:
             <paper-tab>[[mainTitle]]</paper-tab>
           </paper-tabs>
         </paper-toolbar>
-        <paper-card class='primary' hidden="[[!ques]]">
+
+        <paper-card class='primary' hidden="[[!displayFdetails]]">
+          <div class="vertical layout justified questionrepo-detail">
+            <div >
+              <label class='answer-lbl'>Identifier</label>
+              <div class="main-data"> 
+                <span>[[flow.url]]</span>
+                <p style='font-size: .9em; font-weight: 500'>[[flow.sub]]</p>
+              </div>
+            </div>
+          </div>
+        </paper-card>
+
+        <paper-card class='primary' hidden="[[!displayQdetails]]">
           <div class="vertical layout justified questionrepo-detail">
 
             <div >
               <label class='answer-lbl'>Question Text</label>
               <div class="main-data"> 
                 <span>[[ques.txt]]</span>
+                <p style='font-size: .9em; font-weight: 500'>[[ques.sub]]</p>
               </div>
             </div>
-
 
             <div >
               <label class='answer-lbl'>Question Type</label>
@@ -175,7 +227,7 @@ Example:
             </div>
 
             <div hidden="[[!ques.opts]]" >
-              <label class='answer-lbl'>Choices</label>
+              <label class='answer-lbl'>Choices - User may select up to [[ques.minmax.1]] options</label>
               <div class="main-data"> 
                 <ol class='questionrepo-sublist'>
                 <template is="dom-repeat" items="[[ques.opts]]" as="opt" >
@@ -185,10 +237,21 @@ Example:
               </div>
             </div>
 
+            <div hidden="[[!ques.minmax]]" >
+              <label class='answer-lbl'>Choices</label>
+              <div class="main-data"> 
+                <ol class='questionrepo-sublist'>
+                <template is="dom-repeat" items="[[ques.opts]]" as="opt" >
+                  <li>[[opt.txt]]</li>
+                </template>
+              </ol>
+              </div>
+            </div>
+             
+
             <div >
               <label class='answer-lbl'>Special Restricitons</label>
               <div class="main-data"> 
-                <span>[[ques.]]</span>
                 <ul class='questionrepo-sublist'>
                 <template is="dom-repeat" items="[[ques.specialRestrictions]]" as="sr" >
                   <li>[[sr]]</li>
@@ -201,12 +264,13 @@ Example:
               <label class='answer-lbl'>Appears in:</label>
               <div class="main-data"> 
                 <ol class='questionrepo-sublist'>
-                <template is="dom-repeat" items="[[ques.in]]" as="taskDefName" >
-                  <li>[[taskDefName]]</li>
-                </template>
-              </ol>
+                  <template is="dom-repeat" items="[[ques.in]]" as="taskDefName" >
+                    <li>[[taskDefName]]</li>
+                  </template>
+                </ol>
               </div>
             </div>
+
           </div>
         </paper-card>
       </div>
@@ -242,6 +306,17 @@ Example:
     is: 'question-repo',
 
     properties: {
+      displayQdetails: { type: Boolean, value: false },
+      displayFdetails: { type: Boolean, value: false },
+      listingHeight: {
+        type: Number,
+        value: function(){ return 700; }
+      },
+
+      listingHeightPercentageOfWindow: {
+        type: Number,
+        value: function(){ return 80; }
+      },
       ques: {
         type: Object,
         value: null
@@ -257,9 +332,10 @@ Example:
       console.log("tabSelected",idx,this.route);
       switch(idx){
         case 0:
-          this.$.ajax.send();
+          this.$.ajaxflows.send();
           break;
         case 1:
+          this.$.ajax.send();
           break;
         case 2:
           break;
@@ -272,22 +348,27 @@ Example:
       }
 		},
 
-    loadResponse: function(e,data){
+    response: function(e,data){
       console.log(data.bucketname);
       this.set(data.bucketname,data.rows);
       this.set(data.bucketname+"Total",data.total);
     },
 
-    loadError: function(e){
+    err: function(e){
       console.log(e);
     },
 
-    viewQuestion: function(e){
-      var q = e.model.item;
+    listItemClicked: function(e){
+      var p = e.model.item;
+      if ( p.kind ) return this.viewQuestion(p);
+      //user clicked on an assessment
+      return this.viewFlow(p);
+    },
+
+    viewQuestion: function(q){
       console.log(q);
       q.kindTxt = kindRef[q.kind];
       var sr = [];
-
       for(var k in q.allow){
         if ( q.allow[k] !== allowRef[k] ){
           sr.push( k.toUpperCase() + ( ( q.allow[k] )?" Allowed":" Not Allowed" ) )
@@ -296,21 +377,21 @@ Example:
 
       if (sr.length) q.specialRestrictions = [].concat(sr);
 
-      this.set("mainTitle", "Q# " + q._id);
+      this.set("displayQdetails",true);
+      this.set("displayFdetails",false);
       this.set("ques",q);
+      this.set("mainTitle", "Q# " + q._id);
     },
 
-    loadListingResponse: function(e,data){
-      this.$.taskListing.applyTasks(data.tasks);
-    },
-
-    loadListingError: function(e){
-      console.log(e);
-    },
-
-    submit: function(e){
-      return;
+    viewFlow: function(f){
+      this.set("flow",f);
+      this.set("displayFdetails",true);
+      this.set("displayQdetails",false);
+      this.set("mainTitle", "Task Definition: " + f.name);
     }
+
+
+
   });
 
 </script>
