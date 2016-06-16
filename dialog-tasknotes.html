@@ -1,0 +1,207 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../iron-localstorage/iron-localstorage.html">
+<link rel="import" href="../iron-autogrow-textarea/iron-autogrow-textarea.html">
+<link rel="import" href="team-dropdown.html">
+<link rel="import" href="qa-notetool.html">
+<link rel="import" href="styles/qa-styles.html">
+<!--
+An element providing a solution to no problem in particular.
+
+@demo
+-->
+<dom-module id="dialog-tasknotes">
+  <style is="custom-style" include="qa-styles">
+    :host ::content a {
+      cursor: pointer;
+    }
+
+    paper-button {
+      background: #000;
+      color: #fff;
+    }
+
+    paper-button[disabled] {
+      background: #BDBDBD;
+      color: #616161;
+    }
+    iron-autogrow-textarea {
+      --iron-autogrow-textarea: {
+        font-size: .82em;
+      };
+      --iron-autogrow-textarea-placehoder: {
+        font-weight: bold;
+      }
+    }
+  </style>
+
+  <template>
+    <div id="dcontainer" style="width: 600px;">
+      <paper-dialog 
+        id="dialogTaskNotes" 
+        on-iron-overlay-closed="dialogClosed"
+        on-iron-overlay-canceled="dialogCanceled"
+        with-backdrop
+        auto-fit-on-attach 
+      >
+        <h3>Task Notes for [[title]]</h3>
+        <div>
+          <div >
+            <moment-display label="Created" plus-age display-fmt="withday" time str="[[taskDoc.m.init.ts]]"
+             inbound-fmt="YYYY-MM-DDThh:mm:ss"
+            ></moment-display>
+          </div>
+
+          <div hidden="[[!taskDoc.m.done]]" class='age'>
+            <moment-display label="Completed" plus-age display-fmt="withday" time str="[[taskDoc.m.done.ts]]"
+            inbound-fmt="YYYY-MM-DDThh:mm:ss"
+            ></moment-display>
+          </div>
+
+          <div hidden="[[!taskDoc.m.incomplete]]" class='age'>
+            <moment-display label="Marked Incomplete" plus-age display-fmt="withday" time str="[[taskDoc.m.incomplete.ts]]"
+            inbound-fmt="YYYY-MM-DDThh:mm:ss"
+            ></moment-display>
+          </div>
+        </div>
+
+        <qa-notetool
+          id="noteTool"
+          subject-id="[[taskDoc.subjectId]]"
+          on-noteadded="noteAdded"
+          always-hide-helpers
+          existing-task-id="[[taskDoc._id]]"
+          task-creation-disabled
+        >
+        </qa-notetool>
+
+        <div> 
+          <template id="taskNoteRptr" is="dom-repeat" items="[[taskDoc.n]]" as="note" >
+            <div class="row vertical layout" >
+              <div class='note-container layout horizontal' >
+                <div class='note-mdata flex-10'>
+                  <moment-display
+                  label="[[note.m.u_id]] on "
+                  class='note-mdata'
+                  display-fmt="withday"
+                  inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                  str="[[note.m.ts]]"
+                  time></moment-display>
+                </div>
+              </div>
+              <div>
+                <div class='note-txt'>
+                  [[note.txt]]
+                </div>
+
+                <template is="dom-repeat" items="[[note.hashMap]]" as="hm">
+                  <div class='note-txt'>
+                    <label style="font-size: .92em;">[[hm.k]]:</label>
+                    <strong>[[hm.v]]</strong>
+                  </div>
+                </template>
+
+                <div class='notetags' >
+                  <template is="dom-repeat" items="[[note.tags]]" as="tag">
+                    <div class='notetag'>
+                      #[[tag]]
+                    </div>
+                  </template>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+        <!--
+        <div class="buttons">
+          <paper-button 
+            raised 
+            dialog-dismiss
+          >
+            Dismiss
+          </paper-button>
+        </div>
+        -->
+      </paper-dialog>
+    </div>
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'dialog-tasknotes',
+
+    properties: {
+      selectedUser: {
+        type: String, 
+        value: function(){ return ""; }
+      },
+      title: {
+        type: String, 
+        value: function(){ return "Task Notes"; }
+      }
+    },
+
+    show: function(taskDoc){
+      var title = taskDoc.subjectDisplayAs + " - " + taskDoc.name ;
+      this.$.noteTool._reset();
+      this.set("title",title);
+      this.set("taskDoc", taskDoc);
+      this.$.dialogTaskNotes.open();
+    },
+
+    noteAdded: function(data){
+      this.$.dialogTaskNotes.close();
+    },
+    /*
+    * Workaround - iron-overlay-behavior fires close event whe a drop down menu is cha
+    */
+
+    dialogClosed: function(dialogCloseEvent){
+      if (!_.get(dialogCloseEvent,'detail.confirmed',false)) {
+        //reset
+        console.log("user didn't click confirm");
+        return;
+      }
+
+      var selUser = this.selectedUser.toString();
+      console.log(selUser);
+      if ( !selUser ){
+        return;
+      }
+
+      var pkg = {
+        reAssignTo: this.selectedUser.toString(),
+        origTaskDoc: this.taskDoc
+      }
+      this.fire("reassigned",pkg);
+    },
+
+    dialogCanceled: function(dialogCloseEvent){
+      console.log("user cancelled");
+      /*
+      this.set("reasonCode","");
+      this.set("reasonNote","");
+      */
+      this.set("selectedUser","");
+      return;
+    }
+
+  });
+
+</script>

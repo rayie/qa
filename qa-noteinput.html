@@ -21,7 +21,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../paper-input/paper-input-error.html">
 <link rel="import" href="../datejs-parseronly-import/datejs-parseronly-import.html">
 <link rel="import" href="../moment-display/moment-import.html">
-<link rel="import" href="qa-noteinput-addon.html">
 <link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="team-dropdown.html">
 <link rel="import" href="styles/qa-styles.html">
@@ -82,7 +81,7 @@ style this element.
       >
       </iron-autogrow-textarea>
 
-
+      <!--
       <template is="dom-if" if="[[errorMessage]]">
         <paper-input-error>[[errorMessage]]</paper-input-error>
       </template>
@@ -90,6 +89,7 @@ style this element.
       <template is="dom-if" if="[[charCounter]]">
         <paper-input-char-counter></paper-input-char-counter>
       </template>
+      -->
 
     </paper-input-container>
   </template>
@@ -108,6 +108,10 @@ style this element.
     },
 
     properties: {
+      taskCreationDisabled: {
+        type: Boolean,
+        value: function(){ return false; }
+      },
       task: {
         type: Boolean,
         notify: true,
@@ -236,7 +240,6 @@ style this element.
         //console.log(commandStartIdxs);
       });
       
-      //console.log(commands); console.log(txt);
       var tagResults = commands.map(function(commstr){
         var wordparts = commstr.split(/ /g);
         var wp = [].concat(wordparts);
@@ -244,8 +247,16 @@ style this element.
         var commparts = wordparts.splice(0,1).pop().substr(1).split(""); //skip the hashtag
         var key = commparts.splice(0,1)[0] ;
         //console.log("key:",key,"wordparts:", wordparts);
-        var cf = _.get(self.commRef , key , false);
-        var _cf = self.commRef[ key ] ;
+
+        //console.log("check:", (self.taskCreationDisabled && key === "t") );
+        if (self.taskCreationDisabled && key === "t" ){ 
+          var cf = false;
+          //console.log("task creation disabled");
+        }
+        else var cf = _.get(self.commRef , key , false);
+
+        //var _cf = self.commRef[ key ] ;
+
         var tagdisplay = [];
         var tags = [];
         var data=null;

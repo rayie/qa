@@ -55,8 +55,10 @@ style this element.
       }
     </style>
     <div>
+
       <qa-noteinput
         task="{{task}}"
+        task-creation-disabled="[[taskCreationDisabled]]"
         value="{{value}}"
         tags="{{tags}}" 
         tags-display="{{tagsDisplay}}" 
@@ -66,7 +68,7 @@ style this element.
       </qa-noteinput>
 
       <div id="noteBtns" style="height: auto" hidden="[[!value]]">
-        <div class="card-actions">
+        <div class="card-actions" hidden="[[isSubmitting]]">
           <paper-button
             class$="bad"
             raised
@@ -114,29 +116,30 @@ style this element.
         </div>
       </div>
 
-
-      <div id="cheatsheet" style="height: auto" hidden="[[!value]]">
-        <div class="paper-card header">
-          <div class="title-text paper-card">Cheat Sheet:</div>
+      <div id="helperDivs" hidden="[[alwaysHideHelpers]]">
+        <div id="cheatsheet" style="height: auto" hidden="[[!value]]">
+          <div class="paper-card header">
+            <div class="title-text paper-card">Cheat Sheet:</div>
+          </div>
+          <div class="help interaction-help">
+            <ul>
+              <li>#iic - inbound call</li>
+              <li>#ioc - outbound  call</li>
+              <li>#iov - outbound video call</li>
+              <li>#iie - inbound email</li>
+              <li>#ioe - outbound email</li>
+              <li>...f-fax, t-text, m-mail</li>
+            </ul> 
+            <ul>
+              <li>#wp - with patient</li>
+              <li>#wf - with family</li>
+              <li>#wc - with caregiver</li>
+              <li>#wi - with insuranceplan</li>
+              <li>...d-primary doctor, s-specialist, c-clinic</li>
+            </ul>
+          </div>
         </div>
-        <div class="help interaction-help">
-          <ul>
-            <li>#iic - inbound call</li>
-            <li>#ioc - outbound  call</li>
-            <li>#iov - outbound video call</li>
-            <li>#iie - inbound email</li>
-            <li>#ioe - outbound email</li>
-            <li>...f-fax, t-text, m-mail</li>
-          </ul> 
-          <ul>
-            <li>#wp - with patient</li>
-            <li>#wf - with family</li>
-            <li>#wc - with caregiver</li>
-            <li>#wi - with insuranceplan</li>
-            <li>...d-primary doctor, s-specialist, c-clinic</li>
-          </ul>
-        </div>
-      </div>
+      </div><!-- end helper divs -->
 
       <qa-ajax-poster
         id="ajax_add_note"  
@@ -154,6 +157,21 @@ style this element.
     is: 'qa-notetool',
 
     properties: {
+      alwaysHideHelpers: {
+        type: Boolean, value: function(){ return false }
+      },
+      taskCreationDisabled: {
+        type: Boolean,
+        value: function(){ return false }
+      },
+      isSubmitting: {
+        type: Boolean,
+        value: function(){ return false }
+      },
+      existingTaskId: {
+        type: String,
+        value: function(){ return "" }
+      },
       selectedUser: {
         type: String,
         value: "",
@@ -238,11 +256,13 @@ style this element.
       this.set("tags",[]);
       this.set("previewLabelTxt","");
       this.set("timingText","");
+      this.set("isSubmitting",false);
       console.log("note tool reset");
     },
 
     gotTextInput: function(hasTagsAndText){
       if ( this.task ){ 
+        console.log("task creation from hashtag");
         this.set("previewLabelTxt", "Task Instruction Preview");
         console.log(this.task);
         switch(this.task.plannedFor.kind){
@@ -280,12 +300,15 @@ style this element.
 
 
     submit: function(){
+      this.set("isSubmitting",true);
       var payload = {
         subjectId: this.subjectId,
         txt: this.noteText.toString(),
         tags: [].concat( this.tags )
       };
+
       if ( this.task ){
+        // CREATION OF NEW TASK
         var taskType = _.clone( this.taskTypes[ this.selectedTaskTypeIndex ] );
         payload.tags.push( taskType.name.toLowerCase().replace(/ /g,"-") );
         payload.taskPayload = {
@@ -297,9 +320,17 @@ style this element.
 
        // console.log(payload.taskPayload);
       }
+      else{
+        //this might be a new note getting APPENDED to an EXISTING TASK 
+        if ( this.existingTaskId ){
+          payload.taskPayload = {
+            taskId: this.existingTaskId
+          }
+          payload.tags.push("task");
+        }
+      }
 
-
-      //console.info(payload);
+      console.info(payload);
       return this.$.ajax_add_note.send(payload);
     },
 

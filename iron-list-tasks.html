@@ -24,6 +24,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="qa-ajax-poster.html">
 <link rel="import" href="task-part-timing.html">
 <link rel="import" href="dialog-assign.html">
+<link rel="import" href="dialog-tasknotes.html">
 <link rel="import" href="styles/qa-styles.html">
 
 <!--
@@ -119,6 +120,13 @@ Example:
                   <span hidden="[[!item.parentTaskId]]">
                     (automated) 
                   </span>
+                </div>
+
+                <div class="pointer taskNotes" hidden="[[!item.n.length]]" on-click="showTaskNotes">
+                  <strong style="font-size:.8em">[[item.n.length]] Notes</strong>
+                </div>
+                <div class="pointer taskNotes" hidden="[[item.n.length]]" on-click="showTaskNotes">
+                  <strong style="font-size:.8em; color: #795548;">+ Note</strong>
                 </div>
 
               </div>
@@ -226,8 +234,13 @@ Example:
 
       <!--</paper-card>-->
     </div>
+
     <dialog-assign id="dialogAssign" on-reassigned="gotAttemptedReassign">
     </dialog-assign>
+
+    <dialog-tasknotes id="dialogTaskNotes" >
+    </dialog-tasknotes>
+
     <div id="datePickerDialogContainer">
       <paper-dialog 
         id="dialogDatePicker" class="paper-date-picker-dialog" 
@@ -484,6 +497,10 @@ Example:
     cancelTaskError: function(){
     },
 
+    showTaskNotes: function(a){
+      var tmpTaskModel = a.model;
+      this.$.dialogTaskNotes.show(a.model.item); 
+    },
 
     gotShowReassign: function(a,b){
       this.set("tmpModel", a.model);
