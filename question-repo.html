@@ -205,6 +205,16 @@ Example:
                 <p style='font-size: .9em; font-weight: 500'>[[flow.sub]]</p>
               </div>
             </div>
+            <div >
+              <label class='answer-lbl'>Questions</label>
+              <div class="main-data"> 
+                <template is="dom-repeat" items="[[flow.qq]]" as="q" >
+                  <div>
+                    <span>[[q._id]]. [[q.txt]]</span>
+                  </div>
+                </template>
+              </div>
+            </div>
           </div>
         </paper-card>
 
@@ -233,7 +243,7 @@ Example:
                 <template is="dom-repeat" items="[[ques.opts]]" as="opt" >
                   <li>[[opt.txt]]</li>
                 </template>
-              </ol>
+                </ol>
               </div>
             </div>
 
@@ -320,6 +330,10 @@ Example:
       ques: {
         type: Object,
         value: null
+      },
+      flow: {
+        type: Object,
+        value: null
       }
     },
 
@@ -384,6 +398,7 @@ Example:
     },
 
     viewFlow: function(f){
+      console.log(f);
       this.set("flow",f);
       this.set("displayFdetails",true);
       this.set("displayQdetails",false);
