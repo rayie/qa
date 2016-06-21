@@ -102,7 +102,7 @@ Example:
           hidden="[[!isPlannedPast]]"
           id="mdpast"
           class="overdue"
-          label="OVERDUE"
+          label="[[timingLabel]]"
           inbound-fmt="YYYY-MM-DDThh:mm:ss"
           str="[[plannedFor.start]]"
         >
@@ -112,7 +112,7 @@ Example:
           id="mdfuture"
           class="future"
           hidden="[[!isPlannedFuture]]"
-          label="PLANNED"
+          label="[[timingLabel]]"
           inbound-fmt="YYYY-MM-DDThh:mm:ss"
           str="[[plannedFor.start]]"
         >
@@ -122,7 +122,7 @@ Example:
           id="mdcurrent"
           class="current"
           hidden="[[!isPlannedCurrent]]"
-          label="PLANNED"
+          label="[[timingLabel]]"
           inbound-fmt="YYYY-MM-DDThh:mm:ss"
           str="[[plannedFor.start]]"
         >
@@ -135,16 +135,6 @@ Example:
         >
           UNSCHEDULED
         </span>
-        <moment-display
-          id="mdtarget"
-          class="unscheduled"
-          hidden="[[!mustScheduleWithTarget]]"
-          label="UNSCHEDULED"
-          inbound-fmt="YYYY-MM-DDThh:mm:ss"
-          str="[[plannedFor.target.start]]"
-        ></moment-display>
-
-
 
         <!--<span>Test: [[selectedStartDate]]</span>-->
         <iron-icon icon="perm-contact-calendar"></iron-icon>
@@ -203,7 +193,7 @@ Example:
         type: Array,
         value: [
           "mustSchedule", 
-          "mustScheduleWithTarget",
+          //"mustScheduleWithTarget",
           "isPlannedPast",
           "isPlannedCurrent",
           "isPlannedFuture",
@@ -219,6 +209,9 @@ Example:
       taskTs: {
         type: String,
         observer: "reEval"
+      },
+      timingLabel: {
+        type: String
       },
       taskAssignedTo: {
         type: String
@@ -239,7 +232,7 @@ Example:
       okToStart: { type: Boolean, value: false , notify: true },
       isAsap: { type: Boolean, value: false },
       mustSchedule: { type: Boolean, value: false },
-      mustScheduleWithTarget: { type: Boolean, value: false },
+      //mustScheduleWithTarget: { type: Boolean, value: false },
       plannedPast: { type: Boolean, value: false },
       plannedCurrent: { type: Boolean, value: false },
       plannedFuture: { type: Boolean, value: false }
@@ -320,21 +313,24 @@ Example:
           okToStart=true;
           this.set("selectedStartDate", null);
           break;
-        case "schedule":
+        case "scheduled":
           if ( 
             this.plannedFor.start && this.plannedFor.end
           ){
             //check if schedule is current
             if ( moment().isBefore(this.plannedFor.start) ){
               this.isPlannedFuture = true;
+              this.timingLabel = "SCHEDULED";
               okToStart=false;
             }
             else if ( moment().isAfter(this.plannedFor.end) ){
               this.isPlannedPast = true;
+              this.timingLabel = "SCHEDULED-OVERDUE";
               okToStart=true;
             }
             else{
               this.isPlannedCurrent = true;
+              this.timingLabel = "SCHEDULED-TODAY";
               okToStart=true;
             }
             if ( skipSelectDateUpdate !== true ){
@@ -343,23 +339,34 @@ Example:
               this.set("selectedStartDate", st_m.toDate() );
             }
           }
-          else{
-            //no start date 
-
-            if ( 
-              _.get(this.plannedFor,'target.start',false)
-            ){
-              this.mustScheduleWithTarget=true; 
-              this.mustSchedule=false; 
-              if ( skipSelectDateUpdate !== true ){
-                var st_m = new moment(this.plannedFor.target.start.substr(0,19));
-                st_m.add(st_m.utcOffset(),"m");
-                //console.log("selectedStartDate", st_m.toDate() );
-                this.set("selectedStartDate", st_m.toDate() );
-              }
+          break;
+        case "unscheduled":
+          okToStart=false;
+          if ( 
+            this.plannedFor.start && this.plannedFor.end
+          ){
+            //check if schedule is current
+            if ( moment().isBefore(this.plannedFor.start) ){
+              this.timingLabel = "UNSCHEDULED";
+              this.isPlannedFuture = true;
             }
-            else this.mustSchedule=true; 
-            okToStart=false;
+            else if ( moment().isAfter(this.plannedFor.end) ){
+              this.timingLabel = "UNSCHEDULED-OVERDUE";
+              this.isPlannedPast = true;
+            }
+            else{
+              this.timingLabel = "UNSCHEDULED-TODAY";
+              this.isPlannedCurrent = true;
+            }
+            if ( skipSelectDateUpdate !== true ){
+              var st_m = new moment(this.plannedFor.start.substr(0,19));
+              st_m.add(st_m.utcOffset(),"m");
+              this.set("selectedStartDate", st_m.toDate() );
+            }
+          }
+          else{
+            this.set("mustSchedule", true);
+            this.timingLabel = "UNSCHEDULED";
           }
           break;
         default:

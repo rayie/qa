@@ -352,8 +352,10 @@ style this element.
                 kind="asap";
                 break;
               case "sched":
+                kind="scheduled";
+                break;
               case "target":
-                kind="schedule";
+                kind="unscheduled";
                 break;
               default:
                 _dtxt.push( p ); //if it's not a special term, assume it's part of the date
@@ -363,20 +365,19 @@ style this element.
           _dtxt = _dtxt.join(" "); 
           var dt = Date.parse(_dtxt);
           console.log("dtxt partsed:", _dtxt)
-          var pf = { kind: kind };
+          var pf = { kind: kind , start: null, end: null };
           if (dt){
-            if ( kind==="schedule" ){ //to schedule
-              pf.start = null;
-              pf.end= null;
-              pf.target = {
-                start: dt,
-                end: dt,
-              }
-            }
-            else{ //planned
-              pf.kind = "schedule";
+            if ( kind==="unscheduled" ){ //to schedule
               pf.start = pf.end = dt;
             }
+            else{ //planned
+              pf.kind = "scheduled";
+              pf.start = pf.end = dt;
+            }
+          }
+          else{
+            if ( kind=="scheduled" ) //if no date provided for unscheduled
+              pf.kind = "unscheduled";
           }
           return { plannedFor : pf, isTask: true };
         }

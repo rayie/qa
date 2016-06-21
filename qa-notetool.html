@@ -269,12 +269,12 @@ style this element.
           case "asap":
             var txt = "ASAP";
             break;
-          case "schedule":
+          case "scheduled":
+            var txt = "SCHEDULED FOR " + moment( this.task.plannedFor.start ).format("dddd MM/DD/YYYY");
+            break;
+          case "unscheduled":
             if ( this.task.plannedFor.start ){
-              var txt = "PLANNED FOR " + moment( this.task.plannedFor.start ).format("dddd MM/DD/YYYY");
-            }
-            else if ( this.task.plannedFor.target ){
-              var txt = "UNSCHEDULED " + moment( this.task.plannedFor.target.start ).format("dddd MM/DD/YYYY");
+              var txt = "UNSCHEDULED " + moment( this.task.plannedFor.start ).format("dddd MM/DD/YYYY");
             }
             else{
               var txt = "UNSCHEDULED";

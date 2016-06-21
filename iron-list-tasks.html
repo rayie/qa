@@ -250,7 +250,8 @@ Example:
         </paper-date-picker>
         <div class="buttons">
           <paper-button dialog-dismiss>Cancel</paper-button>
-          <paper-button dialog-confirm>OK</paper-button>
+          <paper-button dialog-confirm>Save as Scheduled</paper-button>
+          <paper-button dialog-confirm>Save as UN-Scheduled</paper-button>
         </div>
       </paper-dialog>
     </div>
@@ -559,7 +560,7 @@ Example:
     },
 
     gotDatePickerDismissDialog:function(closeEvent){
-      //console.log("gotDismissalDialog",closeEvent);
+      console.log("gotDismissalDialog",closeEvent);
       if ( closeEvent.detail.confirmed !== true ){
         
         return;
@@ -574,7 +575,8 @@ Example:
 
       var t = this.get("tmpTaskForDateChange");
       var model = this.get("tmpModelForDateChange");
-      var pf = { kind: "schedule", start: s.format('YYYY-MM-DDThh:mm:ss'), end:e.format('YYYY-MM-DDThh:mm:ss') };
+
+      var pf = { kind: t.plannedFor.kind, start: s.format('YYYY-MM-DDThh:mm:ss'), end:e.format('YYYY-MM-DDThh:mm:ss') };
 
       model.set("item.plannedFor.kind", pf.kind);
       model.set("item.plannedFor.start", pf.start);
