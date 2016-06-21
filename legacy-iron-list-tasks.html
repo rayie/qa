@@ -250,8 +250,7 @@ Example:
         </paper-date-picker>
         <div class="buttons">
           <paper-button dialog-dismiss>Cancel</paper-button>
-          <paper-button dialog-confirm dialog-custom="scheduled">Save as Scheduled</paper-button>
-          <paper-button dialog-confirm dialog-custom="unscheduled">Save as UN-Scheduled</paper-button>
+          <paper-button dialog-confirm>OK</paper-button>
         </div>
       </paper-dialog>
     </div>
@@ -560,19 +559,11 @@ Example:
     },
 
     gotDatePickerDismissDialog:function(closeEvent){
-      console.log("gotDismissalDialog",closeEvent);
-      if ( 
-        closeEvent.detail.confirmed !== true 
-      ){
+      //console.log("gotDismissalDialog",closeEvent);
+      if ( closeEvent.detail.confirmed !== true ){
         
         return;
       }
-
-      if ( closeEvent.detail.customData===undefined ){
-        console.error("missing custom data, but confirmed");
-        return;
-      }
-
       var newSelectedStartDate = this.get("tmpSelectedStartDate");
       console.log("new Date", newSelectedStartDate);
 
@@ -583,9 +574,7 @@ Example:
 
       var t = this.get("tmpTaskForDateChange");
       var model = this.get("tmpModelForDateChange");
-
-
-      var pf = { kind: closeEvent.detail.customData, start: s.format('YYYY-MM-DDThh:mm:ss'), end:e.format('YYYY-MM-DDThh:mm:ss') };
+      var pf = { kind: "schedule", start: s.format('YYYY-MM-DDThh:mm:ss'), end:e.format('YYYY-MM-DDThh:mm:ss') };
 
       model.set("item.plannedFor.kind", pf.kind);
       model.set("item.plannedFor.start", pf.start);

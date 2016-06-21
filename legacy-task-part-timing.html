@@ -1,0 +1,394 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-card/paper-card.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../paper-item/paper-icon-item.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-styles/color.html">
+<link rel="import" href="../moment-display/moment-import.html">
+<link rel="import" href="../moment-display/moment-display.html">
+<link rel="import" href="dialog-assign.html">
+
+<!--
+An element providing a solution to no problem in particular.
+
+Example:
+
+    <seed-element></seed-element>
+
+@demo
+-->
+<dom-module id="task-part-timing">
+  <style is="custom-style">
+
+    .main {
+
+    }
+    .displaytxt {
+      cursor: pointer;
+      text-align: right;
+      font-size: 14px;
+      margin: 4px 4px 0 4px;
+    }
+
+    iron-icon {
+      --iron-icon-width: 20px;
+      --iron-icon-height: 20px;
+      vertical-align: top;
+    }
+
+    .assignment {
+      cursor: pointer;
+      color: #00796B;
+      font-size: .86em;
+      font-weight: 400;
+      text-align: right;
+      padding-right: 4px;
+      margin-right: 4px;
+    }
+
+    .current { 
+      --label-color: #F4511E;
+      --label-weight: 800;
+      --display-color: #F4511E;
+      --display-weight: 800;
+    }
+
+    .future{ 
+      --label-color: #FF5722;
+      --label-weight: 800;
+      --display-color: #FF5722;
+      --display-weight: 800;
+    }
+
+    .unscheduled {
+      color: #D84315;
+      font-weight: 800;
+    }
+    .asap, .overdue { 
+      color: #BF360C;
+      font-weight: 800;
+    }
+
+</style>
+
+  <template>
+
+    <div class="main"
+    >
+      <div class="displaytxt" on-click="openDatePicker">
+        <span
+         title="Task has no schedule date."
+         hidden="[[!isAsap]]"
+         class="asap"
+         >
+         ASAP
+       </span>
+
+        <moment-display
+          hidden="[[!isPlannedPast]]"
+          id="mdpast"
+          class="overdue"
+          label="OVERDUE"
+          inbound-fmt="YYYY-MM-DDThh:mm:ss"
+          str="[[plannedFor.start]]"
+        >
+        </moment-display>
+
+        <moment-display
+          id="mdfuture"
+          class="future"
+          hidden="[[!isPlannedFuture]]"
+          label="PLANNED"
+          inbound-fmt="YYYY-MM-DDThh:mm:ss"
+          str="[[plannedFor.start]]"
+        >
+        </moment-display>
+
+        <moment-display
+          id="mdcurrent"
+          class="current"
+          hidden="[[!isPlannedCurrent]]"
+          label="PLANNED"
+          inbound-fmt="YYYY-MM-DDThh:mm:ss"
+          str="[[plannedFor.start]]"
+        >
+        </moment-display>
+
+        <span
+          hidden="[[!mustSchedule]]" 
+          title="Task is unscheduled but scheduling is required. Click to schedule"
+          class="unscheduled"
+        >
+          UNSCHEDULED
+        </span>
+        <moment-display
+          id="mdtarget"
+          class="unscheduled"
+          hidden="[[!mustScheduleWithTarget]]"
+          label="UNSCHEDULED"
+          inbound-fmt="YYYY-MM-DDThh:mm:ss"
+          str="[[plannedFor.target.start]]"
+        ></moment-display>
+
+
+
+        <!--<span>Test: [[selectedStartDate]]</span>-->
+        <iron-icon icon="perm-contact-calendar"></iron-icon>
+      </div>
+
+      <div class='assignment' on-click="showReassign">
+        [[taskAssignedTo]]
+        <!--
+          <br/>
+          [[evaluated]] - [[okToStart]]
+          <br/>
+          [[taskId]]
+        -->
+        <!--[[plannedFor.start]]-->
+      </div>
+    </div>
+
+    <!--
+    <dialog-assign
+      id="dialogAssign"
+      on-reassigned="gotTaskReAssigned"
+    ></dialog-assign>
+    -->
+
+    <!--- DATEPICKER MODAL CONTENT -->
+    <!--
+    <div id="datePickerDialogContainer">
+      <paper-dialog 
+        id="dialog" class="paper-date-picker-dialog" 
+        on-iron-overlay-closed="gotDismissDialog"
+      >
+        <paper-date-picker id="paperDatePicker"  date="{{selectedStartDate}}">
+        </paper-date-picker>
+        <div class="buttons">
+          <paper-button dialog-dismiss>Cancel</paper-button>
+          <paper-button dialog-confirm>OK</paper-button>
+        </div>
+      </paper-dialog>
+    </div>
+    -->
+
+
+  </template>
+
+</dom-module>
+
+<script>
+
+
+  Polymer({
+
+    is: 'task-part-timing',
+
+    properties: {
+      displayState : {
+        type: Array,
+        value: [
+          "mustSchedule", 
+          "mustScheduleWithTarget",
+          "isPlannedPast",
+          "isPlannedCurrent",
+          "isPlannedFuture",
+          "isAsap",
+          "isDone"
+        ]
+      },
+      taskId: {
+        type: String,
+        value: function(){ return "" },
+        observer: "reEval",
+      },
+      taskTs: {
+        type: String,
+        observer: "reEval"
+      },
+      taskAssignedTo: {
+        type: String
+      },
+      plannedFor: {
+        type: Object,
+        value: null
+      },
+      taskState: {
+        type: Object,
+        value: null
+      },
+      selectedStartDate: {
+        type: Object,
+        notify: true,
+        value: function() { return null }
+      },
+      okToStart: { type: Boolean, value: false , notify: true },
+      isAsap: { type: Boolean, value: false },
+      mustSchedule: { type: Boolean, value: false },
+      mustScheduleWithTarget: { type: Boolean, value: false },
+      plannedPast: { type: Boolean, value: false },
+      plannedCurrent: { type: Boolean, value: false },
+      plannedFuture: { type: Boolean, value: false }
+
+    },
+
+    showReassign: function(){
+      if ( this.taskState=="init" ) {
+        console.log("in taskpart timing showReassign, about to fire showReassign");
+        return this.fire("showreassign", {taskID: this.taskId });
+      }
+
+    },
+    evaluate: function(){
+      this._evaluate();
+      console.log("evaluated");
+    },
+
+    reEval: function(a,b){
+      //console.log("got to reEval",a,b);
+      if ( this.taskId ){ 
+        this._evaluate();
+        this._lastSaved = _.clone(this.plannedFor);
+      }
+    },
+
+    attached: function(){
+      //console.log("task part timing attached");
+      if ( this.taskId ){ 
+        this._evaluate();
+        this._lastSaved = _.clone(this.plannedFor);
+      }
+    },
+
+    openDatePicker: function(){
+      if ( this.taskState!=="init" ) {
+        app.$.toast.text="You can not schedule tasks aready in progress or completed";
+        app.$.toast.show();
+        return;
+      }
+      return this.fire("showdatepicker", {taskID:this.taskId});
+
+      //this.$.dialog.open();
+    },
+
+    revert: function(){
+      this.set( "plannedFor", _.clone(this._lastSaved));
+      this._evaluate();
+      return;
+    },
+
+
+    confirm: function(newTs){
+      this._lastSaved = _.clone( this.plannedFor );
+      this.set("taskTs", newTs);
+    },
+
+
+    _resetDisplayStates: function(){
+      var self = this;
+      this.displayState.forEach(function(ds){ self[ds]=false });
+    },
+
+    _evaluate: function(skipSelectDateUpdate){
+      /*
+      this.mustSchedule=false; 
+      this.mustScheduleWithTarget=false; 
+      this.isPlannedPast = false;
+      this.isPlannedCurrent = false;
+      this.isPlannedFuture = false;
+      this.isAsap=false; 
+      */
+      this._resetDisplayStates();
+      var okToStart=false;
+      switch(this.plannedFor.kind){
+        case "asap":
+          this.isAsap=true; 
+          okToStart=true;
+          this.set("selectedStartDate", null);
+          break;
+        case "schedule":
+          if ( 
+            this.plannedFor.start && this.plannedFor.end
+          ){
+            //check if schedule is current
+            if ( moment().isBefore(this.plannedFor.start) ){
+              this.isPlannedFuture = true;
+              okToStart=false;
+            }
+            else if ( moment().isAfter(this.plannedFor.end) ){
+              this.isPlannedPast = true;
+              okToStart=true;
+            }
+            else{
+              this.isPlannedCurrent = true;
+              okToStart=true;
+            }
+            if ( skipSelectDateUpdate !== true ){
+              var st_m = new moment(this.plannedFor.start.substr(0,19));
+              st_m.add(st_m.utcOffset(),"m");
+              this.set("selectedStartDate", st_m.toDate() );
+            }
+          }
+          else{
+            //no start date 
+
+            if ( 
+              _.get(this.plannedFor,'target.start',false)
+            ){
+              this.mustScheduleWithTarget=true; 
+              this.mustSchedule=false; 
+              if ( skipSelectDateUpdate !== true ){
+                var st_m = new moment(this.plannedFor.target.start.substr(0,19));
+                st_m.add(st_m.utcOffset(),"m");
+                //console.log("selectedStartDate", st_m.toDate() );
+                this.set("selectedStartDate", st_m.toDate() );
+              }
+            }
+            else this.mustSchedule=true; 
+            okToStart=false;
+          }
+          break;
+        default:
+          this.isAsap=true; 
+          okToStart=true;
+          this.set("selectedStartDate", null);
+          break;
+      }
+
+      if ( this.taskState=="incomplete" || this.taskState==="done" || this.taskAssignedTo!==_.get(app,"scenariouser._id") ) {
+        //console.log("not ok", this.taskAssignedTo);
+        okToStart=false;
+      }
+      else {
+        //console.log("is ok", this.taskAssignedTo);
+      }
+
+      if ( this.taskState==="done" ){
+        this._resetDisplayStates();
+        this.isDone=true;
+      }
+      
+      this.$.mdcurrent.refresh();
+      this.$.mdfuture.refresh();
+      //console.log("setting okToStart",okToStart, this.taskAssignedTo);
+      this.set("okToStart",okToStart);
+      this.set("evaluated",true);
+    }
+
+  });
+
+</script>
