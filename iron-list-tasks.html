@@ -104,13 +104,15 @@ Example:
         index-as="idx" 
       >
         <template >
-            <div hidden="[[!tasks.length]]" class="row horizontal layout" style="height: 64px;">
+            <div hidden="[[!tasks.length]]" class="row horizontal layout" style="height: auto; padding-bottom: 16px; padding-top: 4px;">
           
               <div class$="[[_computedClass(selected)]]" >
                 <div>
                   <a class='name' href$="patient/[[item.subjectId]]" title="Patient Detail">[[item.subjectDisplayAs]]</a>
                   <a class='name' hidden="[[!item.m.done]]" href$="taskresult/[[item._id]]" title="Task Data"> - [[item.name]]</a>
                   <span class='name' hidden="[[item.m.done]]"> - [[item.name]]</span>
+                  <strong class='pointer' style="font-size:.8em" hidden="[[!item.n.length]]" on-click="showTaskNotes" > - [[item.n.length]] Notes</strong>
+                  <strong class='pointer' style="font-size:.8em" hidden="[[item.n.length]]" on-click="showTaskNotes" > + Note</strong>
                 </div >
 
                 <div class='age'>
@@ -122,13 +124,23 @@ Example:
                   </span>
                 </div>
 
-                <div class="pointer taskNotes" hidden="[[!item.n.length]]" on-click="showTaskNotes">
-                  <strong style="font-size:.8em">[[item.n.length]] Notes</strong>
+                <div class='notetags' hidden="[[!item.noteTags.length]]">
+                  <template is="dom-repeat" items="[[item.noteTags]]" as="noteTag">
+                    <div class='notetag' style="font-size: .8em" >
+                      #[[noteTag]]
+                    </div>
+                  </template>
                 </div>
-                <div class="pointer taskNotes" hidden="[[item.n.length]]" on-click="showTaskNotes">
-                  <strong style="font-size:.8em; color: #795548;">+ Note</strong>
+                <!--
+                <div>
+                  <div class="pointer taskNotes" hidden="[[!item.n.length]]" on-click="showTaskNotes">
+                    <strong style="font-size:.8em" hidden="[[!item.n.length]]" on-click="showTaskNotes" >[[item.n.length]] Notes</strong>
+                  </div>
+                  <div class="pointer taskNotes" hidden="[[item.n.length]]" on-click="showTaskNotes">
+                    <strong style="font-size:.8em; color: #795548;">+ Note</strong>
+                  </div>
                 </div>
-
+                  -->
               </div>
 
 

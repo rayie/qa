@@ -184,31 +184,21 @@ Example:
       <p class="specialMsgs" id="taskSubTitle" hidden="[[!taskDefinition.sub]]">
         [[taskDefinition.sub]]
       </p>
-      <div id="noteArea" class="specialMsgs row vertical layout" hidden="[[!task.n]]" as="note">
+      <div id="noteArea" class="specialMsgs row vertical layout" hidden="[[!task.n]]" >
         <template is="dom-repeat" items="[[task.n]]" as="note">
-          <div class='note-container layout horizontal' >
-            <div class='note-mdata flex-10'>
+          <div class='note-container layout vertical' style='padding-bottom: 8px;'>
+            <div style='font-size:.88em'>
+              [[note.txt]]
+            </div>
+            <div >
               <moment-display
               label="[[note.m.u_id]] on "
-              class='note-mdata'
+              class='note-mdata-small'
               display-fmt="withday"
               inbound-fmt="YYYY-MM-DDThh:mm:ss"
               str="[[note.m.ts]]"
-              time></moment-display>
-            </div>
-          </div>
-          <div>
-            <template is="dom-repeat" items="[[note.txt]]" as="txt-entry">
-              <div class='note-txt'>
-                [[txt-entry]]
-              </div>
-            </template>
-            <div class='tags' >
-              <template is="dom-repeat" items="[[note.tags]]" as="tag">
-                <div class='tag'>
-                  #[[tag]]
-                </div>
-              </template>
+              time>
+              </moment-display>
             </div>
           </div>
         </template> 

@@ -321,8 +321,11 @@ style this element.
     categoryTagRef: {
       "#ph": "pharmacy",
       "#au": "auth",
-      "#in": "insur",
-      "#bl": "billing"
+      "#hp": "insur",
+      "#bl": "billing",
+      "#at1": "attempt1",
+      "#at2": "attempt2",
+      "#at3": "attempt3"
     },
 
     commRef: {
@@ -364,7 +367,7 @@ style this element.
           });
           _dtxt = _dtxt.join(" "); 
           var dt = Date.parse(_dtxt);
-          console.log("dtxt partsed:", _dtxt)
+          //console.log("dtxt partsed:", _dtxt)
           var pf = { kind: kind , start: null, end: null };
           if (dt){
             if ( kind==="unscheduled" ){ //to schedule

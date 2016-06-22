@@ -57,6 +57,7 @@ An element providing a solution to no problem in particular.
         auto-fit-on-attach 
       >
         <h3>Task Notes for [[title]]</h3>
+        <!--
         <div>
           <div >
             <moment-display label="Created" plus-age display-fmt="withday" time str="[[taskDoc.m.init.ts]]"
@@ -76,6 +77,7 @@ An element providing a solution to no problem in particular.
             ></moment-display>
           </div>
         </div>
+        -->
 
         <qa-notetool
           id="noteTool"
@@ -88,52 +90,25 @@ An element providing a solution to no problem in particular.
         </qa-notetool>
 
         <div> 
-          <template id="taskNoteRptr" is="dom-repeat" items="[[taskDoc.n]]" as="note" >
-            <div class="row vertical layout" >
-              <div class='note-container layout horizontal' >
-                <div class='note-mdata flex-10'>
-                  <moment-display
-                  label="[[note.m.u_id]] on "
-                  class='note-mdata'
-                  display-fmt="withday"
-                  inbound-fmt="YYYY-MM-DDThh:mm:ss"
-                  str="[[note.m.ts]]"
-                  time></moment-display>
-                </div>
+          <label hidden="[[!taskDoc.n.length]]">Notes:</label>
+          <template is="dom-repeat" items="[[taskDoc.n]]" as="note">
+            <div class='note-container layout vertical' style='padding-bottom: 8px;'>
+              <div style='font-size:.88em'>
+                [[note.txt]]
               </div>
-              <div>
-                <div class='note-txt'>
-                  [[note.txt]]
-                </div>
-
-                <template is="dom-repeat" items="[[note.hashMap]]" as="hm">
-                  <div class='note-txt'>
-                    <label style="font-size: .92em;">[[hm.k]]:</label>
-                    <strong>[[hm.v]]</strong>
-                  </div>
-                </template>
-
-                <div class='notetags' >
-                  <template is="dom-repeat" items="[[note.tags]]" as="tag">
-                    <div class='notetag'>
-                      #[[tag]]
-                    </div>
-                  </template>
-                </div>
+              <div >
+                <moment-display
+                label="[[note.m.u_id]] on "
+                class='note-mdata-small'
+                display-fmt="withday"
+                inbound-fmt="YYYY-MM-DDThh:mm:ss"
+                str="[[note.m.ts]]"
+                time>
+                </moment-display>
               </div>
             </div>
           </template>
         </div>
-        <!--
-        <div class="buttons">
-          <paper-button 
-            raised 
-            dialog-dismiss
-          >
-            Dismiss
-          </paper-button>
-        </div>
-        -->
       </paper-dialog>
     </div>
   </template>
@@ -175,12 +150,12 @@ An element providing a solution to no problem in particular.
     dialogClosed: function(dialogCloseEvent){
       if (!_.get(dialogCloseEvent,'detail.confirmed',false)) {
         //reset
-        console.log("user didn't click confirm");
+        //console.log("user didn't click confirm");
         return;
       }
 
       var selUser = this.selectedUser.toString();
-      console.log(selUser);
+      //console.log(selUser);
       if ( !selUser ){
         return;
       }

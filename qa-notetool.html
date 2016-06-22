@@ -102,7 +102,7 @@ style this element.
       <div id="taskDiv" style="height: auto" hidden="[[!task]]">
         <menu-tasks task-types="{{taskTypes}}" id="taskTypeMenu" subject-id="[[subjectId]]" selected-task-type-index="{{selectedTaskTypeIndex}}" ></menu-tasks>
         <team-dropdown selected-user="{{selectedUser}}"></team-dropdown>
-        <div style="font-size: .92em; font-weight: bold;">[[timingText]]</div>
+        <div style="font-size: .92em; font-weight: bold;">Timing: [[timingText]]</div>
       </div>
 
       <div style="height: auto" hidden="[[!value]]">
@@ -257,14 +257,14 @@ style this element.
       this.set("previewLabelTxt","");
       this.set("timingText","");
       this.set("isSubmitting",false);
-      console.log("note tool reset");
+      //console.log("note tool reset");
     },
 
     gotTextInput: function(hasTagsAndText){
       if ( this.task ){ 
         console.log("task creation from hashtag");
         this.set("previewLabelTxt", "Task Instruction Preview");
-        console.log(this.task);
+        //console.log(this.task);
         switch(this.task.plannedFor.kind){
           case "asap":
             var txt = "ASAP";
@@ -281,7 +281,7 @@ style this element.
             }
             break;
         }
-        console.log(txt);
+        //console.log(txt);
         if ( app.scenariouser && !this.selectedUser){
           this.set("selectedUser",app.scenariouser._id);
         }
@@ -330,7 +330,7 @@ style this element.
         }
       }
 
-      console.info(payload);
+      //console.info(payload);
       return this.$.ajax_add_note.send(payload);
     },
 
